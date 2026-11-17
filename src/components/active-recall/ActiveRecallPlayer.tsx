@@ -24,7 +24,13 @@ import {
 	subscribeReadingSize,
 	writeStoredReadingSize,
 } from './readingSize';
-import RecallHintButton, { RecallPresentIcon, RecallSizeGlyph } from './RecallHintButton';
+import { readStoredFireMode, subscribeFireMode, writeStoredFireMode } from './fireMode';
+import RecallFire from './RecallFire';
+import RecallHintButton, {
+	RecallFireIcon,
+	RecallPresentIcon,
+	RecallSizeGlyph,
+} from './RecallHintButton';
 
 type StoredState = {
 	currentId?: string;
@@ -111,8 +117,10 @@ export default function ActiveRecallPlayer({
 		readStoredReadingSize,
 		() => DEFAULT_READING_SIZE,
 	);
+	const fireOn = useSyncExternalStore(subscribeFireMode, readStoredFireMode, () => false);
 	const rootRef = useRef<HTMLElement>(null);
 	const cardBodyRef = useRef<HTMLDivElement>(null);
+	const cardRef = useRef<HTMLElement>(null);
 	const restoreFocusRef = useRef<HTMLElement | null>(null);
 	const cardGesture = useRef({ x: 0, y: 0, skip: false });
 	const storageKey = `active-recall:${deck.id}`;
@@ -397,6 +405,7 @@ export default function ActiveRecallPlayer({
 			data-reading-size={readingSize}
 			data-has-back={backHref && backLabel ? 'true' : 'false'}
 			data-mode={presentation ? 'presentation' : 'study'}
+			data-fire={fireOn ? 'on' : 'off'}
 			data-lang={splitView ? 'split' : viMode ? 'vi' : 'en'}
 			role={fallbackPresentation ? 'dialog' : undefined}
 			aria-label={fallbackPresentation ? 'Chế độ trình chiếu Active Recall' : undefined}
@@ -478,6 +487,15 @@ export default function ActiveRecallPlayer({
 							))}
 						</div>
 						<RecallHintButton
+							className="recall-icon-button recall-fire-toggle"
+							aria-pressed={fireOn}
+							label="Hiệu ứng lửa"
+							hint={fireOn ? 'Tắt hiệu ứng lửa' : 'Bật hiệu ứng lửa'}
+							onClick={() => writeStoredFireMode(!fireOn)}
+						>
+							<RecallFireIcon />
+						</RecallHintButton>
+						<RecallHintButton
 							className="recall-icon-button"
 							label="Trình chiếu"
 							hint="Trình chiếu toàn màn hình"
@@ -493,7 +511,9 @@ export default function ActiveRecallPlayer({
 				</div>
 
 				<section className="recall-card-shell" aria-live="polite" aria-atomic="true">
+					{fireOn ? <RecallFire cardRef={cardRef} flareKey={revealed ? currentId : null} /> : null}
 					<article
+						ref={cardRef}
 						role="button"
 						tabIndex={0}
 						aria-label={

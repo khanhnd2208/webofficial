@@ -1,0 +1,132 @@
+/* Fire mode for the Active Recall player (on by default, toggled per device). */
+
+.recall-player {
+	--fire-core: #ffd27a;
+	--fire-body: #ff8a2a;
+	--fire-deep: #d9471c;
+	--fire-char: #7a2410;
+	--fire-pad-x: 20px;
+	--fire-pad-bottom: 46px;
+}
+
+.recall-player[data-fire='on'] {
+	overflow-x: clip;
+}
+
+@media (min-width: 720px) {
+	.recall-player {
+		--fire-pad-x: 44px;
+	}
+}
+
+.recall-player[data-fire='on'] .recall-card-shell {
+	position: relative;
+	isolation: isolate;
+	margin-bottom: 3.25rem;
+}
+
+.recall-fire {
+	position: absolute;
+	top: -56px;
+	left: calc(var(--fire-pad-x) * -1);
+	z-index: 0;
+	width: calc(100% + var(--fire-pad-x) * 2);
+	height: calc(100% + 56px + var(--fire-pad-bottom));
+	pointer-events: none;
+}
+
+.recall-player[data-fire='on'] .recall-card {
+	position: relative;
+	z-index: 1;
+	border-color: color-mix(in srgb, var(--fire-deep) 55%, var(--hairline));
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--fire-body) 22%, transparent),
+		0 14px 32px -14px color-mix(in srgb, var(--fire-deep) 70%, transparent),
+		0 0 26px -8px color-mix(in srgb, var(--fire-body) 60%, transparent);
+	animation: recall-heat 2.8s ease-in-out infinite;
+}
+
+/* Glowing coal line along the bottom edge of the card. */
+.recall-player[data-fire='on'] .recall-card::after {
+	content: '';
+	position: absolute;
+	left: 6%;
+	right: 6%;
+	bottom: -1px;
+	height: 2px;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		var(--fire-deep) 15%,
+		var(--fire-core) 50%,
+		var(--fire-deep) 85%,
+		transparent
+	);
+	box-shadow: 0 0 10px 1px color-mix(in srgb, var(--fire-body) 70%, transparent);
+	pointer-events: none;
+}
+
+.recall-player[data-fire='on'] .recall-card.is-revealed {
+	border-color: color-mix(in srgb, var(--fire-body) 70%, var(--hairline));
+}
+
+/* Progress bar becomes a burning fuse with a live tip. */
+.recall-player[data-fire='on'] .recall-progress span {
+	position: relative;
+	background: linear-gradient(90deg, var(--fire-char), var(--fire-deep) 60%, var(--fire-body));
+}
+
+.recall-player[data-fire='on'] .recall-progress span::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	right: -3px;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--fire-core);
+	box-shadow:
+		0 0 6px 2px var(--fire-body),
+		0 0 14px 4px color-mix(in srgb, var(--fire-deep) 60%, transparent);
+	transform: translateY(-50%);
+	animation: recall-fuse 0.9s ease-in-out infinite alternate;
+}
+
+.recall-fire-toggle[aria-pressed='true'] {
+	border-color: color-mix(in srgb, var(--fire-deep) 60%, var(--ink));
+	color: var(--fire-deep);
+}
+
+@keyframes recall-heat {
+	0%,
+	100% {
+		box-shadow:
+			0 0 0 1px color-mix(in srgb, var(--fire-body) 22%, transparent),
+			0 14px 32px -14px color-mix(in srgb, var(--fire-deep) 70%, transparent),
+			0 0 26px -8px color-mix(in srgb, var(--fire-body) 60%, transparent);
+	}
+	50% {
+		box-shadow:
+			0 0 0 1px color-mix(in srgb, var(--fire-body) 34%, transparent),
+			0 16px 38px -12px color-mix(in srgb, var(--fire-deep) 80%, transparent),
+			0 0 34px -6px color-mix(in srgb, var(--fire-body) 70%, transparent);
+	}
+}
+
+@keyframes recall-fuse {
+	from {
+		opacity: 0.75;
+		transform: translateY(-50%) scale(0.85);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(-50%) scale(1.15);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.recall-player[data-fire='on'] .recall-card,
+	.recall-player[data-fire='on'] .recall-progress span::after {
+		animation: none;
+	}
+}
