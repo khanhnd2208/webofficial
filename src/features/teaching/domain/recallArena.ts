@@ -78,6 +78,31 @@ export function drawFromBag(
 }
 
 /**
+ * Let students who became eligible mid-cycle (the call rule was widened, a
+ * late student was marked present, a guest was added) into the waiting bag at
+ * random places, so they are not left until everyone already waiting has been
+ * called. Only for callers whose `eligible` list drops a student once they
+ * have answered: there, an eligible id missing from the bag is always new. An
+ * empty bag stays empty, so the next draw refills it as usual.
+ */
+export function admitToBag(
+	bag: readonly string[],
+	eligible: readonly string[],
+	random: RandomSource = Math.random,
+): string[] {
+	const allowed = new Set(eligible);
+	const waiting = bag.filter((id) => allowed.has(id));
+	if (waiting.length === 0) return [];
+	const known = new Set(waiting);
+	for (const id of eligible) {
+		if (known.has(id)) continue;
+		known.add(id);
+		waiting.splice(Math.floor(random() * (waiting.length + 1)), 0, id);
+	}
+	return waiting;
+}
+
+/**
  * Give a student their turn back (skipped or dismissed without grading). They
  * go to the end of the bag. If nobody else is waiting, the bag is refilled
  * with everyone else first, so the same student is never drawn again at once.
