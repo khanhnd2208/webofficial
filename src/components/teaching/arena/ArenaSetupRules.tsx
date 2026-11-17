@@ -16,7 +16,7 @@ const RULES: Array<{ id: ArenaGroupFilter; label: string; hint: string }> = [
 /**
  * Step 3: who the monster may call. The floor always shows everyone in the
  * game, so the class cannot tell the groups apart; each student answers at
- * most once a day, and a question already passed is not asked again.
+ * most once per phiên, and a question already passed is not asked again.
  */
 export function ArenaSetupRules({
 	config,
@@ -70,8 +70,8 @@ export function ArenaSetupRules({
 			) : null}
 			<ul className={setup.ruleNotes}>
 				<li>
-					Mỗi bạn chỉ trả lời một lần trong ngày; bạn đã trả lời có dấu ✓ trên đầu và không bị gọi
-					lại.
+					Mỗi bạn chỉ bị gọi một lần trong phiên; bạn đã trả lời có dấu ✓ trên đầu và không bị gọi
+					lại cho tới khi kết thúc phiên.
 				</li>
 				<li>Câu hỏi đã có người trả lời đạt sẽ không xuất hiện lại.</li>
 				<li>

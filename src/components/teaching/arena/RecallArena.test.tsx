@@ -766,6 +766,29 @@ describe('RecallArena', () => {
 		expect(screen.getByRole('button', { name: /Bắt!/ })).toHaveProperty('disabled', false);
 	});
 
+	it('says why a reopened phiên cannot continue when the whole called group has answered', async () => {
+		apiMock.mockResolvedValue({ cpPrevious: 0, cpAfter: 1 });
+		const view = render(<RecallArena data={arenaData()} />);
+		chooseRule('Chỉ Supporting');
+		enterGame();
+		fireEvent.click(screen.getByRole('button', { name: /Bắt!/ }));
+		const caught = await screen.findByRole('dialog', { name: 'Nguyễn Bình' });
+		fireEvent.click(within(caught).getByRole('button', { name: PASS_HIDE }));
+		await screen.findByRole('button', { name: /Đã gọi hết/ });
+		view.unmount();
+
+		render(<RecallArena data={arenaData()} />);
+		const setup = within(setupDialog());
+		expect(setup.getByRole('button', { name: 'Tiếp tục phiên' })).toHaveProperty('disabled', true);
+		expect(setup.getByText(/Mọi bạn trong nhóm đang gọi đã trả lời/)).toBeTruthy();
+
+		// Widening the rule leaves An to call, so the phiên can go on.
+		chooseRule('Cả lớp');
+		expect(setup.queryByText(/Mọi bạn trong nhóm đang gọi đã trả lời/)).toBeNull();
+		fireEvent.click(setup.getByRole('button', { name: 'Tiếp tục phiên' }));
+		expect(screen.getByRole('button', { name: /Bắt!/ })).toHaveProperty('disabled', false);
+	});
+
 	it('lets the lecturer leave the setup before the game starts', () => {
 		render(<RecallArena data={arenaData()} />);
 		const exit = within(setupDialog()).getByRole('link', { name: 'Thoát về trang lớp' });
