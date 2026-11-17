@@ -4,6 +4,7 @@ import type { RecallArenaData, RecallArenaPlayer } from '@/features/teaching/typ
 
 import {
 	answeredArenaIds,
+	arenaResults,
 	callablePlayers,
 	displayNames,
 	hiddenArenaCards,
@@ -89,6 +90,18 @@ describe('answered once', () => {
 	it('counts a pass or a miss as answered, never a skip', () => {
 		const answered = answeredArenaIds([entry('a', 'pass'), entry('b', 'fail'), entry('d', 'skip')]);
 		expect([...answered].sort()).toEqual(['a', 'b']);
+	});
+
+	it('does not count an answer given in place of a classmate as being called', () => {
+		const history = [
+			entry('a', 'fail'),
+			{ ...entry('a', 'pass'), id: 'assist:1' },
+			{ ...entry('b', 'pass'), id: 'assist:2' },
+		];
+		expect([...answeredArenaIds(history)]).toEqual(['a']);
+		// The mark above a's head stays the miss of their own turn; b has none.
+		expect([...arenaResults(history)]).toEqual([['a', 'fail']]);
+		expect(callablePlayers(roster, 'SUPPORT', answeredArenaIds(history))).toHaveLength(2);
 	});
 
 	it('only calls the chosen group, and nobody who already answered', () => {

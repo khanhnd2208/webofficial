@@ -847,6 +847,12 @@ describe('RecallArena', () => {
 		expect(bonus.clientId).toMatch(/^assist:/);
 		// The class answered the question, so the boss is hit instead of healing.
 		expect(screen.getByLabelText('Máu quái vật 9/10')).toBeTruthy();
+		// Only Bình was called: An answered in place, so An is neither counted nor marked.
+		expect(screen.getByRole('button', { name: 'Đã gọi 1' })).toBeTruthy();
+		const an = screen
+			.getAllByTestId('arena-player')
+			.find((node) => within(node).queryByText('An'))!;
+		expect(within(an).queryByTitle('Đã vượt qua')).toBeNull();
 	});
 
 	it('goes back to the picker without a Gift when the volunteer misses too', async () => {
