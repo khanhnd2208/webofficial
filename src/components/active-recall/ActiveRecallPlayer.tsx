@@ -27,7 +27,7 @@ import {
 import { readStoredFireMode, subscribeFireMode, writeStoredFireMode } from './fireMode';
 import RecallFire from './RecallFire';
 import RecallHintButton, {
-	RecallFireIcon,
+	RecallFireSwitch,
 	RecallPresentIcon,
 	RecallSizeGlyph,
 } from './RecallHintButton';
@@ -487,13 +487,14 @@ export default function ActiveRecallPlayer({
 							))}
 						</div>
 						<RecallHintButton
-							className="recall-icon-button recall-fire-toggle"
-							aria-pressed={fireOn}
+							role="switch"
+							aria-checked={fireOn}
+							className="recall-fire-switch"
 							label="Hiệu ứng lửa"
 							hint={fireOn ? 'Tắt hiệu ứng lửa' : 'Bật hiệu ứng lửa'}
 							onClick={() => writeStoredFireMode(!fireOn)}
 						>
-							<RecallFireIcon />
+							<RecallFireSwitch />
 						</RecallHintButton>
 						<RecallHintButton
 							className="recall-icon-button"

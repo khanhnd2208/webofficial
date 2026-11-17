@@ -43,6 +43,7 @@ const MAX_FLAMES = 1400;
 const MAX_EMBERS = 60;
 const BASE_INTENSITY = 0.6;
 const WALL_SPAN_MAX = 420;
+const COMPACT_GUTTER_PX = 36;
 
 // Temperature ramp, hottest first: core, flame body, tip, dying red.
 const RAMP: Array<[number, [number, number, number], number]> = [
@@ -111,6 +112,9 @@ export function createFireEngine(canvas: HTMLCanvasElement, card: HTMLElement): 
 	let last = 0;
 	let visible = true;
 	let clock = 0;
+	// Phones leave only a thin gutter beside the card: burn as small licks
+	// hugging the edge instead of a full wall that the screen edge cuts flat.
+	let compact = false;
 
 	const measure = () => {
 		const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -127,7 +131,11 @@ export function createFireEngine(canvas: HTMLCanvasElement, card: HTMLElement): 
 			right: cardRect.right - canvasRect.left,
 			bottom: cardRect.bottom - canvasRect.top,
 		};
+		compact = box.left < COMPACT_GUTTER_PX;
 	};
+
+	// About one hot spot per 140px of edge.
+	const compactSpots = () => Math.max(3, Math.round((box.bottom - box.top) / 140));
 
 	const spawnFlame = (side: -1 | 0 | 1) => {
 		if (flames.length >= MAX_FLAMES) return;
@@ -140,7 +148,20 @@ export function createFireEngine(canvas: HTMLCanvasElement, card: HTMLElement): 
 		if (side === 0) {
 			x = rand(box.left - margin * 0.3, box.right + margin * 0.3);
 			y = box.bottom + rand(margin * 0.25, Math.max(6, margin * 0.85));
-			size = rand(26, 46);
+			size = compact ? rand(14, 26) : rand(26, 46);
+		} else if (compact) {
+			// Spread along the whole edge; the bottom of a tall card is often
+			// under the sticky controls on a phone.
+			// Flames gather at a few slow-drifting hot spots, so they read as
+			// separate tongues with gaps instead of one continuous band.
+			const span = box.bottom - box.top;
+			const spots = compactSpots();
+			const spot = Math.floor(Math.random() * spots);
+			const phase = spot * 2.4 + (side === 1 ? 1.3 : 0);
+			const anchor = (spot + 0.5) / spots + (Math.sin(clock * 0.004 + phase) * 0.4) / spots;
+			x = side === -1 ? box.left - rand(0, margin * 0.35) : box.right + rand(0, margin * 0.35);
+			y = box.top + anchor * span + rand(-8, 8);
+			size = rand(13, 22) * (0.55 + 0.45 * Math.sin(clock * 0.02 + phase) ** 2);
 		} else {
 			// Weighted toward the bottom so the walls taper like real flames.
 			const rise = Math.pow(Math.random(), 2.2) * cardHeight * 0.7;
@@ -151,10 +172,10 @@ export function createFireEngine(canvas: HTMLCanvasElement, card: HTMLElement): 
 		flames.push({
 			x,
 			y,
-			vx: side * rand(0.02, 0.2),
-			vy: rand(-1.5, -0.6),
+			vx: side * (compact ? rand(0, 0.08) : rand(0.02, 0.2)),
+			vy: compact ? rand(-1.1, -0.4) : rand(-1.5, -0.6),
 			life: 0,
-			maxLife: rand(30, 54),
+			maxLife: compact ? rand(16, 28) : rand(30, 54),
 			size: size * (0.85 + intensity * 0.25),
 			side,
 			seed: Math.random() * 1000,
@@ -187,7 +208,9 @@ export function createFireEngine(canvas: HTMLCanvasElement, card: HTMLElement): 
 		intensity += (target + flareBoost - intensity) * Math.min(1, 0.04 * dt);
 
 		const bedRate = ((box.right - box.left) / 22) * intensity;
-		const wallRate = (Math.min(box.bottom - box.top, WALL_SPAN_MAX) / 18) * intensity;
+		const wallRate = compact
+			? compactSpots() * 0.75 * intensity
+			: (Math.min(box.bottom - box.top, WALL_SPAN_MAX) / 18) * intensity;
 		for (let n = bedRate * dt; n > 0; n -= 1) if (n >= 1 || Math.random() < n) spawnFlame(0);
 		for (let n = wallRate * dt; n > 0; n -= 1) {
 			if (n >= 1 || Math.random() < n) {
@@ -206,7 +229,8 @@ export function createFireEngine(canvas: HTMLCanvasElement, card: HTMLElement): 
 			}
 			const wobble =
 				Math.sin(clock * 0.12 + flame.seed) * 0.06 + Math.sin(clock * 0.31 + flame.seed * 2) * 0.04;
-			flame.vx = (flame.vx + wobble * dt + flame.side * 0.012 * dt) * Math.pow(0.97, dt);
+			const drift = compact ? 0.3 : 1;
+			flame.vx = (flame.vx + (wobble * dt + flame.side * 0.012 * dt) * drift) * Math.pow(0.97, dt);
 			flame.vy -= 0.045 * dt;
 			flame.x += flame.vx * dt;
 			flame.y += flame.vy * dt;

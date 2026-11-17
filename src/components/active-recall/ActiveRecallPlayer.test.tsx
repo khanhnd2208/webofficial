@@ -289,9 +289,9 @@ describe('ActiveRecallPlayer', () => {
 
 	it('burns by default and remembers when the learner turns the fire off', async () => {
 		const { unmount } = render(<ActiveRecallPlayer deck={deck} />);
-		const toggle = screen.getByRole('button', { name: 'Hiệu ứng lửa' });
+		const toggle = screen.getByRole('switch', { name: 'Hiệu ứng lửa' });
 		await waitFor(() => expect(screen.getByRole('main')).toHaveAttribute('data-fire', 'on'));
-		expect(toggle).toHaveAttribute('aria-pressed', 'true');
+		expect(toggle).toHaveAttribute('aria-checked', 'true');
 
 		fireEvent.click(toggle);
 		expect(screen.getByRole('main')).toHaveAttribute('data-fire', 'off');

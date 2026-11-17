@@ -19,8 +19,14 @@ export function RecallPresentIcon() {
 	return <Icon name="fullscreen" size={20} aria-hidden="true" />;
 }
 
-export function RecallFireIcon() {
-	return <Icon name="flame" size={20} aria-hidden="true" />;
+export function RecallFireSwitch() {
+	return (
+		<span className="recall-fire-switch-track" aria-hidden="true">
+			<span className="recall-fire-switch-knob">
+				<Icon name="flame" size={11} />
+			</span>
+		</span>
+	);
 }
 
 export default function RecallHintButton({
