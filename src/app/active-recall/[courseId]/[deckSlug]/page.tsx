@@ -32,6 +32,7 @@ export default async function PublicCourseRecallDeckPage({ params }: PageProps) 
 			backHref={routes.publicCourseRecall(courseId)}
 			backLabel="Các bộ thẻ của môn"
 			showViToggle
+			testHref={routes.publicCourseRecallTest(courseId, deckSlug)}
 		/>
 	);
 }

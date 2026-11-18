@@ -35,6 +35,13 @@ export default async function PublicCourseRecallPage({ params }: PageProps) {
 					<p className="mt-3 text-base leading-relaxed text-ink-secondary">
 						Chọn một bài để ôn. Tự trả lời rồi lật thẻ để đối chiếu.
 					</p>
+					<Link href={routes.publicCourseRecallTest(courseId)} className="recall-test-cta">
+						<span className="recall-test-cta-title">Test yourself</span>
+						<span className="recall-test-cta-text">
+							Chọn bộ câu hỏi, gặp boss ngẫu nhiên và để boss kiểm tra bài cũ.
+						</span>
+						<span aria-hidden="true">→</span>
+					</Link>
 				</header>
 				<ul className="mt-9 border-t border-hairline" aria-label="Các bộ thẻ của môn">
 					{course.decks.map((deck) => (

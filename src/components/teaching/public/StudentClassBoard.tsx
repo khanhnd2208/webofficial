@@ -490,6 +490,16 @@ export function StudentClassBoard({
 					aria-labelledby="public-tab-recall"
 					className="public-notes-panel"
 				>
+					<Link
+						href={routes.teachingPublicRecallTest(board.slug)}
+						className="recall-test-cta mb-4"
+					>
+						<span className="recall-test-cta-title">Test yourself</span>
+						<span className="recall-test-cta-text">
+							Chọn bộ câu hỏi, gặp boss ngẫu nhiên và để boss kiểm tra bài cũ.
+						</span>
+						<span aria-hidden="true">→</span>
+					</Link>
 					<ul className="space-y-3">
 						{board.recallDecks!.map((deck) => (
 								<li key={deck.id}>
