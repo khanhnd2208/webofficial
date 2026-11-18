@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ActiveRecallPlayer from './ActiveRecallPlayer';
+import { FIRE_MODE_STORAGE_KEY } from './fireMode';
 import { DEFAULT_READING_SIZE, READING_SIZE_STORAGE_KEY } from './readingSize';
 
 const { createRecallTracker, study, stop } = vi.hoisted(() => ({
@@ -284,6 +285,22 @@ describe('ActiveRecallPlayer', () => {
 			expect(screen.getByRole('main')).toHaveAttribute('data-reading-size', 'small'),
 		);
 		expect(screen.getByRole('radio', { name: 'Nhỏ' })).toHaveAttribute('aria-checked', 'true');
+	});
+
+	it('burns by default and remembers when the learner turns the fire off', async () => {
+		const { unmount } = render(<ActiveRecallPlayer deck={deck} />);
+		const toggle = screen.getByRole('switch', { name: 'Hiệu ứng lửa' });
+		await waitFor(() => expect(screen.getByRole('main')).toHaveAttribute('data-fire', 'on'));
+		expect(toggle).toHaveAttribute('aria-checked', 'true');
+
+		fireEvent.click(toggle);
+		expect(screen.getByRole('main')).toHaveAttribute('data-fire', 'off');
+		expect(localStorage.getItem(FIRE_MODE_STORAGE_KEY)).toBe('off');
+		expect(document.querySelector('.recall-fire')).toBeNull();
+		unmount();
+
+		render(<ActiveRecallPlayer deck={{ ...deck, id: 'deck-2', title: 'Other' }} />);
+		await waitFor(() => expect(screen.getByRole('main')).toHaveAttribute('data-fire', 'off'));
 	});
 
 	it('falls back to large reading size when stored data is invalid', async () => {

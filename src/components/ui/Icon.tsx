@@ -107,6 +107,7 @@ export type IconName =
 	| 'fullscreen'
 	| 'fullscreen_exit'
 	| 'shuffle'
+	| 'flame'
 	| 'underline'
 	| 'align_left'
 	| 'align_center'
@@ -133,6 +134,8 @@ const PATHS: Record<IconName, string> = {
 	fullscreen: 'M9 4H4v5M15 4h5v5M4 15v5h5M20 15v5h-5',
 	fullscreen_exit: 'M4 9h5V4M15 4v5h5M9 20v-5H4M20 15h-5v5',
 	shuffle: 'M4 4l5 5M4 20 20 4M15 4h5v5M15 15l5 5M15 20h5v-5',
+	flame:
+		'M12 3c1 3 5 5.5 5 10.5a5 5 0 0 1-10 0c0-2.6 1.4-4.2 2.6-5.3.1 2.1 1 3.3 2.2 3.8.2-3.2-1-5.8.2-9z',
 	layers: 'M12 3 3 8l9 5 9-5zM3 13l9 5 9-5',
 	sidebar: 'M3.5 4.5h17v15h-17zM9.5 4.5v15',
 	note: 'M7 4h8l4 4v12H7zM15 4v4h4M9 12h6M9 16h4',
