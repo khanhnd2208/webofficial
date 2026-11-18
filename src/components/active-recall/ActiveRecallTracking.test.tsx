@@ -72,7 +72,7 @@ describe('semantic Recall tracking actions', () => {
 
 it('records bilingual mode as study without falsely recording an answer reveal', () => {
 	render(<ActiveRecallPlayer deck={deck} showViToggle />);
-	fireEvent.click(screen.getByRole('button', { name: 'Hai ngôn ngữ' }));
+	fireEvent.click(screen.getByRole('radio', { name: 'Hai ngôn ngữ' }));
 	expect(study).toHaveBeenCalledWith(false);
 	fireEvent.click(screen.getByRole('button', { name: 'Hiện đáp án' }));
 	expect(study).toHaveBeenLastCalledWith(true);

@@ -23,6 +23,7 @@ export default function RecallHintButton({
 	hint,
 	label,
 	className,
+	tipClassName,
 	onClick,
 	children,
 	type = 'button',
@@ -30,6 +31,7 @@ export default function RecallHintButton({
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
 	hint: string;
 	label?: string;
+	tipClassName?: string;
 	children: ReactNode;
 }) {
 	const hintId = useId();
@@ -42,7 +44,7 @@ export default function RecallHintButton({
 
 	return (
 		<div
-			className="recall-tip"
+			className={tipClassName ? `recall-tip ${tipClassName}` : 'recall-tip'}
 			onPointerEnter={(event) => {
 				if (isMousePointer(event)) event.currentTarget.removeAttribute('data-touch-used');
 			}}

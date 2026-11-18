@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {
 	useCallback,
 	useEffect,
+	useId,
 	useMemo,
 	useRef,
 	useState,
@@ -14,7 +15,12 @@ import {
 import { useRecallStudy } from './useRecallStudy';
 
 import type { ActiveRecallStudyDeck } from '@/features/active-recall';
-import { recallHasContent, recallToStoredHtml } from '@/features/active-recall/richText';
+import {
+	recallHasContent,
+	recallToStoredHtml,
+	recallVisibleText,
+} from '@/features/active-recall/richText';
+import { Icon } from '@/components/ui/Icon';
 
 import {
 	DEFAULT_READING_SIZE,
@@ -24,7 +30,9 @@ import {
 	subscribeReadingSize,
 	writeStoredReadingSize,
 } from './readingSize';
+import RecallFinishPanel from './RecallFinishPanel';
 import RecallHintButton, { RecallPresentIcon, RecallSizeGlyph } from './RecallHintButton';
+import RecallLanguageSwitch, { type RecallLanguage } from './RecallLanguageSwitch';
 
 type StoredState = {
 	currentId?: string;
@@ -32,6 +40,8 @@ type StoredState = {
 	viMode?: boolean;
 	splitView?: boolean;
 };
+
+type CardGesture = { x: number; y: number; skip: boolean; touch: boolean };
 
 function shuffle<T>(items: T[]) {
 	const next = [...items];
@@ -48,6 +58,8 @@ function hasTextSelection() {
 }
 
 const CARD_DRAG_PX = 8;
+const CARD_SWIPE_PX = 56;
+const PRIVACY_NOTE = 'Lượt học được thống kê bằng mã trình duyệt ẩn danh, không cần đăng nhập.';
 
 function RecallText({ children }: { children: string }) {
 	return (
@@ -100,26 +112,32 @@ export default function ActiveRecallPlayer({
 	const [ids, setIds] = useState(originalIds);
 	const [currentId, setCurrentId] = useState(deck.cards[0]?.id ?? '');
 	const [revealed, setRevealed] = useState(false);
+	const [finished, setFinished] = useState(false);
 	const [shuffled, setShuffled] = useState(false);
 	const [viMode, setViMode] = useState(false);
 	const [splitView, setSplitView] = useState(false);
 	const [hydrated, setHydrated] = useState(false);
 	const [presentation, setPresentation] = useState(false);
 	const [nativeFullscreen, setNativeFullscreen] = useState(false);
+	const [optionsOpen, setOptionsOpen] = useState(false);
 	const readingSize = useSyncExternalStore(
 		subscribeReadingSize,
 		readStoredReadingSize,
 		() => DEFAULT_READING_SIZE,
 	);
+	const optionsId = useId();
 	const rootRef = useRef<HTMLElement>(null);
 	const cardBodyRef = useRef<HTMLDivElement>(null);
+	const toolsRef = useRef<HTMLDivElement>(null);
+	const optionsToggleRef = useRef<HTMLButtonElement>(null);
 	const restoreFocusRef = useRef<HTMLElement | null>(null);
-	const cardGesture = useRef({ x: 0, y: 0, skip: false });
+	const cardGesture = useRef<CardGesture>({ x: 0, y: 0, skip: false, touch: false });
 	const storageKey = `active-recall:${deck.id}`;
 	const byId = useMemo(() => new Map(deck.cards.map((card) => [card.id, card])), [deck.cards]);
 	const currentIndex = Math.max(0, ids.indexOf(currentId));
 	const card = byId.get(currentId) ?? deck.cards[0];
 	const fallbackPresentation = presentation && !nativeFullscreen;
+	const language: RecallLanguage = splitView ? 'split' : viMode ? 'vi' : 'en';
 
 	useEffect(() => {
 		let cancelled = false;
@@ -182,12 +200,45 @@ export default function ActiveRecallPlayer({
 	useEffect(() => {
 		const body = cardBodyRef.current;
 		if (!body) return;
-		if (typeof body.scrollTo === 'function') body.scrollTo({ top: 0, left: 0 });
-		else body.scrollTop = 0;
-	}, [currentId, revealed, splitView]);
+		const scrollers = [body, ...body.querySelectorAll<HTMLElement>('.recall-split-pane')];
+		for (const scroller of scrollers) {
+			if (typeof scroller.scrollTo === 'function') scroller.scrollTo({ top: 0, left: 0 });
+			else scroller.scrollTop = 0;
+		}
+	}, [currentId, revealed, splitView, finished]);
+
+	useEffect(() => {
+		if (!optionsOpen) return;
+		const onPointerDown = (event: PointerEvent) => {
+			if (event.target instanceof Node && toolsRef.current?.contains(event.target)) return;
+			setOptionsOpen(false);
+		};
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key !== 'Escape') return;
+			event.stopImmediatePropagation();
+			setOptionsOpen(false);
+			optionsToggleRef.current?.focus();
+		};
+		document.addEventListener('pointerdown', onPointerDown);
+		window.addEventListener('keydown', onKeyDown, true);
+		return () => {
+			document.removeEventListener('pointerdown', onPointerDown);
+			window.removeEventListener('keydown', onKeyDown, true);
+		};
+	}, [optionsOpen]);
 
 	const move = useCallback(
 		(direction: -1 | 1) => {
+			if (finished) {
+				// Back from the summary returns to the last card; forward has nowhere to go.
+				if (direction === -1) setFinished(false);
+				return;
+			}
+			if (direction === 1 && currentIndex === ids.length - 1) {
+				setFinished(true);
+				setRevealed(false);
+				return;
+			}
 			const next = Math.min(Math.max(0, currentIndex + direction), ids.length - 1);
 			if (ids[next] && ids[next] !== currentId) {
 				recordStudy(false);
@@ -195,18 +246,20 @@ export default function ActiveRecallPlayer({
 			}
 			setRevealed(false);
 		},
-		[currentId, currentIndex, ids, recordStudy],
+		[currentId, currentIndex, finished, ids, recordStudy],
 	);
 	const flip = useCallback(() => {
+		if (finished) return;
 		recordStudy(!revealed);
 		setRevealed((value) => !value);
-	}, [recordStudy, revealed]);
+	}, [finished, recordStudy, revealed]);
 
 	const onCardPointerDown = useCallback((event: ReactPointerEvent<HTMLElement>) => {
 		cardGesture.current = {
 			x: event.clientX,
 			y: event.clientY,
 			skip: hasTextSelection(),
+			touch: event.pointerType !== 'mouse',
 		};
 	}, []);
 
@@ -217,9 +270,23 @@ export default function ActiveRecallPlayer({
 		}
 	}, []);
 
-	const onCardPointerUp = useCallback(() => {
-		if (hasTextSelection()) cardGesture.current.skip = true;
-	}, []);
+	const onCardPointerUp = useCallback(
+		(event: ReactPointerEvent<HTMLElement>) => {
+			const gesture = cardGesture.current;
+			if (hasTextSelection()) {
+				gesture.skip = true;
+				return;
+			}
+			const dx = event.clientX - gesture.x;
+			const dy = event.clientY - gesture.y;
+			// A clear sideways swipe on a touch screen changes card; vertical drags stay scrolls.
+			if (gesture.touch && Math.abs(dx) >= CARD_SWIPE_PX && Math.abs(dx) > Math.abs(dy) * 1.5) {
+				gesture.skip = true;
+				move(dx < 0 ? 1 : -1);
+			}
+		},
+		[move],
+	);
 
 	const onCardClick = useCallback(() => {
 		if (cardGesture.current.skip || hasTextSelection()) return;
@@ -230,10 +297,12 @@ export default function ActiveRecallPlayer({
 		setIds(nextIds);
 		setCurrentId(nextIds[0] ?? '');
 		setRevealed(false);
+		setFinished(false);
 		setShuffled(nextShuffled);
 	}, []);
 
 	const toggleShuffle = useCallback(() => {
+		setOptionsOpen(false);
 		if (shuffled) {
 			applyOrder(originalIds, false);
 			return;
@@ -241,15 +310,25 @@ export default function ActiveRecallPlayer({
 		applyOrder(shuffle(originalIds), true);
 	}, [applyOrder, originalIds, shuffled]);
 
-	const toggleViMode = useCallback(() => {
-		setSplitView(false);
-		setViMode((value) => !value);
-	}, []);
+	const restart = useCallback(() => {
+		if (ids[0] !== currentId) recordStudy(false);
+		setCurrentId(ids[0]!);
+		setRevealed(false);
+		setFinished(false);
+	}, [currentId, ids, recordStudy]);
 
-	const toggleSplitView = useCallback(() => {
-		if (!splitView) recordStudy(false);
-		setSplitView((value) => !value);
-	}, [recordStudy, splitView]);
+	const changeLanguage = useCallback(
+		(next: RecallLanguage) => {
+			if (next === 'split') {
+				if (!splitView) recordStudy(false);
+				setSplitView(true);
+				return;
+			}
+			setSplitView(false);
+			setViMode(next === 'vi');
+		},
+		[recordStudy, splitView],
+	);
 
 	const chooseReadingSize = useCallback((size: (typeof READING_SIZES)[number]) => {
 		writeStoredReadingSize(size);
@@ -273,6 +352,7 @@ export default function ActiveRecallPlayer({
 	const enterPresentation = useCallback(async () => {
 		const root = rootRef.current;
 		if (!root) return;
+		setOptionsOpen(false);
 		restoreFocusRef.current =
 			document.activeElement instanceof HTMLElement ? document.activeElement : null;
 		if (root.requestFullscreen) {
@@ -388,6 +468,8 @@ export default function ActiveRecallPlayer({
 	const flipLabel = revealed ? 'Xem câu hỏi' : 'Hiện đáp án';
 	const questionText = viMode && card.questionVi ? card.questionVi : card.question;
 	const answerText = viMode && card.answerVi ? card.answerVi : card.answer;
+	const recapText = recallVisibleText(splitView ? card.question : questionText);
+	const progress = finished ? 1 : (currentIndex + 1) / ids.length;
 
 	return (
 		<main
@@ -396,166 +478,161 @@ export default function ActiveRecallPlayer({
 			className={`recall-player min-h-svh bg-canvas text-ink ${presentation ? 'recall-player-presentation' : ''}`}
 			data-reading-size={readingSize}
 			data-has-back={backHref && backLabel ? 'true' : 'false'}
+			data-has-lang={showViToggle ? 'true' : 'false'}
 			data-mode={presentation ? 'presentation' : 'study'}
-			data-lang={splitView ? 'split' : viMode ? 'vi' : 'en'}
+			data-lang={language}
 			role={fallbackPresentation ? 'dialog' : undefined}
 			aria-label={fallbackPresentation ? 'Chế độ trình chiếu Active Recall' : undefined}
 			aria-modal={fallbackPresentation ? true : undefined}
 		>
 			<div className="recall-player-inner">
-				<p className="recall-player-chrome text-xs text-ink-secondary">
-					Lượt học được thống kê bằng mã trình duyệt ẩn danh, không cần đăng nhập.
-				</p>
-				{backHref && backLabel ? (
-					<Link href={backHref} className="recall-player-back recall-player-chrome">
-						← {backLabel}
-					</Link>
-				) : null}
+				<div className="recall-player-top recall-player-chrome">
+					{backHref && backLabel ? (
+						<Link href={backHref} className="recall-player-back">
+							<span aria-hidden="true">←</span>{' '}
+							<span className="recall-player-back-label">{backLabel}</span>
+						</Link>
+					) : null}
 
-				<header className="recall-player-head recall-player-chrome">
-					<div>
-						<p className="text-sm text-ink-secondary">
-							{[deck.subject, deck.lessonLabel].filter(Boolean).join(' · ')}
-						</p>
-						<h1 className="recall-player-title">{deck.title}</h1>
-					</div>
-					<div className="recall-player-tools" aria-label="Tiến độ thẻ">
-						{showViToggle ? (
-							<div className="recall-lang-group" role="group" aria-label="Ngôn ngữ">
-								<RecallHintButton
-									className={`recall-lang-chip ${viMode && !splitView ? 'is-en' : splitView ? 'is-idle' : 'is-vi'}`}
-									aria-pressed={viMode && !splitView}
-									hint={
-										viMode && !splitView
-											? 'Đang học bản tiếng Việt. Bấm EN để xem bản tiếng Anh.'
-											: 'Học dễ hơn với bản tiếng Việt. Bấm VI để đổi câu hỏi và đáp án.'
-									}
-									onClick={toggleViMode}
-								>
-									<span className="recall-lang-chip-mark">{viMode ? 'EN' : 'VI'}</span>
-								</RecallHintButton>
-								<RecallHintButton
-									className={`recall-split-chip ${splitView ? 'is-on' : ''}`}
-									aria-pressed={splitView}
-									label="Hai ngôn ngữ"
-									hint={
-										splitView
-											? 'Đang xem tiếng Anh và tiếng Việt cùng lúc. Bấm để về một ngôn ngữ.'
-											: 'Xem tiếng Anh và tiếng Việt cùng lúc.'
-									}
-									onClick={toggleSplitView}
-								>
-									<span className="recall-split-chip-mark" aria-hidden="true">
-										EN<span>|</span>VI
-									</span>
-								</RecallHintButton>
-							</div>
-						) : null}
-						<span className="tabular-nums">
-							{currentIndex + 1}/{ids.length}
-						</span>
-						<button
-							type="button"
-							className="recall-quiet-button"
-							aria-pressed={shuffled}
-							onClick={toggleShuffle}
-						>
-							{shuffled ? 'Về thứ tự ban đầu' : 'Xáo câu'}
-						</button>
-						<div className="recall-size-group" role="radiogroup" aria-label="Cỡ chữ">
-							{READING_SIZES.map((size) => (
-								<RecallHintButton
-									key={size}
-									role="radio"
-									aria-checked={readingSize === size}
-									className="recall-icon-button"
-									label={READING_SIZE_LABELS[size]}
-									hint={size === 'small' ? 'Cỡ chữ nhỏ' : 'Cỡ chữ lớn'}
-									onClick={() => chooseReadingSize(size)}
-								>
-									<RecallSizeGlyph size={size} />
-								</RecallHintButton>
-							))}
+					<header className="recall-player-head">
+						<div className="recall-player-titles">
+							<p className="recall-player-meta text-sm text-ink-secondary">
+								{[deck.subject, deck.lessonLabel].filter(Boolean).join(' · ')}
+							</p>
+							<h1 className="recall-player-title">{deck.title}</h1>
 						</div>
-						<RecallHintButton
-							className="recall-icon-button"
-							label="Trình chiếu"
-							hint="Trình chiếu toàn màn hình"
-							onClick={() => void togglePresentation()}
-						>
-							<RecallPresentIcon />
-						</RecallHintButton>
-					</div>
-				</header>
+						<div className="recall-player-tools" ref={toolsRef}>
+							{showViToggle ? (
+								<RecallLanguageSwitch value={language} onChange={changeLanguage} />
+							) : null}
+							<span className="recall-count tabular-nums">
+								{currentIndex + 1}/{ids.length}
+							</span>
+							<button
+								ref={optionsToggleRef}
+								type="button"
+								className="recall-options-toggle"
+								aria-label="Tùy chọn"
+								aria-expanded={optionsOpen}
+								aria-controls={optionsId}
+								onClick={() => setOptionsOpen((open) => !open)}
+							>
+								<Icon name="more_horiz" size={22} aria-hidden="true" />
+							</button>
+							<div className="recall-options" id={optionsId} data-open={optionsOpen}>
+								<button
+									type="button"
+									className="recall-quiet-button"
+									aria-pressed={shuffled}
+									onClick={toggleShuffle}
+								>
+									{shuffled ? 'Về thứ tự ban đầu' : 'Xáo câu'}
+								</button>
+								<div className="recall-options-row">
+									<span className="recall-options-label" aria-hidden="true">
+										Cỡ chữ
+									</span>
+									<div className="recall-size-group" role="radiogroup" aria-label="Cỡ chữ">
+										{READING_SIZES.map((size) => (
+											<RecallHintButton
+												key={size}
+												role="radio"
+												aria-checked={readingSize === size}
+												className="recall-icon-button"
+												label={READING_SIZE_LABELS[size]}
+												hint={size === 'small' ? 'Cỡ chữ nhỏ' : 'Cỡ chữ lớn'}
+												onClick={() => chooseReadingSize(size)}
+											>
+												<RecallSizeGlyph size={size} />
+											</RecallHintButton>
+										))}
+									</div>
+								</div>
+								<RecallHintButton
+									className="recall-icon-button"
+									tipClassName="recall-present-tip"
+									label="Trình chiếu"
+									hint="Trình chiếu toàn màn hình"
+									onClick={() => void togglePresentation()}
+								>
+									<RecallPresentIcon />
+								</RecallHintButton>
+								<p className="recall-options-note">Chạm thẻ để lật, vuốt ngang để chuyển thẻ.</p>
+								<p className="recall-options-note">{PRIVACY_NOTE}</p>
+							</div>
+						</div>
+					</header>
+				</div>
 
 				<div className="recall-progress" aria-hidden="true">
-					<span style={{ width: `${((currentIndex + 1) / ids.length) * 100}%` }} />
+					<span style={{ width: `${progress * 100}%` }} />
 				</div>
 
 				<section className="recall-card-shell" aria-live="polite" aria-atomic="true">
-					<article
-						role="button"
-						tabIndex={0}
-						aria-label={
-							revealed ? 'Thẻ đáp án. Chạm để xem câu hỏi' : 'Thẻ câu hỏi. Chạm để hiện đáp án'
-						}
-						onPointerDown={onCardPointerDown}
-						onPointerMove={onCardPointerMove}
-						onPointerUp={onCardPointerUp}
-						onClick={onCardClick}
-						onKeyDown={(event) => {
-							if (event.key === ' ' || event.key === 'Enter') {
-								event.preventDefault();
-								event.stopPropagation();
-								flip();
+					{finished ? (
+						<RecallFinishPanel
+							total={ids.length}
+							onShuffleRestart={() => applyOrder(shuffle(originalIds), true)}
+							backHref={backHref}
+							backLabel={backLabel}
+						/>
+					) : (
+						<article
+							role="button"
+							tabIndex={0}
+							aria-label={
+								revealed ? 'Thẻ đáp án. Chạm để xem câu hỏi' : 'Thẻ câu hỏi. Chạm để hiện đáp án'
 							}
-						}}
-						className={`recall-card ${revealed ? 'is-revealed' : ''} ${splitView ? 'is-split' : ''}`}
-						data-side={revealed ? 'answer' : 'question'}
-					>
-						<p className="recall-card-kicker">{revealed ? 'Đáp án' : 'Câu hỏi'}</p>
-						<div
-							className="recall-card-body"
-							ref={cardBodyRef}
-							onScroll={() => {
-								cardGesture.current.skip = true;
+							onPointerDown={onCardPointerDown}
+							onPointerMove={onCardPointerMove}
+							onPointerUp={onCardPointerUp}
+							onClick={onCardClick}
+							onKeyDown={(event) => {
+								if (event.key === ' ' || event.key === 'Enter') {
+									event.preventDefault();
+									event.stopPropagation();
+									flip();
+								}
 							}}
+							className={`recall-card ${revealed ? 'is-revealed' : ''} ${splitView ? 'is-split' : ''}`}
+							data-side={revealed ? 'answer' : 'question'}
 						>
-							{splitView ? (
-								<div className="recall-split">
-									<RecallSplitPane
-										label="EN"
-										html={revealed ? card.answer : card.question}
-										emptyLabel="Không có nội dung"
-									/>
-									<RecallSplitPane
-										label="VI"
-										html={revealed ? card.answerVi : card.questionVi}
-										emptyLabel="Chưa có bản tiếng Việt"
-									/>
+							<p className="recall-card-kicker">{revealed ? 'Đáp án' : 'Câu hỏi'}</p>
+							{revealed && recapText ? (
+								<div className="recall-card-recap">
+									<p className="recall-card-recap-text">
+										<span className="sr-only">Câu hỏi: </span>
+										{recapText}
+									</p>
 								</div>
-							) : (
-								<RecallText>{revealed ? answerText : questionText}</RecallText>
-							)}
-						</div>
-					</article>
+							) : null}
+							<div
+								className="recall-card-body"
+								ref={cardBodyRef}
+								onScrollCapture={() => {
+									cardGesture.current.skip = true;
+								}}
+							>
+								{splitView ? (
+									<div className="recall-split">
+										<RecallSplitPane
+											label="EN"
+											html={revealed ? card.answer : card.question}
+											emptyLabel="Không có nội dung"
+										/>
+										<RecallSplitPane
+											label="VI"
+											html={revealed ? card.answerVi : card.questionVi}
+											emptyLabel="Chưa có bản tiếng Việt"
+										/>
+									</div>
+								) : (
+									<RecallText>{revealed ? answerText : questionText}</RecallText>
+								)}
+							</div>
+						</article>
+					)}
 				</section>
-				<p className="recall-player-chrome recall-player-touch-hint mb-3 text-center text-xs text-ink-secondary sm:hidden">
-					Chạm vào thẻ để lật câu hỏi và đáp án.
-				</p>
-				{last ? (
-					<button
-						type="button"
-						className="recall-quiet-button recall-player-chrome mb-3 min-h-11 self-center"
-						onClick={() => {
-							if (ids[0] !== currentId) recordStudy(false);
-							setCurrentId(ids[0]!);
-							setRevealed(false);
-						}}
-					>
-						Học lại từ đầu
-					</button>
-				) : null}
 
 				<p className="recall-player-hint recall-player-chrome">
 					Space để lật · ← → để chuyển · F để trình chiếu
@@ -568,21 +645,30 @@ export default function ActiveRecallPlayer({
 						type="button"
 						className="recall-nav-button"
 						onClick={() => move(-1)}
-						disabled={first}
+						disabled={first && !finished}
 					>
 						← Trước
 					</button>
-					<button type="button" className="recall-reveal-button" onClick={flip}>
-						{flipLabel}
-					</button>
-					<button
-						type="button"
-						className="recall-nav-button"
-						onClick={() => move(1)}
-						disabled={last}
-					>
-						Tiếp →
-					</button>
+					{finished ? (
+						<button type="button" className="recall-reveal-button" onClick={restart}>
+							Học lại từ đầu
+						</button>
+					) : (
+						<>
+							<button type="button" className="recall-reveal-button" onClick={flip}>
+								{flipLabel}
+							</button>
+							<button
+								type="button"
+								className={
+									last ? 'recall-nav-button recall-nav-button-finish' : 'recall-nav-button'
+								}
+								onClick={() => move(1)}
+							>
+								{last ? 'Hoàn thành' : 'Tiếp →'}
+							</button>
+						</>
+					)}
 					{presentation ? (
 						<button
 							type="button"
@@ -593,6 +679,7 @@ export default function ActiveRecallPlayer({
 						</button>
 					) : null}
 				</nav>
+				<p className="recall-player-privacy recall-player-chrome">{PRIVACY_NOTE}</p>
 			</div>
 		</main>
 	);

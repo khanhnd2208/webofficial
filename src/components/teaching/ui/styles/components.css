@@ -570,23 +570,22 @@
 }
 [data-surface='teaching']
 	:is(
-		.recall-lang-chip,
-		.recall-split-chip,
-		.recall-size-button,
+		.recall-lang-switch,
+		.recall-options,
+		.recall-options-toggle,
+		.recall-finish,
 		.recall-reveal-button,
 		.recall-nav-button,
 		.recall-quiet-button
 	) {
 	border-radius: 8px;
 }
-[data-surface='teaching'] .recall-lang-chip {
-	animation: none;
-	box-shadow: none;
-	border-width: 1px;
-	background: var(--accent);
+[data-surface='teaching'] .recall-lang-switch {
+	overflow: hidden;
 }
-[data-surface='teaching'] .recall-lang-chip:is(.is-en, .is-idle) {
-	background: var(--paper);
+[data-surface='teaching'] .recall-lang-option[aria-checked='true'] {
+	background: var(--accent);
+	color: var(--paper);
 }
 [data-surface='teaching'] .recall-card {
 	border-radius: 12px;
@@ -599,10 +598,8 @@
 	background: var(--accent-hover);
 }
 
-[data-surface='teaching'] .recall-lang-chip.is-vi {
+[data-surface='teaching'] .recall-lang-option.is-nudge {
 	animation: none;
-	box-shadow: none;
-	background: var(--accent);
 }
 [data-surface='teaching'] .teaching-roster-card h3 {
 	white-space: normal;
