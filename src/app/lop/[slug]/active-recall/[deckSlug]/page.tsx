@@ -37,6 +37,7 @@ export default async function PublicClassRecallDeckPage({
 			backHref={routes.teachingPublicClassTab(slug, 'recall')}
 			backLabel="Ôn tập của lớp"
 			showViToggle
+			testHref={routes.teachingPublicRecallTest(slug, deckSlug)}
 		/>
 	);
 }

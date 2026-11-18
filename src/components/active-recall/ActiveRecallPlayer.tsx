@@ -87,6 +87,7 @@ export default function ActiveRecallPlayer({
 	showViToggle = false,
 	surface,
 	classSlug,
+	testHref,
 }: {
 	deck: ActiveRecallStudyDeck;
 	backHref?: string;
@@ -94,6 +95,8 @@ export default function ActiveRecallPlayer({
 	showViToggle?: boolean;
 	surface?: 'teaching';
 	classSlug?: string;
+	/** "Test yourself" for this deck: a boss quizzes the learner. */
+	testHref?: string;
 }) {
 	const recordStudy = useRecallStudy(deck.id, classSlug);
 	const originalIds = useMemo(() => deck.cards.map((card) => card.id), [deck.cards]);
@@ -418,6 +421,11 @@ export default function ActiveRecallPlayer({
 							{[deck.subject, deck.lessonLabel].filter(Boolean).join(' · ')}
 						</p>
 						<h1 className="recall-player-title">{deck.title}</h1>
+						{testHref ? (
+							<Link href={testHref} className="recall-test-link">
+								Test yourself: gặp boss kiểm tra bài <span aria-hidden="true">→</span>
+							</Link>
+						) : null}
 					</div>
 					<div className="recall-player-tools" aria-label="Tiến độ thẻ">
 						{showViToggle ? (

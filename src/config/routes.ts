@@ -18,6 +18,9 @@ export const routes = {
 		`/active-recall/${encodeURIComponent(courseId)}` as const,
 	publicCourseRecallDeck: (courseId: string, deckSlug: string) =>
 		`/active-recall/${encodeURIComponent(courseId)}/${encodeURIComponent(deckSlug)}` as const,
+	/** "Test yourself": a boss quizzes the learner on the decks they pick. */
+	publicCourseRecallTest: (courseId: string, deckSlug?: string) =>
+		`/active-recall/${encodeURIComponent(courseId)}/test-yourself${deckSlug ? `?deck=${encodeURIComponent(deckSlug)}` : ''}` as const,
 	/** Legacy public index. Share course-scoped links from Teaching. */
 	activeRecall: '/my-space/active-recall',
 	/** Legacy standalone deck address. */
@@ -133,6 +136,8 @@ export const routes = {
 	},
 	teachingPublicRecallDeck: (classSlug: string, deckSlug: string) =>
 		`/lop/${classSlug}/active-recall/${deckSlug}` as const,
+	teachingPublicRecallTest: (classSlug: string, deckSlug?: string) =>
+		`/lop/${classSlug}/test-yourself${deckSlug ? `?deck=${encodeURIComponent(deckSlug)}` : ''}` as const,
 	vocabStore: '/vocabulary/store',
 
 	// ─── Admin ────────────────────────────────────────────────────────────────
