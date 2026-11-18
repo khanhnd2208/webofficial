@@ -30,16 +30,21 @@ export interface ArenaSummarySync {
 	retry: () => void;
 }
 
+/** A pass of their own or an answer in place of a classmate can both add CP. */
+function earnsCp(row: ArenaSummaryRow) {
+	return !row.guest && (row.result === 'pass' || row.assists > 0);
+}
+
 function cpCell(row: ArenaSummaryRow) {
-	if (row.result !== 'pass' || row.guest) return '–';
+	if (!earnsCp(row)) return '–';
 	if (row.cpBefore != null && row.cpAfter != null && row.cpBefore !== row.cpAfter)
 		return `${row.cpBefore} → ${row.cpAfter}`;
 	return row.cpAfter ?? '–';
 }
 
 function gainCell(row: ArenaSummaryRow) {
-	if (row.result !== 'pass' || row.guest) return '–';
-	if (row.award === 0) return 'Không điểm';
+	if (!earnsCp(row)) return '–';
+	if (row.award === 0 && !row.assists) return 'Không điểm';
 	if (row.cpGain == null) return row.award ? `+${row.award}` : '–';
 	return row.cpGain > 0 ? `+${row.cpGain}` : '+0';
 }
@@ -189,6 +194,9 @@ export function ArenaSummary({
 											</span>
 											{row.guest && row.result !== 'waiting' ? (
 												<span className={summary.note}> · không ghi điểm</span>
+											) : null}
+											{row.assists ? (
+												<span className={summary.note}> · trả lời thay {row.assists} câu</span>
 											) : null}
 										</td>
 										<td data-gain={(row.cpGain ?? 0) > 0 || undefined}>{gainCell(row)}</td>

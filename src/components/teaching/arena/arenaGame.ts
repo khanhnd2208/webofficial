@@ -90,22 +90,31 @@ export function keptArenaCards(history: readonly ArenaHistoryEntry[]) {
 }
 
 /**
- * Students who already answered in this phiên, pass or fail. Each student
- * answers once per phiên; a skipped turn does not count.
+ * A student's own graded turn: they were called and passed or missed. A
+ * skipped turn and an answer given in place of someone else are not one.
+ */
+export function isOwnTurn(entry: ArenaHistoryEntry) {
+	return entry.result !== 'skip' && !isAssistTurn(entry);
+}
+
+/**
+ * Students who were called and answered in this phiên, pass or fail. Each
+ * student is called once per phiên. Answering in place of a classmate is a
+ * bonus: it does not use up the volunteer's own turn.
  */
 export function answeredArenaIds(history: readonly ArenaHistoryEntry[]) {
 	const ids = new Set<string>();
 	for (const entry of history) {
-		if (entry.result !== 'skip') ids.add(entry.enrollmentId);
+		if (isOwnTurn(entry)) ids.add(entry.enrollmentId);
 	}
 	return ids;
 }
 
-/** Each student's latest graded result today, for the mark above their head. */
+/** How each student did on their own turn, for the mark above their head. */
 export function arenaResults(history: readonly ArenaHistoryEntry[]) {
 	const results = new Map<string, 'pass' | 'fail'>();
 	for (const entry of history) {
-		if (entry.result !== 'skip') results.set(entry.enrollmentId, entry.result);
+		if (isOwnTurn(entry)) results.set(entry.enrollmentId, entry.result as 'pass' | 'fail');
 	}
 	return results;
 }

@@ -7,6 +7,7 @@ import { useAdminConfirm } from '@/components/admin/useAdminConfirm';
 import { useMotionTier } from '@/components/motion';
 import { routes } from '@/config/routes';
 import {
+	admitToBag,
 	drawCard,
 	drawFromBag,
 	returnToBag,
@@ -236,7 +237,9 @@ export function RecallArena({
 	const startHunt = useCallback(() => {
 		if (phase !== 'idle' || !progressLoaded) return;
 		const eligibleIds = callable.map((player) => player.enrollmentId);
-		const draw = drawFromBag(progress.bag, eligibleIds, progress.lastPicked);
+		// Students the rule or the roster let in since the last draw join the order at random.
+		const waiting = admitToBag(progress.bag, eligibleIds);
+		const draw = drawFromBag(waiting, eligibleIds, progress.lastPicked);
 		if (!draw.picked) {
 			setToast({
 				tone: 'error',

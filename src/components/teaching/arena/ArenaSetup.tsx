@@ -90,7 +90,15 @@ export function ArenaSetup({
 	const [step, setStep] = useState<ArenaSetupStep>(initialStep);
 	// Escape stays with RecallArena, which only closes setup once a game has started.
 	const dialogRef = useArenaDialogFocus();
-	const callable = callablePlayers(roster, config.filter);
+	const inGroup = callablePlayers(roster, config.filter);
+	const callable = callablePlayers(roster, config.filter, answered);
+	/** Why "Vào trận" is off, or null when someone can still be called. */
+	const blocked =
+		started || callable.length > 0
+			? null
+			: inGroup.length
+				? 'Mọi bạn trong nhóm đang gọi đã trả lời. Đổi luật gọi hoặc kết thúc phiên.'
+				: 'Chưa có ai để gọi. Thêm người chơi hoặc đổi luật gọi.';
 	const chosenDecks = data.decks.filter((deck) => config.deckIds.includes(deck.deckId));
 	const cardTotal = chosenDecks.reduce((sum, deck) => sum + deck.cardCount, 0);
 	const summary: Record<ArenaSetupStep, string> = {
@@ -183,6 +191,11 @@ export function ArenaSetup({
 							</span>
 						</p>
 					) : null}
+					{blocked ? (
+						<p className={styles.setupHint} data-tone="bad" role="status">
+							{blocked}
+						</p>
+					) : null}
 					{step === 'classes' ? (
 						<ArenaSetupClasses
 							data={data}
@@ -250,14 +263,8 @@ export function ArenaSetup({
 						<button
 							type="button"
 							className={styles.startButton}
-							disabled={!started && callable.length === 0}
-							title={
-								!started && callable.length === 0
-									? openPhien
-										? 'Mọi bạn đã trả lời trong phiên này'
-										: 'Chưa có ai để gọi'
-									: undefined
-							}
+							disabled={Boolean(blocked)}
+							title={blocked ?? undefined}
 							onClick={onDone}
 						>
 							{started ? 'Xong' : openPhien ? 'Tiếp tục phiên' : 'Vào trận'}

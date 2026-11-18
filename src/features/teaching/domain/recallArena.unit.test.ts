@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { AttendanceStatus } from './cp';
 import {
+	admitToBag,
 	arenaCpSession,
 	buildArenaRoster,
 	drawCard,
@@ -92,6 +93,31 @@ describe('drawFromBag', () => {
 
 	it('can repeat the only student in the room', () => {
 		expect(drawFromBag([], ['solo'], 'solo').picked).toBe('solo');
+	});
+});
+
+describe('admitToBag', () => {
+	it('mixes newly eligible students in instead of leaving them for last', () => {
+		// Two Challenging students are still waiting when the rule widens to the whole class.
+		const eligible = ['c2', 'c3', 's1', 's2', 's3', 's4'];
+		expect(admitToBag(['c2', 'c3'], eligible, zero)).toEqual(['s4', 's3', 's2', 's1', 'c2', 'c3']);
+		const firsts = new Set<string>();
+		for (let run = 0; run < 200; run += 1) {
+			const bag = admitToBag(['c2', 'c3'], eligible);
+			expect([...bag].sort()).toEqual([...eligible].sort());
+			expect(bag.indexOf('c2')).toBeLessThan(bag.indexOf('c3'));
+			firsts.add(drawFromBag(bag, eligible, null).picked!);
+		}
+		expect([...firsts].some((id) => id.startsWith('s'))).toBe(true);
+	});
+
+	it('drops ids that left and keeps the order of those still waiting', () => {
+		expect(admitToBag(['gone', 'b', 'a'], ['a', 'b'])).toEqual(['b', 'a']);
+	});
+
+	it('leaves an empty bag empty so the next draw refills it', () => {
+		expect(admitToBag([], ['a', 'b'])).toEqual([]);
+		expect(admitToBag(['gone'], ['a', 'b'])).toEqual([]);
 	});
 });
 
