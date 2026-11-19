@@ -178,7 +178,10 @@ test('Teaching surfaces keep their theme, overlays and responsive navigation', a
 			await expect(page.getByText(/Bạn: vắng/)).toHaveCount(0);
 			await page.emulateMedia({ reducedMotion: 'reduce' });
 			await page.goto(`/lop/${slug}/active-recall/${deck.slug}`);
-			await expect(page.locator('.recall-lang-chip')).toHaveCSS('animation-name', 'none');
+			await expect(page.locator('.recall-lang-option.is-nudge')).toHaveCSS(
+				'animation-name',
+				'none',
+			);
 			await page.getByRole('button', { name: 'Hiện đáp án', exact: true }).click();
 			await expect(page.locator('.recall-card')).toHaveAttribute('data-side', 'answer');
 			await page.getByRole('button', { name: 'Tiếp →' }).click();
