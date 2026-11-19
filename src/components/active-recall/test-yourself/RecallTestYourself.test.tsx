@@ -10,12 +10,12 @@ vi.mock('@/components/teaching/arena/arenaSound', () => ({
 	subscribeArenaMuted: () => () => {},
 }));
 
-const card = (id: string, question: string, answer: string) => ({
+const card = (id: string, question: string, answer: string, vi = false) => ({
 	id,
 	question,
 	answer,
-	questionVi: '',
-	answerVi: '',
+	questionVi: vi ? `Câu hỏi ${id.toUpperCase()}` : '',
+	answerVi: vi ? `<p>Đáp án ${id.toUpperCase()}</p><p><strong>Ví dụ:</strong> Hương.</p>` : '',
 });
 
 const decks = [
@@ -25,7 +25,7 @@ const decks = [
 		title: 'Bài 1',
 		subject: 'HRM',
 		lessonLabel: 'Lesson 1',
-		cards: [card('a', 'Question A', 'Answer A'), card('b', 'Question B', 'Answer B')],
+		cards: [card('a', 'Question A', 'Answer A', true), card('b', 'Question B', 'Answer B', true)],
 	},
 	{
 		id: 'd2',
@@ -50,7 +50,7 @@ function renderTest(initialDeckSlug?: string) {
 }
 
 function bubble() {
-	return screen.getByText(/^Question [ABC]$/).closest('section')!;
+	return screen.getByText(/^(Question|Câu hỏi) [ABC]$/).closest('section')!;
 }
 
 describe('RecallTestYourself', () => {
@@ -63,11 +63,15 @@ describe('RecallTestYourself', () => {
 		vi.restoreAllMocks();
 	});
 
-	it('preselects the deck from the link and counts its questions', () => {
+	it('starts the linked deck by name and folds the other decks away', () => {
 		renderTest('bai-2');
-		expect(screen.getByRole('checkbox', { name: /Bài 2/ })).toBeChecked();
-		expect(screen.getByRole('checkbox', { name: /Bài 1/ })).not.toBeChecked();
-		expect(screen.getByRole('button', { name: 'Gặp boss · 1 câu' })).toBeEnabled();
+		expect(screen.getByRole('button', { name: 'Bắt đầu Bài 2 · 1 câu' })).toBeEnabled();
+		expect(screen.getByText('Đổi hoặc chọn thêm bộ').closest('details')).not.toHaveAttribute(
+			'open',
+		);
+		expect(screen.getByRole('checkbox', { name: /Bài 2/, hidden: true })).toBeChecked();
+		fireEvent.click(screen.getByRole('checkbox', { name: /Bài 1/, hidden: true }));
+		expect(screen.getByRole('button', { name: 'Gặp boss · 3 câu' })).toBeEnabled();
 	});
 
 	it('cannot start without a deck', () => {
@@ -85,18 +89,22 @@ describe('RecallTestYourself', () => {
 		);
 
 		const firstQuestion = within(bubble()).getByText(/^Question/).textContent!;
-		expect(screen.queryByText('Đáp án')).toBeNull();
+		expect(screen.queryByText('Ý cần nhớ')).toBeNull();
+		expect(screen.getByText(/Thử trả lời thành tiếng/)).toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: 'Xem đáp án' }));
-		expect(screen.getByText('Đáp án')).toBeInTheDocument();
+		expect(screen.getByText('Ý cần nhớ')).toBeInTheDocument();
 
-		fireEvent.click(screen.getByRole('button', { name: /Chưa hiểu, kiểm tra lại tôi sau/ }));
+		fireEvent.click(screen.getByRole('button', { name: /Cần ôn lại/ }));
 		expect(within(bubble()).getByText(/^Question/).textContent).not.toBe(firstQuestion);
 		expect(screen.getByRole('meter')).toHaveAttribute('aria-valuenow', '3');
 
+		let cheered = false;
 		for (let turn = 0; turn < 3; turn += 1) {
 			fireEvent.click(screen.getByRole('button', { name: 'Xem đáp án' }));
-			fireEvent.click(screen.getByRole('button', { name: /Đã hiểu, không hỏi lại/ }));
+			fireEvent.click(screen.getByRole('button', { name: /Nhớ được/ }));
+			cheered ||= screen.queryByText('Đã nhớ lại!') !== null;
 		}
+		expect(cheered).toBe(true);
 		expect(screen.getByRole('meter')).toHaveAttribute('aria-valuenow', '0');
 
 		act(() => {
@@ -107,18 +115,48 @@ describe('RecallTestYourself', () => {
 		expect(screen.getByText(firstQuestion)).toBeInTheDocument();
 	});
 
-	it('moves on with the keyboard and can stop mid-fight', () => {
+	it('pauses and resumes on the same card, then ends the session', () => {
 		renderTest('bai-1');
-		fireEvent.click(screen.getByRole('button', { name: 'Gặp boss · 2 câu' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Bắt đầu Bài 1 · 2 câu' }));
 		const first = within(bubble()).getByText(/^Question/).textContent;
 		fireEvent.keyDown(window, { key: ' ' });
-		expect(screen.getByText('Đáp án')).toBeInTheDocument();
+		expect(screen.getByText('Ý cần nhớ')).toBeInTheDocument();
 		fireEvent.keyDown(window, { key: '2' });
-		expect(within(bubble()).getByText(/^Question/).textContent).not.toBe(first);
+		const second = within(bubble()).getByText(/^Question/).textContent;
+		expect(second).not.toBe(first);
 
 		fireEvent.click(screen.getByRole('button', { name: 'Dừng trận' }));
 		expect(screen.getByRole('heading', { name: 'Tạm dừng trận đấu' })).toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Tiếp tục trận' }));
+		expect(within(bubble()).getByText(/^Question/).textContent).toBe(second);
+		expect(screen.getByRole('meter')).toHaveAttribute('aria-valuenow', '1');
+
+		fireEvent.click(screen.getByRole('button', { name: 'Dừng trận' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Kết thúc phiên' }));
+		expect(screen.getByRole('heading', { name: 'Kết thúc phiên' })).toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: 'Chọn bộ câu hỏi khác' }));
 		expect(screen.getByRole('heading', { name: 'Test yourself' })).toBeInTheDocument();
+	});
+
+	it('keeps the chosen language through the summary and drills the hard cards', () => {
+		renderTest('bai-1');
+		fireEvent.click(screen.getByRole('button', { name: 'Bắt đầu Bài 1 · 2 câu' }));
+		fireEvent.click(screen.getByRole('button', { name: 'VI' }));
+		expect(screen.getByRole('button', { name: 'VI' })).toHaveAttribute('aria-pressed', 'true');
+		expect(screen.getByRole('button', { name: 'EN' })).toHaveAttribute('aria-pressed', 'false');
+		const hard = within(bubble()).getByText(/^Câu hỏi/).textContent!;
+
+		fireEvent.click(screen.getByRole('button', { name: 'Xem đáp án' }));
+		expect(screen.getByText('Ví dụ')).toBeInTheDocument();
+		expect(screen.getByText('Hương.')).toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: /Cần ôn lại/ }));
+
+		fireEvent.click(screen.getByRole('button', { name: 'Dừng trận' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Kết thúc phiên' }));
+		expect(within(screen.getByRole('list')).getByText(hard)).toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole('button', { name: 'Ôn riêng 1 câu này' }));
+		expect(screen.getByRole('meter')).toHaveAttribute('aria-valuemax', '1');
+		expect(within(bubble()).getByText(hard)).toBeInTheDocument();
 	});
 });
