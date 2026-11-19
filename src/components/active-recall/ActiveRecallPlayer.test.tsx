@@ -613,10 +613,10 @@ describe('ActiveRecallPlayer', () => {
 
 	it('offers the boss test under the title and again on the summary', () => {
 		render(<ActiveRecallPlayer deck={deck} testHref="/lop/hrm/test-yourself?deck=demo" />);
-		expect(screen.getAllByRole('link', { name: /Test yourself/ })).toHaveLength(1);
+		expect(screen.getAllByRole('link', { name: /Làm Test/ })).toHaveLength(1);
 		fireEvent.click(screen.getByRole('button', { name: 'Tiếp →' }));
 		fireEvent.click(screen.getByRole('button', { name: 'Hoàn thành' }));
-		const links = screen.getAllByRole('link', { name: /Test yourself/ });
+		const links = screen.getAllByRole('link', { name: /Làm Test/ });
 		expect(links).toHaveLength(2);
 		for (const link of links) {
 			expect(link).toHaveAttribute('href', '/lop/hrm/test-yourself?deck=demo');
