@@ -1094,6 +1094,14 @@
 	flex: 0 0 auto;
 }
 
+.recall-finish-test {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 0.35rem;
+	text-decoration: none;
+}
+
 .recall-finish-link {
 	display: inline-flex;
 	align-items: center;
@@ -1228,6 +1236,11 @@
 	}
 	.recall-player:not(.recall-player-presentation):not(:fullscreen) .recall-player-meta {
 		display: none;
+	}
+	.recall-player:not(.recall-player-presentation):not(:fullscreen) .recall-test-link {
+		min-height: 1.75rem;
+		margin-top: 0;
+		font-size: 0.8125rem;
 	}
 	.recall-player:not(.recall-player-presentation):not(:fullscreen) .recall-player-title {
 		margin-top: 0;

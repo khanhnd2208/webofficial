@@ -611,6 +611,18 @@ describe('ActiveRecallPlayer', () => {
 		expect(screen.getByText('1/2')).toBeVisible();
 	});
 
+	it('offers the boss test under the title and again on the summary', () => {
+		render(<ActiveRecallPlayer deck={deck} testHref="/lop/hrm/test-yourself?deck=demo" />);
+		expect(screen.getAllByRole('link', { name: /Test yourself/ })).toHaveLength(1);
+		fireEvent.click(screen.getByRole('button', { name: 'Tiếp →' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Hoàn thành' }));
+		const links = screen.getAllByRole('link', { name: /Test yourself/ });
+		expect(links).toHaveLength(2);
+		for (const link of links) {
+			expect(link).toHaveAttribute('href', '/lop/hrm/test-yourself?deck=demo');
+		}
+	});
+
 	it('shuffles and restarts from the summary', () => {
 		vi.spyOn(Math, 'random').mockReturnValue(0);
 		render(<ActiveRecallPlayer deck={deck} />);

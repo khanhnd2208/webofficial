@@ -582,6 +582,7 @@ export default function ActiveRecallPlayer({
 					{finished ? (
 						<RecallFinishPanel
 							total={ids.length}
+							testHref={testHref}
 							onShuffleRestart={() => applyOrder(shuffle(originalIds), true)}
 							backHref={backHref}
 							backLabel={backLabel}

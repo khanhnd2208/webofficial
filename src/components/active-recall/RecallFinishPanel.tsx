@@ -5,11 +5,13 @@ import Link from 'next/link';
 /** Shown in place of the card once the learner moves past the last card. */
 export default function RecallFinishPanel({
 	total,
+	testHref,
 	onShuffleRestart,
 	backHref,
 	backLabel,
 }: {
 	total: number;
+	testHref?: string;
 	onShuffleRestart: () => void;
 	backHref?: string;
 	backLabel?: string;
@@ -24,6 +26,11 @@ export default function RecallFinishPanel({
 				Học lại từ đầu để nhớ chắc hơn, hoặc xáo thứ tự để tự kiểm tra mà không nhớ theo vị trí.
 			</p>
 			<div className="recall-finish-actions">
+				{testHref ? (
+					<Link href={testHref} className="recall-reveal-button recall-finish-test">
+						Test yourself: gặp boss kiểm tra bài <span aria-hidden="true">→</span>
+					</Link>
+				) : null}
 				<button type="button" className="recall-nav-button" onClick={onShuffleRestart}>
 					Xáo thứ tự rồi học lại
 				</button>
