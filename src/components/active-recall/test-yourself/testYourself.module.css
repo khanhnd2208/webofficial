@@ -640,6 +640,11 @@
 /* Phones: once the answer is open, the boss shrinks next to its health bar
    so the whole answer fits above the buttons. */
 @media (max-width: 719px) {
+	.gradeRow button {
+		padding-inline: 0.5rem;
+		gap: 0.35rem;
+	}
+
 	.battle[data-revealed] .bossSlot {
 		display: none;
 	}
