@@ -211,6 +211,8 @@ export default function ActiveRecallPlayer({
 		if (!optionsOpen) return;
 		const onPointerDown = (event: PointerEvent) => {
 			if (event.target instanceof Node && toolsRef.current?.contains(event.target)) return;
+			// A tap that only closes the menu should not also flip the card underneath.
+			cardGesture.current.skip = true;
 			setOptionsOpen(false);
 		};
 		const onKeyDown = (event: KeyboardEvent) => {

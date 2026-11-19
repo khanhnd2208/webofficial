@@ -459,9 +459,11 @@
 	background: var(--paper);
 	color: var(--ink);
 }
-.recall-icon-button:hover {
-	border-color: var(--hairline);
-	color: var(--ink);
+@media (hover: hover) {
+	.recall-icon-button:hover {
+		border-color: var(--hairline);
+		color: var(--ink);
+	}
 }
 
 .recall-size-glyph {
@@ -758,10 +760,13 @@
 	color: var(--paper);
 }
 
-.recall-reveal-button:hover,
-.recall-nav-button-primary:hover {
-	background: var(--bronze, #765625);
-	border-color: var(--bronze, #765625);
+/* Touch screens keep :hover after a tap, so the hover colour only applies to real pointers. */
+@media (hover: hover) {
+	.recall-reveal-button:hover,
+	.recall-nav-button-primary:hover {
+		background: var(--bronze, #765625);
+		border-color: var(--bronze, #765625);
+	}
 }
 
 .recall-nav-button {
@@ -785,10 +790,12 @@
 	background: transparent;
 	color: var(--ink-secondary);
 }
-.recall-quiet-button:hover {
-	border-color: var(--hairline);
-	background: var(--paper);
-	color: var(--ink);
+@media (hover: hover) {
+	.recall-quiet-button:hover {
+		border-color: var(--hairline);
+		background: var(--paper);
+		color: var(--ink);
+	}
 }
 
 .recall-reveal-button:focus-visible,
@@ -1303,6 +1310,24 @@
 			calc(0.5rem + env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
 		background: color-mix(in srgb, var(--canvas) 92%, transparent);
 		backdrop-filter: blur(8px);
+	}
+	/* One row even on 320px phones; a second row would cover the bottom of the card. */
+	.recall-player:not(.recall-player-presentation):not(:fullscreen) .recall-controls {
+		flex-wrap: nowrap;
+		gap: 0.4rem;
+	}
+	.recall-player:not(.recall-player-presentation):not(:fullscreen)
+		.recall-controls
+		:is(.recall-nav-button, .recall-reveal-button) {
+		flex: 1 1 0;
+		min-width: 0;
+		padding: 0.5rem 0.25rem;
+		line-height: 1.2;
+	}
+	.recall-player:not(.recall-player-presentation):not(:fullscreen)
+		.recall-controls
+		.recall-reveal-button {
+		flex-grow: 1.35;
 	}
 }
 

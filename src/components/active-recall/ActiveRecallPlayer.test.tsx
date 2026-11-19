@@ -679,4 +679,22 @@ describe('ActiveRecallPlayer', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'Xáo câu' }));
 		expect(toggle).toHaveAttribute('aria-expanded', 'false');
 	});
+
+	it('closes the options menu without flipping the card that was tapped', () => {
+		render(<ActiveRecallPlayer deck={deck} />);
+		const toggle = screen.getByRole('button', { name: 'Tùy chọn' });
+		fireEvent.click(toggle);
+		const card = screen.getByRole('button', { name: /Thẻ câu hỏi/ });
+		fireEvent.pointerDown(card, { pointerType: 'touch', clientX: 50, clientY: 50 });
+		fireEvent.pointerUp(card, { pointerType: 'touch', clientX: 50, clientY: 50 });
+		fireEvent.click(card);
+		expect(toggle).toHaveAttribute('aria-expanded', 'false');
+		expect(screen.getByText('Question one')).toBeVisible();
+		expect(screen.queryByText('Answer one')).not.toBeInTheDocument();
+
+		fireEvent.pointerDown(card, { pointerType: 'touch', clientX: 50, clientY: 50 });
+		fireEvent.pointerUp(card, { pointerType: 'touch', clientX: 50, clientY: 50 });
+		fireEvent.click(card);
+		expect(screen.getByText('Answer one')).toBeVisible();
+	});
 });
