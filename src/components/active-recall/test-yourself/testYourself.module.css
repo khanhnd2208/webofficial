@@ -113,8 +113,9 @@
 }
 
 .chip {
-	min-height: 40px;
-	padding: 0.4rem 0.9rem;
+	width: 44px;
+	height: 44px;
+	padding: 0;
 	font-size: 0.85rem;
 }
 
@@ -555,7 +556,7 @@
 
 .langSwitch button {
 	min-width: 2.75rem;
-	min-height: 36px;
+	min-height: 44px;
 	border: 0;
 	border-radius: 999px;
 	padding: 0 0.7rem;
@@ -672,9 +673,52 @@
 }
 
 @media (min-width: 720px) {
+	.battle {
+		display: grid;
+		max-width: 68rem;
+		grid-template-columns: minmax(13rem, 1fr) minmax(0, 2fr);
+		grid-template-areas:
+			'tools tools'
+			'hud question'
+			'scene question'
+			'. actions'
+			'. keys';
+		align-content: start;
+		align-items: start;
+		column-gap: clamp(1.5rem, 4vw, 3rem);
+		padding: 1.5rem;
+	}
+	.topBar {
+		grid-area: tools;
+		margin-bottom: 1.5rem;
+	}
+	.bossHud {
+		grid-area: hud;
+		margin: 0;
+		align-self: end;
+	}
+	.bossSlot {
+		grid-area: scene;
+	}
+	.bubble {
+		grid-area: question;
+		margin: 0;
+		padding: clamp(1.4rem, 3vw, 2.4rem);
+	}
+	.bubble::before {
+		top: 3rem;
+		left: 0;
+		rotate: -45deg;
+	}
+	.keyHint {
+		grid-area: keys;
+		text-align: center;
+	}
 	.actions {
+		position: static;
+		grid-area: actions;
 		width: 100%;
-		margin: 1.5rem 0 0;
+		margin: 1rem 0 0;
 		border-top: 0;
 		padding-inline: 0;
 		background: transparent;
@@ -687,7 +731,8 @@
 	}
 
 	.gradeRow {
-		grid-template-columns: repeat(2, minmax(13rem, auto));
+		width: 100%;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
 	.knownButton kbd,

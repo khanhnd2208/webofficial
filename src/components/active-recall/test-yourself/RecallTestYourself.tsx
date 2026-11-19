@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import { recallHasContent, recallToStoredHtml } from '@/features/active-recall/richText';
 import type { RecallTestDeck } from '@/features/active-recall/testYourself';
 
+import { Icon } from '@/components/ui/Icon';
 import { ArenaMonster, type MonsterMood } from '@/components/teaching/arena/ArenaFigures';
 import { ARENA_BOSSES, type ArenaBoss } from '@/components/teaching/arena/arenaBosses';
 import arenaStyles from '@/components/teaching/arena/arena.module.css';
@@ -303,7 +304,12 @@ export default function RecallTestYourself({
 		<main className={styles.root} data-phase="battle">
 			<div className={styles.battle} data-revealed={revealed || undefined}>
 				<div className={styles.topBar}>
-					<button type="button" className={styles.ghostButton} onClick={() => setPhase('paused')}>
+					<button
+						type="button"
+						className={styles.ghostButton}
+						disabled={!card}
+						onClick={() => setPhase('paused')}
+					>
 						Dừng trận
 					</button>
 					<div className={styles.topTools}>
@@ -311,10 +317,12 @@ export default function RecallTestYourself({
 						<button
 							type="button"
 							className={styles.chip}
+							aria-label="Âm thanh"
+							title={muted ? 'Bật âm thanh' : 'Tắt âm thanh'}
 							aria-pressed={!muted}
 							onClick={() => setArenaMuted(!muted)}
 						>
-							{muted ? 'Âm thanh: tắt' : 'Âm thanh: bật'}
+							<Icon name={muted ? 'volume_off' : 'volume_up'} size={20} aria-hidden="true" />
 						</button>
 					</div>
 				</div>
@@ -338,7 +346,7 @@ export default function RecallTestYourself({
 							<span style={{ width: `${(hp / session.total) * 100}%` }} />
 						</div>
 						<p className={styles.hpText}>
-							Đã hạ {session.known.length}/{session.total} câu · còn {session.queue.length} câu
+							Đã nhớ {session.known.length}/{session.total} câu · còn {session.queue.length} câu
 							trong lượt
 						</p>
 					</div>
@@ -393,16 +401,16 @@ export default function RecallTestYourself({
 									className={styles.againButton}
 									onClick={() => answer('again')}
 								>
-									Cần ôn lại
-									<kbd>1</kbd>
+									<Icon name="retry" size={18} aria-hidden="true" /> Cần ôn lại
+									<kbd aria-hidden="true">1</kbd>
 								</button>
 								<button
 									type="button"
 									className={styles.knownButton}
 									onClick={() => answer('known')}
 								>
-									Nhớ được
-									<kbd>2</kbd>
+									<Icon name="check" size={18} aria-hidden="true" /> Nhớ được
+									<kbd aria-hidden="true">2</kbd>
 								</button>
 							</div>
 							<button type="button" className={styles.laterButton} onClick={() => answer('skip')}>
@@ -421,7 +429,7 @@ export default function RecallTestYourself({
 					)}
 				</nav>
 				<p className={styles.keyHint}>
-					Space: xem đáp án · 1: cần ôn lại · 2: nhớ được · →: để cuối lượt
+					{revealed ? '1 · Cần ôn lại　 2 · Nhớ được' : 'Space · Xem đáp án'}　 → · Để cuối lượt
 				</p>
 			</div>
 		</main>
