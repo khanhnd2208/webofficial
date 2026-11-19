@@ -105,10 +105,12 @@ export default function TestYourselfSetup({
 			{linked ? (
 				<>
 					{startRow}
-					<details className={styles.moreDecks}>
-						<summary>Đổi hoặc chọn thêm bộ</summary>
-						{picker}
-					</details>
+					{decks.length > 1 ? (
+						<details className={styles.moreDecks}>
+							<summary>Đổi hoặc chọn thêm bộ</summary>
+							{picker}
+						</details>
+					) : null}
 				</>
 			) : (
 				<>

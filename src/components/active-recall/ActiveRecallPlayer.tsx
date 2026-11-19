@@ -505,16 +505,16 @@ export default function ActiveRecallPlayer({
 								{[deck.subject, deck.lessonLabel].filter(Boolean).join(' · ')}
 							</p>
 							<h1 className="recall-player-title">{deck.title}</h1>
-							{testHref ? (
-								<Link href={testHref} className="recall-test-link">
-									<Icon name="quiz" size={18} aria-hidden="true" />
-									Test yourself <Icon name="chevron_right" size={16} aria-hidden="true" />
-								</Link>
-							) : null}
 						</div>
 						<div className="recall-player-tools" ref={toolsRef}>
 							{showViToggle ? (
 								<RecallLanguageSwitch value={language} onChange={changeLanguage} />
+							) : null}
+							{testHref ? (
+								<Link href={testHref} className="recall-test-link">
+									<Icon name="quiz" size={18} aria-hidden="true" />
+									Làm Test
+								</Link>
 							) : null}
 							<span className="recall-count tabular-nums">
 								{currentIndex + 1}/{ids.length}
@@ -568,8 +568,11 @@ export default function ActiveRecallPlayer({
 								>
 									<RecallPresentIcon />
 								</RecallHintButton>
-								<p className="recall-options-note">Chạm thẻ để lật, vuốt ngang để chuyển thẻ.</p>
-								<p className="recall-options-note">{PRIVACY_NOTE}</p>
+								<details className="recall-options-note">
+									<summary>Thông tin ôn tập</summary>
+									<p>Chạm thẻ để lật, vuốt ngang để chuyển thẻ.</p>
+									<p>{PRIVACY_NOTE}</p>
+								</details>
 							</div>
 						</div>
 					</header>

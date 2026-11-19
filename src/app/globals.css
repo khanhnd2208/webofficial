@@ -211,13 +211,35 @@
 	font-size: 1.25rem;
 	color: #fbbf24;
 }
+.recall-index-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 0.75rem;
+	border-bottom: 1px solid var(--hairline);
+}
+.recall-index-row .recall-deck-row {
+	border-bottom: 0;
+}
+@media (max-width: 639px) {
+	.recall-index-row .recall-deck-row {
+		display: grid;
+		gap: 0.35rem;
+	}
+	.recall-index-row .recall-stack-mark {
+		display: none;
+	}
+}
 .recall-test-link {
 	display: inline-flex;
 	min-height: 2.75rem;
 	align-items: center;
 	gap: 0.35rem;
-	margin-top: 0.35rem;
-	color: var(--bronze, #765625);
+	padding: 0 0.7rem;
+	background: var(--ink);
+	color: var(--paper);
+	border-radius: 0.55rem;
+	white-space: nowrap;
 	font-size: 0.875rem;
 	font-weight: 600;
 }
@@ -1200,7 +1222,7 @@
 		grid-template-columns: auto minmax(0, 1fr) auto auto;
 		grid-template-areas:
 			'back title title count'
-			'lang lang lang options';
+			'lang lang test options';
 		align-items: center;
 		gap: 0.35rem 0.5rem;
 	}
@@ -1208,17 +1230,17 @@
 		.recall-player-top {
 		grid-template-areas:
 			'title title title count'
-			'lang lang lang options';
+			'lang lang test options';
 	}
 	.recall-player:not(.recall-player-presentation):not(:fullscreen)[data-has-lang='false']
 		.recall-player-top {
-		grid-template-areas: 'back title count options';
+		grid-template-areas: 'back title count count' '. test test options';
 	}
 	.recall-player:not(.recall-player-presentation):not(
 			:fullscreen
 		)[data-has-back='false'][data-has-lang='false']
 		.recall-player-top {
-		grid-template-areas: 'title title count options';
+		grid-template-areas: 'title title count count' 'test test test options';
 	}
 	.recall-player:not(.recall-player-presentation):not(:fullscreen) .recall-player-head,
 	.recall-player:not(.recall-player-presentation):not(:fullscreen) .recall-player-tools {
@@ -1248,6 +1270,8 @@
 		display: none;
 	}
 	.recall-player:not(.recall-player-presentation):not(:fullscreen) .recall-test-link {
+		grid-area: test;
+		justify-self: end;
 		min-height: 2.75rem;
 		margin-top: 0;
 		font-size: 0.8125rem;
@@ -1278,12 +1302,13 @@
 		top: calc(100% + 0.35rem);
 		right: 0;
 		display: none;
-		width: min(20rem, 100%);
+		width: min(17rem, 100%);
 		flex-direction: column;
 		align-items: stretch;
 		gap: 0.6rem;
 		padding: 0.75rem;
-		border: 1px solid var(--ink);
+		border: 1px solid var(--hairline);
+		border-radius: 0.75rem;
 		background: var(--paper);
 		box-shadow: 0 12px 32px rgb(23 23 23 / 0.16);
 	}
@@ -1310,6 +1335,13 @@
 		font-size: 0.8125rem;
 		font-weight: 600;
 		color: var(--ink);
+	}
+	.recall-options-note summary {
+		cursor: pointer;
+		padding-block: 0.6rem;
+	}
+	.recall-options-note p {
+		margin-block: 0.4rem;
 	}
 	.recall-player:not(.recall-player-presentation):not(:fullscreen) .recall-options-note {
 		display: block;
@@ -1433,22 +1465,22 @@
 /* A phone on its side has width to spare but almost no height: keep the chrome to one row. */
 @media (max-height: 500px) and (min-width: 640px) {
 	.recall-player:not(.recall-player-presentation):not(:fullscreen) .recall-player-top {
-		grid-template-columns: auto minmax(0, 1fr) auto auto auto;
-		grid-template-areas: 'back title lang count options';
+		grid-template-columns: auto minmax(0, 1fr) auto auto auto auto;
+		grid-template-areas: 'back title lang test count options';
 	}
 	.recall-player:not(.recall-player-presentation):not(:fullscreen)[data-has-back='false']
 		.recall-player-top {
-		grid-template-areas: 'title title lang count options';
+		grid-template-areas: 'title title lang test count options';
 	}
 	.recall-player:not(.recall-player-presentation):not(:fullscreen)[data-has-lang='false']
 		.recall-player-top {
-		grid-template-areas: 'back title title count options';
+		grid-template-areas: 'back title title test count options';
 	}
 	.recall-player:not(.recall-player-presentation):not(
 			:fullscreen
 		)[data-has-back='false'][data-has-lang='false']
 		.recall-player-top {
-		grid-template-areas: 'title title title count options';
+		grid-template-areas: 'title title title test count options';
 	}
 }
 

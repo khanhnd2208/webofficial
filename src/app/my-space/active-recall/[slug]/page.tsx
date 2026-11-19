@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
+import { routes } from '@/config/routes';
+import RecallTestYourself from '@/components/active-recall/test-yourself/RecallTestYourself';
 import ActiveRecallPlayer from '@/components/active-recall/ActiveRecallPlayer';
 import { getPublishedRecallDeck } from '@/features/active-recall';
 
@@ -22,12 +24,30 @@ export async function generateMetadata({
 
 export default async function ActiveRecallDeckPage({
 	params,
+	searchParams,
 }: {
 	params: Promise<{ slug: string }>;
+	searchParams: Promise<{ mode?: string | string[] }>;
 }) {
 	const { slug } = await params;
 	const deck = await getPublishedRecallDeck(slug);
 	if (!deck) notFound();
-	// Older shared links point here; keep them on the same bilingual player as class links.
-	return <ActiveRecallPlayer deck={deck} showViToggle />;
+	if ((await searchParams).mode === 'test') {
+		return (
+			<RecallTestYourself
+				title={deck.subject}
+				decks={[deck]}
+				initialDeckSlug={deck.slug}
+				backHref={routes.activeRecallDeck(deck.slug)}
+				backLabel="Về thẻ ôn tập"
+			/>
+		);
+	}
+	return (
+		<ActiveRecallPlayer
+			deck={deck}
+			showViToggle
+			testHref={routes.activeRecallDeckTest(deck.slug)}
+		/>
+	);
 }
