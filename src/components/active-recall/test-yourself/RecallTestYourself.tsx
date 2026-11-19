@@ -15,6 +15,7 @@ import {
 	subscribeArenaMuted,
 } from '@/components/teaching/arena/arenaSound';
 
+import { splitAnswerExample } from './answerParts';
 import {
 	bossHp,
 	createTestSession,
@@ -28,17 +29,31 @@ import TestYourselfSetup from './TestYourselfSetup';
 import TestYourselfSummary from './TestYourselfSummary';
 import styles from './testYourself.module.css';
 
-type Phase = 'setup' | 'battle' | 'summary';
+type Phase = 'setup' | 'battle' | 'paused' | 'summary';
 type TestCard = RecallTestDeck['cards'][number] & { deckTitle: string };
 
 /** Generic villains only: the illustrated sheets are portraits of real people. */
 const TEST_BOSSES = ARENA_BOSSES.filter((boss) => boss.art.kind !== 'sheet');
 const MOOD_MS: Partial<Record<MonsterMood, number>> = { roar: 900, hurt: 750, laugh: 1200 };
 const VICTORY_MS = 1300;
+const CHEER_MS = 1400;
 
 function pickBoss(previousId?: string): ArenaBoss {
 	const pool = TEST_BOSSES.filter((boss) => boss.id !== previousId);
 	return pool[Math.floor(Math.random() * pool.length)] ?? TEST_BOSSES[0]!;
+}
+
+function LanguageSwitch({ vi, onChange }: { vi: boolean; onChange: (vi: boolean) => void }) {
+	return (
+		<div className={styles.langSwitch} role="group" aria-label="Ngôn ngữ thẻ">
+			<button type="button" aria-pressed={!vi} onClick={() => onChange(false)}>
+				EN
+			</button>
+			<button type="button" aria-pressed={vi} onClick={() => onChange(true)}>
+				VI
+			</button>
+		</div>
+	);
 }
 
 function RecallHtml({ html }: { html: string }) {
@@ -74,8 +89,10 @@ export default function RecallTestYourself({
 	const [revealed, setRevealed] = useState(false);
 	const [viMode, setViMode] = useState(false);
 	const [entry, setEntry] = useState(0);
+	const [cheer, setCheer] = useState(0);
 	const moodTimer = useRef(0);
 	const victoryTimer = useRef(0);
+	const cheerTimer = useRef(0);
 	const muted = useSyncExternalStore(subscribeArenaMuted, isArenaMuted, () => false);
 
 	const cards = useMemo(() => {
@@ -99,6 +116,7 @@ export default function RecallTestYourself({
 		() => () => {
 			window.clearTimeout(moodTimer.current);
 			window.clearTimeout(victoryTimer.current);
+			window.clearTimeout(cheerTimer.current);
 		},
 		[],
 	);
@@ -111,12 +129,16 @@ export default function RecallTestYourself({
 	}, []);
 
 	const start = useCallback(
-		(previousBossId?: string) => {
-			const ids = decks
-				.filter((deck) => selected.has(deck.id))
-				.flatMap((deck) => deck.cards.map((card) => card.id));
+		(previousBossId?: string, onlyIds?: readonly string[]) => {
+			const ids =
+				onlyIds ??
+				decks
+					.filter((deck) => selected.has(deck.id))
+					.flatMap((deck) => deck.cards.map((card) => card.id));
 			if (!ids.length) return;
 			window.clearTimeout(victoryTimer.current);
+			window.clearTimeout(cheerTimer.current);
+			setCheer(0);
 			setSession(createTestSession(ids));
 			setBoss(pickBoss(previousBossId));
 			setRevealed(false);
@@ -138,6 +160,8 @@ export default function RecallTestYourself({
 	const answer = useCallback(
 		(kind: 'known' | 'again' | 'skip') => {
 			if (!session || phase !== 'battle') return;
+			const head = currentCard(session);
+			const recalled = kind === 'known' && head !== null && (session.again[head] ?? 0) > 0;
 			const next =
 				kind === 'known'
 					? markKnown(session)
@@ -146,6 +170,13 @@ export default function RecallTestYourself({
 						: skipCard(session);
 			setSession(next);
 			setRevealed(false);
+			if (recalled) {
+				// Remembering a card that once slipped is the win active recall is
+				// for: it gets its own label, even on the finishing blow.
+				window.clearTimeout(cheerTimer.current);
+				setCheer((value) => value + 1);
+				cheerTimer.current = window.setTimeout(() => setCheer(0), CHEER_MS);
+			}
 			if (kind === 'known' && next.queue.length === 0) {
 				window.clearTimeout(moodTimer.current);
 				setMood('defeated');
@@ -156,13 +187,15 @@ export default function RecallTestYourself({
 				}, VICTORY_MS);
 				return;
 			}
-			if (kind === 'known') {
+			if (recalled) {
+				// The boss reels: a combo hit instead of the plain one.
+				showMood('hurt');
+				playArenaSound('combo');
+			} else if (kind === 'known') {
 				showMood('hurt');
 				playArenaSound('hit');
-			} else if (kind === 'again') {
-				showMood('laugh');
-				playArenaSound('laugh');
 			} else {
+				// An honest "not yet" stays quiet: the card simply comes back later.
 				showMood('idle');
 			}
 		},
@@ -209,7 +242,14 @@ export default function RecallTestYourself({
 		[decks],
 	);
 
-	const questionOf = useCallback((cardId: string) => cards.get(cardId)?.question ?? '', [cards]);
+	const questionOf = useCallback(
+		(cardId: string) => {
+			const card = cards.get(cardId);
+			if (!card) return '';
+			return viMode && recallHasContent(card.questionVi) ? card.questionVi : card.question;
+		},
+		[cards, viMode],
+	);
 
 	if (phase === 'setup' || !session) {
 		return (
@@ -220,6 +260,7 @@ export default function RecallTestYourself({
 					selected={selected}
 					onToggle={toggleDeck}
 					onSelectAll={selectAll}
+					initialDeckSlug={initialDeckSlug}
 					onStart={() => start()}
 					backHref={backHref}
 					backLabel={backLabel}
@@ -228,14 +269,18 @@ export default function RecallTestYourself({
 		);
 	}
 
-	if (phase === 'summary') {
+	if (phase === 'summary' || phase === 'paused') {
 		return (
 			<main className={styles.root}>
 				<TestYourselfSummary
 					boss={boss}
 					session={session}
+					paused={phase === 'paused'}
 					questionOf={questionOf}
+					onResume={() => setPhase('battle')}
+					onEnd={() => setPhase('summary')}
 					onReplay={() => start(boss.id)}
+					onPractice={(ids) => start(boss.id, ids)}
 					onChooseDecks={() => setPhase('setup')}
 				/>
 			</main>
@@ -249,26 +294,19 @@ export default function RecallTestYourself({
 	const question = card ? (useVi ? card.questionVi : card.question) : '';
 	const answerHtml =
 		card && (useVi && recallHasContent(card.answerVi) ? card.answerVi : card.answer);
+	const parts = answerHtml ? splitAnswerExample(recallToStoredHtml(answerHtml)) : null;
 	const timesAgain = cardId ? (session.again[cardId] ?? 0) : 0;
+	const enraged = session.total >= 2 && hp > 0 && hp <= session.total / 2;
 
 	return (
 		<main className={styles.root} data-phase="battle">
-			<div className={styles.battle}>
+			<div className={styles.battle} data-revealed={revealed || undefined}>
 				<div className={styles.topBar}>
-					<button type="button" className={styles.ghostButton} onClick={() => setPhase('summary')}>
+					<button type="button" className={styles.ghostButton} onClick={() => setPhase('paused')}>
 						Dừng trận
 					</button>
 					<div className={styles.topTools}>
-						{hasVi ? (
-							<button
-								type="button"
-								className={styles.chip}
-								aria-pressed={viMode}
-								onClick={() => setViMode((value) => !value)}
-							>
-								{viMode ? 'EN' : 'VI'}
-							</button>
-						) : null}
+						{hasVi ? <LanguageSwitch vi={viMode} onChange={setViMode} /> : null}
 						<button
 							type="button"
 							className={styles.chip}
@@ -281,27 +319,42 @@ export default function RecallTestYourself({
 				</div>
 
 				<div className={styles.bossHud}>
-					<p className={styles.bossName}>{boss.name}</p>
-					<div
-						className={styles.hpBar}
-						role="meter"
-						aria-label="Máu của boss"
-						aria-valuemin={0}
-						aria-valuemax={session.total}
-						aria-valuenow={hp}
-					>
-						<span style={{ width: `${(hp / session.total) * 100}%` }} />
+					{revealed ? (
+						<div className={styles.miniBoss}>
+							<ArenaMonster boss={boss} mood="idle" size={56} enraged={enraged} decorative />
+						</div>
+					) : null}
+					<div className={styles.hudText}>
+						<p className={styles.bossName}>{boss.name}</p>
+						<div
+							className={styles.hpBar}
+							role="meter"
+							aria-label="Máu của boss"
+							aria-valuemin={0}
+							aria-valuemax={session.total}
+							aria-valuenow={hp}
+						>
+							<span style={{ width: `${(hp / session.total) * 100}%` }} />
+						</div>
+						<p className={styles.hpText}>
+							Đã hạ {session.known.length}/{session.total} câu · còn {session.queue.length} câu
+							trong lượt
+						</p>
 					</div>
-					<p className={styles.hpText}>
-						Đã hạ {session.known.length}/{session.total} câu · còn {session.queue.length} câu trong
-						lượt
-					</p>
 				</div>
 
-				<div className={`${arenaStyles.monsterZone} ${styles.bossSlot}`}>
+				<div
+					className={`${arenaStyles.monsterZone} ${styles.bossSlot}`}
+					data-stunned={cheer ? true : undefined}
+				>
 					<div key={entry} className={arenaStyles.monsterEntry}>
-						<ArenaMonster boss={boss} mood={mood} size={200} decorative />
+						<ArenaMonster boss={boss} mood={mood} size={200} enraged={enraged} decorative />
 					</div>
+					{cheer ? (
+						<p key={cheer} className={styles.cheer} role="status">
+							Đã nhớ lại!
+						</p>
+					) : null}
 				</div>
 
 				{card ? (
@@ -311,11 +364,20 @@ export default function RecallTestYourself({
 							{timesAgain ? <span className={styles.again}>Hỏi lại lần {timesAgain}</span> : null}
 						</p>
 						<RecallHtml html={question} />
-						{revealed && answerHtml ? (
+						{revealed && parts ? (
 							<div className={styles.answer}>
-								<p className={styles.answerLabel}>Đáp án</p>
-								<RecallHtml html={answerHtml} />
+								<p className={styles.answerLabel}>Ý cần nhớ</p>
+								<RecallHtml html={parts.main} />
+								{parts.example ? (
+									<div className={styles.example}>
+										<p className={styles.exampleLabel}>Ví dụ</p>
+										<RecallHtml html={parts.example} />
+									</div>
+								) : null}
 							</div>
+						) : null}
+						{!revealed ? (
+							<p className={styles.recallPrompt}>Thử trả lời thành tiếng trước khi xem đáp án.</p>
 						) : null}
 					</section>
 				) : null}
@@ -323,16 +385,26 @@ export default function RecallTestYourself({
 				<nav className={styles.actions} aria-label="Trả lời boss" hidden={!card}>
 					{revealed ? (
 						<>
-							<button type="button" className={styles.againButton} onClick={() => answer('again')}>
-								Chưa hiểu, kiểm tra lại tôi sau
-								<kbd>1</kbd>
-							</button>
-							<button type="button" className={styles.knownButton} onClick={() => answer('known')}>
-								Đã hiểu, không hỏi lại
-								<kbd>2</kbd>
-							</button>
-							<button type="button" className={styles.ghostButton} onClick={() => answer('skip')}>
-								Câu tiếp →
+							<div className={styles.gradeRow}>
+								<button
+									type="button"
+									className={styles.againButton}
+									onClick={() => answer('again')}
+								>
+									Cần ôn lại
+									<kbd>1</kbd>
+								</button>
+								<button
+									type="button"
+									className={styles.knownButton}
+									onClick={() => answer('known')}
+								>
+									Nhớ được
+									<kbd>2</kbd>
+								</button>
+							</div>
+							<button type="button" className={styles.laterButton} onClick={() => answer('skip')}>
+								Để cuối lượt →
 							</button>
 						</>
 					) : (
@@ -340,14 +412,14 @@ export default function RecallTestYourself({
 							<button type="button" className={styles.startButton} onClick={reveal}>
 								Xem đáp án
 							</button>
-							<button type="button" className={styles.ghostButton} onClick={() => answer('skip')}>
-								Câu tiếp →
+							<button type="button" className={styles.laterButton} onClick={() => answer('skip')}>
+								Để cuối lượt →
 							</button>
 						</>
 					)}
 				</nav>
 				<p className={styles.keyHint}>
-					Space: xem đáp án · 1: kiểm tra lại sau · 2: đã hiểu · →: câu tiếp
+					Space: xem đáp án · 1: cần ôn lại · 2: nhớ được · →: để cuối lượt
 				</p>
 			</div>
 		</main>

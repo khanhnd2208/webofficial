@@ -10,42 +10,74 @@ import styles from './testYourself.module.css';
 
 const HARDEST_SHOWN = 5;
 
+/**
+ * Between or after fights. Paused keeps the run (same card, queue and
+ * language) so "Tiếp tục trận" picks up where the learner stopped; an ended
+ * run offers a focused rematch on the cards that needed review.
+ */
 export default function TestYourselfSummary({
 	boss,
 	session,
+	paused,
 	questionOf,
+	onResume,
+	onEnd,
 	onReplay,
+	onPractice,
 	onChooseDecks,
 }: {
 	boss: ArenaBoss;
 	session: TestSession;
+	paused: boolean;
 	questionOf: (cardId: string) => string;
+	onResume: () => void;
+	onEnd: () => void;
 	onReplay: () => void;
+	onPractice: (cardIds: string[]) => void;
 	onChooseDecks: () => void;
 }) {
 	const won = session.queue.length === 0 && session.total > 0;
 	const againTotal = Object.values(session.again).reduce((sum, count) => sum + count, 0);
-	const hardest = Object.entries(session.again)
-		.sort((left, right) => right[1] - left[1])
-		.slice(0, HARDEST_SHOWN);
+	const hardestAll = Object.entries(session.again).sort((left, right) => right[1] - left[1]);
+	const hardest = hardestAll.slice(0, HARDEST_SHOWN);
+	const hiddenCount = hardestAll.length - hardest.length;
+	const left = session.total - session.known.length;
+
+	const title = won ? 'Boss đã gục!' : paused ? 'Tạm dừng trận đấu' : 'Kết thúc phiên';
+	const lead = won
+		? 'Bạn đã nhớ được hết các câu trong phiên này.'
+		: paused
+			? `Bạn đã hạ ${session.known.length}/${session.total} câu. Tiếp tục để quay lại đúng câu đang hỏi.`
+			: `Bạn đã hạ ${session.known.length}/${session.total} câu. Boss vẫn còn ${left} máu.`;
 
 	return (
 		<section className={styles.summary} aria-labelledby="test-summary-title">
 			<div className={styles.summaryBoss}>
-				<ArenaMonster boss={boss} mood={won ? 'defeated' : 'laugh'} size={150} decorative />
+				<ArenaMonster
+					boss={boss}
+					mood={won ? 'defeated' : paused ? 'idle' : 'laugh'}
+					size={150}
+					decorative
+				/>
 			</div>
 			<p className={styles.kicker}>{boss.name}</p>
 			<h2 id="test-summary-title" className={styles.summaryTitle}>
-				{won ? 'Boss đã gục!' : 'Tạm dừng trận đấu'}
+				{title}
 			</h2>
-			<p className={styles.summaryLead}>
-				{won
-					? 'Bạn đã trả lời hiểu hết các câu trong phiên này.'
-					: `Bạn đã hạ ${session.known.length}/${session.total} câu. Boss vẫn còn ${session.total - session.known.length} máu.`}
-			</p>
+			<p className={styles.summaryLead}>{lead}</p>
+			{paused ? (
+				<div className={styles.summaryActions}>
+					<button type="button" className={styles.startButton} onClick={onResume}>
+						Tiếp tục trận
+					</button>
+					<button type="button" className={styles.ghostButton} onClick={onEnd}>
+						Kết thúc phiên
+					</button>
+				</div>
+			) : null}
 			<dl className={styles.stats}>
 				<div>
-					<dt>Đã hiểu</dt>
+					<dt>Nhớ được</dt>
 					<dd>
 						{session.known.length}/{session.total}
 					</dd>
@@ -55,7 +87,7 @@ export default function TestYourselfSummary({
 					<dd>{session.asked}</dd>
 				</div>
 				<div>
-					<dt>Kiểm tra lại</dt>
+					<dt>Cần ôn lại</dt>
 					<dd>{againTotal}</dd>
 				</div>
 			</dl>
@@ -70,16 +102,28 @@ export default function TestYourselfSummary({
 							</li>
 						))}
 					</ol>
+					{hiddenCount > 0 ? <p className={styles.hardestMore}>và {hiddenCount} câu khác</p> : null}
+					{paused ? null : (
+						<button
+							type="button"
+							className={styles.practiceButton}
+							onClick={() => onPractice(hardestAll.map(([cardId]) => cardId))}
+						>
+							Ôn riêng {hardestAll.length} câu này
+						</button>
+					)}
 				</div>
 			) : null}
-			<div className={styles.summaryActions}>
-				<button type="button" className={styles.startButton} onClick={onReplay}>
-					Đấu lại với boss mới
-				</button>
-				<button type="button" className={styles.ghostButton} onClick={onChooseDecks}>
-					Chọn bộ câu hỏi khác
-				</button>
-			</div>
+			{paused ? null : (
+				<div className={styles.summaryActions}>
+					<button type="button" className={styles.startButton} onClick={onReplay}>
+						Đấu lại với boss mới
+					</button>
+					<button type="button" className={styles.ghostButton} onClick={onChooseDecks}>
+						Chọn bộ câu hỏi khác
+					</button>
+				</div>
+			)}
 		</section>
 	);
 }

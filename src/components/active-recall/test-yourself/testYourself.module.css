@@ -291,6 +291,31 @@
 	background: linear-gradient(transparent, var(--ty-bg) 35%);
 }
 
+.startRow[data-linked] {
+	position: static;
+	justify-content: flex-start;
+	margin-top: 1.75rem;
+	padding: 0;
+	background: none;
+}
+
+.moreDecks {
+	margin-top: 1.5rem;
+}
+
+.moreDecks > summary {
+	display: inline-flex;
+	min-height: 44px;
+	align-items: center;
+	color: var(--ty-accent);
+	font-weight: 650;
+	cursor: pointer;
+}
+
+.moreDecks .deckPicker {
+	margin-top: 0.75rem;
+}
+
 .startRow .startButton {
 	width: 100%;
 	max-width: 22rem;
@@ -456,12 +481,183 @@
 .actions {
 	position: sticky;
 	bottom: 0;
+	z-index: 2;
 	display: grid;
-	width: 100%;
+	width: calc(100% + 2rem);
+	gap: 0.35rem;
+	margin: auto -1rem 0;
+	border-top: 1px solid var(--ty-line);
+	padding: 0.75rem 1rem calc(0.4rem + env(safe-area-inset-bottom));
+	/* Solid, so the answer never shows through the buttons. */
+	background: var(--ty-bg);
+	box-shadow: 0 -12px 28px rgb(0 0 0 / 35%);
+}
+
+.gradeRow {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
 	gap: 0.6rem;
-	margin-top: auto;
-	padding: 1rem 0 calc(0.25rem + env(safe-area-inset-bottom));
-	background: linear-gradient(transparent, var(--ty-bg) 30%);
+}
+
+.laterButton {
+	min-height: 44px;
+	justify-self: center;
+	border: 0;
+	padding: 0 1rem;
+	color: var(--ty-muted);
+	background: none;
+	font: inherit;
+	font-size: 0.9rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.laterButton:hover {
+	color: var(--ty-ink);
+}
+
+.recallPrompt {
+	margin: 0.9rem 0 0;
+	color: var(--ty-muted);
+	font-size: 0.9rem;
+	font-style: italic;
+}
+
+.example {
+	margin-top: 0.9rem;
+	border-left: 3px solid var(--ty-accent);
+	border-radius: 0 0.6rem 0.6rem 0;
+	padding: 0.6rem 0.85rem;
+	background: rgb(251 191 36 / 7%);
+}
+
+.example .recallText {
+	color: var(--ty-muted);
+	font-size: calc(var(--recall-answer-size) * 0.94);
+}
+
+.exampleLabel {
+	margin: 0 0 0.3rem;
+	color: var(--ty-accent);
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+/* EN | VI: both options visible, the active one filled. */
+.langSwitch {
+	display: inline-flex;
+	border: 1px solid var(--ty-line);
+	border-radius: 999px;
+	padding: 2px;
+}
+
+.langSwitch button {
+	min-width: 2.75rem;
+	min-height: 36px;
+	border: 0;
+	border-radius: 999px;
+	padding: 0 0.7rem;
+	color: var(--ty-muted);
+	background: transparent;
+	font: inherit;
+	font-size: 0.85rem;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.langSwitch button[aria-pressed='true'] {
+	color: #1c1206;
+	background: var(--ty-accent);
+}
+
+.hudText {
+	min-width: 0;
+	flex: 1;
+}
+
+.miniBoss {
+	display: none;
+	flex: none;
+}
+
+/* "Đã nhớ lại!": the boss reels and the label pops above it. */
+.bossSlot {
+	position: relative;
+}
+
+.bossSlot[data-stunned] > :first-child {
+	animation: ty-stun 0.7s ease-in-out 2;
+}
+
+.cheer {
+	position: absolute;
+	top: 0.5rem;
+	left: 50%;
+	z-index: 1;
+	margin: 0;
+	border-radius: 999px;
+	padding: 0.35rem 0.9rem;
+	color: #052e1c;
+	background: var(--ty-ok);
+	box-shadow: 0 6px 22px rgb(52 211 153 / 45%);
+	font-weight: 800;
+	white-space: nowrap;
+	translate: -50% 0;
+	animation: ty-cheer 1.4s ease-out forwards;
+}
+
+@keyframes ty-stun {
+	25% {
+		rotate: -9deg;
+	}
+
+	75% {
+		rotate: 9deg;
+	}
+}
+
+@keyframes ty-cheer {
+	0% {
+		opacity: 0;
+		transform: translateY(10px) scale(0.8);
+	}
+
+	15%,
+	75% {
+		opacity: 1;
+		transform: none;
+	}
+
+	100% {
+		opacity: 0;
+		transform: translateY(-8px);
+	}
+}
+
+/* Phones: once the answer is open, the boss shrinks next to its health bar
+   so the whole answer fits above the buttons. */
+@media (max-width: 719px) {
+	.battle[data-revealed] .bossSlot {
+		display: none;
+	}
+
+	.battle[data-revealed] .bossHud {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		max-width: none;
+		text-align: left;
+	}
+
+	.battle[data-revealed] .miniBoss {
+		display: block;
+	}
+
+	.battle[data-revealed] .bubble::before {
+		display: none;
+	}
 }
 
 .actions[hidden] {
@@ -477,9 +673,21 @@
 
 @media (min-width: 720px) {
 	.actions {
-		grid-auto-flow: column;
-		justify-content: center;
-		margin-top: 1.5rem;
+		width: 100%;
+		margin: 1.5rem 0 0;
+		border-top: 0;
+		padding-inline: 0;
+		background: transparent;
+		box-shadow: none;
+	}
+
+	.actions > :not(.laterButton),
+	.gradeRow {
+		justify-self: center;
+	}
+
+	.gradeRow {
+		grid-template-columns: repeat(2, minmax(13rem, auto));
 	}
 
 	.knownButton kbd,
@@ -583,6 +791,32 @@
 	line-height: 1.45;
 }
 
+.hardestMore {
+	margin: 0.5rem 0 0;
+	color: var(--ty-muted);
+	font-size: 0.85rem;
+}
+
+.practiceButton {
+	display: flex;
+	width: 100%;
+	min-height: 48px;
+	align-items: center;
+	justify-content: center;
+	margin-top: 0.75rem;
+	border: 1px solid var(--ty-accent);
+	border-radius: 999px;
+	color: var(--ty-accent);
+	background: rgb(251 191 36 / 10%);
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.practiceButton:hover {
+	background: rgb(251 191 36 / 18%);
+}
+
 .hardestCount {
 	flex: none;
 	color: var(--ty-bad);
@@ -599,6 +833,8 @@
 
 @media (prefers-reduced-motion: reduce) {
 	.answer,
+	.cheer,
+	.bossSlot[data-stunned] > :first-child,
 	.hpBar span {
 		animation: none;
 		transition: none;
