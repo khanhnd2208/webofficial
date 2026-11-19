@@ -175,6 +175,61 @@
 	transform: rotate(8deg);
 }
 
+/* "Test yourself" entry: a slice of the dark boss room, the same in both themes. */
+.recall-test-cta {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: center;
+	gap: 0.15rem 1rem;
+	margin-top: 1.5rem;
+	border: 1px solid rgb(196 181 253 / 30%);
+	border-radius: 1rem;
+	padding: 1rem 1.25rem;
+	color: #f5f3ff;
+	background:
+		radial-gradient(ellipse 80% 120% at 0% 0%, rgb(124 58 237 / 45%), transparent 70%), #1d1438;
+	transition: transform var(--ui-duration-hover) var(--ui-ease);
+}
+.recall-test-cta:hover {
+	transform: translateY(-1px);
+	border-color: #fbbf24;
+}
+.recall-test-cta-title {
+	font-size: 1.15rem;
+	font-weight: 800;
+	color: #fbbf24;
+}
+.recall-test-cta-text {
+	grid-column: 1;
+	font-size: 0.9rem;
+	color: #c4b5fd;
+	line-height: 1.5;
+}
+.recall-test-cta > span[aria-hidden] {
+	grid-column: 2;
+	grid-row: 1 / span 2;
+	font-size: 1.25rem;
+	color: #fbbf24;
+}
+.recall-test-link {
+	display: inline-flex;
+	min-height: 2.25rem;
+	align-items: center;
+	gap: 0.35rem;
+	margin-top: 0.35rem;
+	color: var(--bronze, #765625);
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+.recall-test-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+}
+.recall-player-presentation .recall-test-link,
+.recall-player:fullscreen .recall-test-link {
+	display: none;
+}
+
 .recall-player {
 	--recall-size: 1;
 	--recall-question-size: max(1rem, calc(1.25rem * var(--recall-size)));
