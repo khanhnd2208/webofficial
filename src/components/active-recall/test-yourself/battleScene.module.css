@@ -1,0 +1,68 @@
+/* A bounded backdrop leaves the card and its controls on a quiet reading surface. */
+.scene.scene {
+	isolation: isolate;
+	width: 100%;
+	overflow: hidden;
+	margin: 0.75rem 0 0;
+	border: 1px solid rgb(171 180 255 / 34%);
+	border-radius: 1.15rem;
+	padding: 0.25rem 0 0.65rem;
+	background: #202047 url('/arena/recall-sanctum.webp') center 66% / cover no-repeat;
+	box-shadow:
+		inset 0 -0.6rem 1.3rem rgb(10 12 34 / 35%),
+		0 0.4rem 1.6rem rgb(8 8 25 / 28%);
+}
+
+.scene.scene::before {
+	inset: auto auto 5% 50%;
+	width: clamp(8rem, 30%, 14rem);
+	height: 10%;
+	border: 1px solid rgb(147 236 247 / 75%);
+	border-radius: 50%;
+	background: radial-gradient(ellipse, #5cdeec55 5%, #55d6e220 55%, transparent 73%);
+	box-shadow: 0 0 1rem #53dee74d;
+	mask-image: none;
+	translate: -50% 0;
+	animation: none;
+}
+
+.actor {
+	align-self: end;
+	filter: drop-shadow(0 3px 2px #15102bcc);
+}
+
+.scene[data-enraged]::before {
+	border-color: #ffd3a2;
+	background: radial-gradient(ellipse, #ff936d88, transparent 70%);
+	box-shadow: 0 0 1.25rem #ff966f80;
+}
+
+.scene[data-stunned]::after {
+	position: absolute;
+	inset: auto auto 3% 50%;
+	width: clamp(8rem, 30%, 14rem);
+	height: 13%;
+	border: 2px solid #bcffe6;
+	border-radius: 50%;
+	content: '';
+	translate: -50% 0;
+	animation: recall-ripple 650ms ease-out both;
+}
+
+@keyframes recall-ripple {
+	from {
+		opacity: 0.95;
+		scale: 0.65;
+	}
+	to {
+		opacity: 0;
+		scale: 1.8;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.scene[data-stunned]::after {
+		animation: none;
+		opacity: 0.55;
+	}
+}

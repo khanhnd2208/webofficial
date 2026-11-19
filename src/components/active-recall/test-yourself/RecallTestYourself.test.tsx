@@ -158,5 +158,11 @@ describe('RecallTestYourself', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'Ôn riêng 1 câu này' }));
 		expect(screen.getByRole('meter')).toHaveAttribute('aria-valuemax', '1');
 		expect(within(bubble()).getByText(hard)).toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Xem đáp án' }));
+		fireEvent.click(screen.getByRole('button', { name: /Nhớ được/ }));
+		act(() => vi.runAllTimers());
+		fireEvent.click(screen.getByRole('button', { name: 'Đấu lại với boss mới' }));
+		expect(screen.getByRole('meter')).toHaveAttribute('aria-valuemax', '1');
+		expect(within(bubble()).getByText(hard)).toBeInTheDocument();
 	});
 });
