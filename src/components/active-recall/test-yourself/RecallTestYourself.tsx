@@ -16,6 +16,7 @@ import {
 } from '@/components/teaching/arena/arenaSound';
 
 import { splitAnswerExample } from './answerParts';
+import stage from './battleScene.module.css';
 import {
 	bossHp,
 	createTestSession,
@@ -344,10 +345,11 @@ export default function RecallTestYourself({
 				</div>
 
 				<div
-					className={`${arenaStyles.monsterZone} ${styles.bossSlot}`}
+					className={`${arenaStyles.monsterZone} ${styles.bossSlot} ${stage.scene}`}
+					data-enraged={enraged || undefined}
 					data-stunned={cheer ? true : undefined}
 				>
-					<div key={entry} className={arenaStyles.monsterEntry}>
+					<div key={entry} className={`${arenaStyles.monsterEntry} ${stage.actor}`}>
 						<ArenaMonster boss={boss} mood={mood} size={200} enraged={enraged} decorative />
 					</div>
 					{cheer ? (
