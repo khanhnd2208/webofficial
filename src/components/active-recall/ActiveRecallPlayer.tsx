@@ -507,7 +507,8 @@ export default function ActiveRecallPlayer({
 							<h1 className="recall-player-title">{deck.title}</h1>
 							{testHref ? (
 								<Link href={testHref} className="recall-test-link">
-									Test yourself: gặp boss kiểm tra bài <span aria-hidden="true">→</span>
+									<Icon name="quiz" size={18} aria-hidden="true" />
+									Test yourself <Icon name="chevron_right" size={16} aria-hidden="true" />
 								</Link>
 							) : null}
 						</div>
@@ -655,10 +656,13 @@ export default function ActiveRecallPlayer({
 					<button
 						type="button"
 						className="recall-nav-button"
+						aria-label="← Trước"
+						title="Thẻ trước"
 						onClick={() => move(-1)}
 						disabled={first && !finished}
 					>
-						← Trước
+						<Icon name="arrow_back" size={20} aria-hidden="true" />{' '}
+						<span className="recall-direction-label">Trước</span>
 					</button>
 					{finished ? (
 						<button type="button" className="recall-reveal-button" onClick={restart}>
@@ -666,17 +670,34 @@ export default function ActiveRecallPlayer({
 						</button>
 					) : (
 						<>
-							<button type="button" className="recall-reveal-button" onClick={flip}>
+							<button
+								type="button"
+								className={revealed ? 'recall-nav-button' : 'recall-reveal-button'}
+								onClick={flip}
+							>
 								{flipLabel}
 							</button>
 							<button
 								type="button"
 								className={
-									last ? 'recall-nav-button recall-nav-button-finish' : 'recall-nav-button'
+									revealed
+										? 'recall-reveal-button'
+										: last
+											? 'recall-nav-button recall-nav-button-finish'
+											: 'recall-nav-button'
 								}
+								aria-label={last ? 'Hoàn thành' : 'Tiếp →'}
+								title={last ? 'Hoàn thành' : 'Thẻ tiếp theo'}
 								onClick={() => move(1)}
 							>
-								{last ? 'Hoàn thành' : 'Tiếp →'}
+								{last ? (
+									'Hoàn thành'
+								) : (
+									<>
+										<span className="recall-direction-label">Tiếp</span>{' '}
+										<Icon name="arrow_forward" size={20} aria-hidden="true" />
+									</>
+								)}
 							</button>
 						</>
 					)}

@@ -213,7 +213,7 @@
 }
 .recall-test-link {
 	display: inline-flex;
-	min-height: 2.25rem;
+	min-height: 2.75rem;
 	align-items: center;
 	gap: 0.35rem;
 	margin-top: 0.35rem;
@@ -830,6 +830,16 @@
 	background: var(--paper);
 	color: var(--ink);
 }
+.recall-controls button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.4rem;
+	flex-basis: 6rem;
+}
+.recall-controls button:nth-child(2) {
+	flex-basis: 8rem;
+}
 .recall-nav-button-primary {
 	background: var(--ink);
 	border-color: var(--ink);
@@ -1238,7 +1248,7 @@
 		display: none;
 	}
 	.recall-player:not(.recall-player-presentation):not(:fullscreen) .recall-test-link {
-		min-height: 1.75rem;
+		min-height: 2.75rem;
 		margin-top: 0;
 		font-size: 0.8125rem;
 	}
@@ -1379,6 +1389,9 @@
 		background: color-mix(in srgb, var(--canvas) 92%, transparent);
 		backdrop-filter: blur(8px);
 	}
+	.recall-direction-label {
+		display: none;
+	}
 	/* One row even on 320px phones; a second row would cover the bottom of the card. */
 	.recall-player:not(.recall-player-presentation):not(:fullscreen) .recall-controls {
 		flex-wrap: nowrap;
@@ -1394,8 +1407,8 @@
 	}
 	.recall-player:not(.recall-player-presentation):not(:fullscreen)
 		.recall-controls
-		.recall-reveal-button {
-		flex-grow: 1.35;
+		button:nth-child(2) {
+		flex-grow: 2.3;
 	}
 }
 

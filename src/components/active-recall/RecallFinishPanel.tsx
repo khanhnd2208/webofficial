@@ -28,7 +28,7 @@ export default function RecallFinishPanel({
 			<div className="recall-finish-actions">
 				{testHref ? (
 					<Link href={testHref} className="recall-reveal-button recall-finish-test">
-						Test yourself: gặp boss kiểm tra bài <span aria-hidden="true">→</span>
+						Test yourself · Tự kiểm tra <span aria-hidden="true">→</span>
 					</Link>
 				) : null}
 				<button type="button" className="recall-nav-button" onClick={onShuffleRestart}>

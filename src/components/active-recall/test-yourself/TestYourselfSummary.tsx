@@ -47,8 +47,8 @@ export default function TestYourselfSummary({
 	const lead = won
 		? 'Bạn đã nhớ được hết các câu trong phiên này.'
 		: paused
-			? `Bạn đã hạ ${session.known.length}/${session.total} câu. Tiếp tục để quay lại đúng câu đang hỏi.`
-			: `Bạn đã hạ ${session.known.length}/${session.total} câu. Boss vẫn còn ${left} máu.`;
+			? `Bạn đã nhớ ${session.known.length}/${session.total} câu. Tiếp tục để quay lại đúng câu đang hỏi.`
+			: `Bạn đã nhớ ${session.known.length}/${session.total} câu. Còn ${left} câu chưa đánh dấu nhớ.`;
 
 	return (
 		<section className={styles.summary} aria-labelledby="test-summary-title">
@@ -87,7 +87,7 @@ export default function TestYourselfSummary({
 					<dd>{session.asked}</dd>
 				</div>
 				<div>
-					<dt>Cần ôn lại</dt>
+					<dt>Lần chọn ôn lại</dt>
 					<dd>{againTotal}</dd>
 				</div>
 			</dl>

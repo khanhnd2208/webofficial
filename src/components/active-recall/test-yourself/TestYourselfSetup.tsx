@@ -97,9 +97,8 @@ export default function TestYourselfSetup({
 				<p className={styles.kicker}>Active Recall · {title}</p>
 				<h1 className={styles.setupTitle}>Test yourself</h1>
 				<p className={styles.setupLead}>
-					Chọn bộ câu hỏi. Một boss ngẫu nhiên sẽ xuất hiện và hỏi bạn từng câu. Thử tự trả lời
-					trước khi xem đáp án. Câu nào <strong>nhớ được</strong> thì boss mất máu và không hỏi lại;
-					câu nào <strong>cần ôn lại</strong> thì boss sẽ hỏi lại bất ngờ trong phiên.
+					Tự trả lời rồi mở đáp án để đối chiếu. Chọn <strong>Nhớ được</strong> để hạ máu boss hoặc{' '}
+					<strong>Cần ôn lại</strong> để gặp lại câu đó trong lượt này.
 				</p>
 			</header>
 
