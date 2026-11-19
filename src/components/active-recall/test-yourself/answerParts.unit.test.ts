@@ -17,6 +17,18 @@ describe('splitAnswerExample', () => {
 		expect(parts).toEqual({ main: '<p>Ý chính.</p>', example: '<p>Hương đạt chỉ tiêu.</p>' });
 	});
 
+	it.each(['<strong>Example:</strong>', '<em>Ví dụ</em>:'])(
+		'splits a soft break before %s',
+		(label) => {
+			expect(
+				splitAnswerExample(`<p>A <strong>point</strong>.<br>${label} One.</p><p>Two.</p>`),
+			).toEqual({
+				main: '<p>A <strong>point</strong>.</p>',
+				example: '<p>One.</p><p>Two.</p>',
+			});
+		},
+	);
+
 	it('keeps answers without an example, or that open with one, whole', () => {
 		expect(splitAnswerExample('<p>Example of a theory is X.</p>').example).toBe('');
 		expect(splitAnswerExample('<p><strong>Example:</strong> only.</p>').example).toBe('');

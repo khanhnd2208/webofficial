@@ -279,7 +279,7 @@ export default function RecallTestYourself({
 					questionOf={questionOf}
 					onResume={() => setPhase('battle')}
 					onEnd={() => setPhase('summary')}
-					onReplay={() => start(boss.id)}
+					onReplay={() => start(boss.id, [...session.known, ...session.queue])}
 					onPractice={(ids) => start(boss.id, ids)}
 					onChooseDecks={() => setPhase('setup')}
 				/>
@@ -294,7 +294,7 @@ export default function RecallTestYourself({
 	const question = card ? (useVi ? card.questionVi : card.question) : '';
 	const answerHtml =
 		card && (useVi && recallHasContent(card.answerVi) ? card.answerVi : card.answer);
-	const parts = answerHtml ? splitAnswerExample(recallToStoredHtml(answerHtml)) : null;
+	const parts = revealed && answerHtml ? splitAnswerExample(recallToStoredHtml(answerHtml)) : null;
 	const timesAgain = cardId ? (session.again[cardId] ?? 0) : 0;
 	const enraged = session.total >= 2 && hp > 0 && hp <= session.total / 2;
 
@@ -351,7 +351,7 @@ export default function RecallTestYourself({
 						<ArenaMonster boss={boss} mood={mood} size={200} enraged={enraged} decorative />
 					</div>
 					{cheer ? (
-						<p key={cheer} className={styles.cheer} role="status">
+						<p key={`cheer-${cheer}`} className={styles.cheer} role="status">
 							Đã nhớ lại!
 						</p>
 					) : null}

@@ -1,20 +1,46 @@
-/**
- * Split a card's stored answer HTML into the point to remember and its example,
- * so the battle can show them as two blocks. The example starts at the first
- * top-level paragraph that opens with "Example:" / "Ví dụ:" (bold or not); that
- * label is dropped because the block carries its own heading.
- */
+import DOMPurify from 'isomorphic-dompurify';
 
-const EXAMPLE_START =
-	/<p\b[^>]*>\s*(?:<(strong|b)\b[^>]*>\s*)?(?:for example|example|e\.g\.|ví dụ|vd)\s*(?:<\/\1>\s*)?[:.]\s*(?:<\/\1>\s*)?/i;
-
+const EXAMPLE_LABEL = /^\s*(?:for example|example|e\.g\.|ví dụ|vd)\s*[:.]\s*/i;
 export type AnswerParts = { main: string; example: string };
 
+/** Stored cards use both new paragraphs and soft line breaks before an example. */
 export function splitAnswerExample(html: string): AnswerParts {
-	const match = EXAMPLE_START.exec(html);
-	if (!match || match.index === 0) return { main: html, example: '' };
-	const main = html.slice(0, match.index).trim();
-	const opening = /^<p\b[^>]*>/i.exec(match[0])![0];
-	const example = `${opening}${html.slice(match.index + match[0].length)}`.trim();
-	return { main, example };
+	const whole = { main: html, example: '' };
+	if (!/(?:example|ví dụ|e\.g\.|\bvd\b)/i.test(html)) return whole;
+	const body = DOMPurify.sanitize(html, { RETURN_DOM: true }) as HTMLElement;
+	const doc = body.ownerDocument;
+	for (const boundary of body.querySelectorAll(':scope > p, :scope > p br')) {
+		const remainder = doc.createRange();
+		remainder.selectNodeContents(boundary.closest('p')!);
+		if (boundary.tagName === 'BR') remainder.setStartAfter(boundary);
+		const label = EXAMPLE_LABEL.exec(remainder.toString());
+		if (!label) continue;
+
+		const point = doc.createRange();
+		point.selectNodeContents(body);
+		point.setEndBefore(boundary);
+		if (!point.toString().trim()) return whole;
+		const main = doc.createElement('div');
+		main.append(point.cloneContents());
+
+		const exampleRange = doc.createRange();
+		exampleRange.selectNodeContents(body);
+		exampleRange.setStart(remainder.startContainer, remainder.startOffset);
+		const example = doc.createElement('div');
+		example.append(exampleRange.cloneContents());
+		// The label, colon and whitespace can be in separate formatting nodes.
+		let remaining = label[0].length;
+		const walker = doc.createTreeWalker(example, 4 /* SHOW_TEXT */);
+		while (remaining > 0 && walker.nextNode()) {
+			const node = walker.currentNode as Text;
+			const count = Math.min(node.length, remaining);
+			node.deleteData(0, count);
+			remaining -= count;
+		}
+		example.normalize();
+		for (const empty of example.querySelectorAll('strong:empty, b:empty, em:empty, i:empty'))
+			empty.remove();
+		return { main: main.innerHTML, example: example.innerHTML };
+	}
+	return whole;
 }
