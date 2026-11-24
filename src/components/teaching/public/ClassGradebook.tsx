@@ -1,9 +1,7 @@
 'use client';
 
-import { useMemo, type RefObject } from 'react';
+import { useMemo } from 'react';
 
-import { AttendanceGrid } from '../admin/AttendanceGrid';
-import { ParticipationGrid } from '../admin/ParticipationGrid';
 import type { BoardGridStudent } from '../board/gridTypes';
 import type { PublicClassBoard } from '@/features/teaching/types';
 import {
@@ -15,6 +13,8 @@ import {
 	studentMatchesPublicTutorial,
 } from '@/features/teaching/domain/publicBoardFilter';
 
+import { ClassRoster } from './ClassRoster';
+import { GradebookLegend } from './GradebookLegend';
 import type { GradebookView } from './publicBoardNav';
 import { matchesStudentQuery, pinStudent } from './studentIdentity';
 import { getPublicSummaryLockStatus, StudentSummaryPanel } from './StudentSummaryPanel';
@@ -51,7 +51,6 @@ export function ClassGradebook({
 	onQueryChange,
 	meId,
 	onOpenMe,
-	gridWrapRef,
 }: {
 	board: PublicClassBoard;
 	view: GradebookView;
@@ -62,7 +61,6 @@ export function ClassGradebook({
 	onQueryChange: (next: string) => void;
 	meId: string | null;
 	onOpenMe: () => void;
-	gridWrapRef: RefObject<HTMLDivElement | null>;
 }) {
 	const hasUnassigned = useMemo(
 		() => hasUnassignedPublicStudents(board.students),
@@ -97,54 +95,39 @@ export function ClassGradebook({
 	});
 	const summaryLocked = view === 'summary' && !summaryLock.unlocked;
 
+	const emptyMessage =
+		students.length === 0
+			? tutorialId === PUBLIC_TUTORIAL_UNASSIGNED
+				? 'Chưa có sinh viên chưa phân tutorial.'
+				: tutorialId
+					? 'Tutorial này chưa có sinh viên.'
+					: 'Lớp này chưa có sinh viên.'
+			: 'Không tìm thấy sinh viên phù hợp. Hãy thử tên hoặc 2 số cuối MSV.';
+
 	return (
 		<div
 			id="public-panel-gradebook"
 			role="tabpanel"
 			aria-labelledby="public-tab-gradebook"
-			className="space-y-3"
+			className="space-y-4"
 		>
-			<div className="flex flex-wrap items-center justify-between gap-2">
-				<div
-					role="group"
-					aria-label="Chế độ xem bảng điểm"
-					className="inline-grid w-full grid-cols-3 rounded-[var(--mc-r-sm)] border border-mc-rule bg-surface-sunken p-1 sm:w-auto"
-				>
-					{VIEW_OPTIONS.map((option) => {
-						const active = view === option.value;
-						return (
-							<button
-								key={option.value}
-								type="button"
-								aria-pressed={active}
-								onClick={() => onViewChange(option.value)}
-								className={`min-h-11 rounded-[6px] px-3 text-sm font-semibold transition-colors ${
-									active
-										? 'bg-paper text-accent shadow-xs'
-										: 'text-ink-secondary hover:text-ink'
-								}`}
-							>
-								{option.label}
-							</button>
-						);
-					})}
+			<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+				<div role="group" aria-label="Chế độ xem bảng điểm" className="teaching-public-switch">
+					{VIEW_OPTIONS.map((option) => (
+						<button
+							key={option.value}
+							type="button"
+							aria-pressed={view === option.value}
+							onClick={() => onViewChange(option.value)}
+						>
+							{option.label}
+						</button>
+					))}
 				</div>
 
-				{!meId ? (
-					<button
-						type="button"
-						onClick={onOpenMe}
-						className="inline-flex min-h-11 items-center text-xs font-medium text-ink-secondary hover:text-accent"
-					>
-						Chọn bạn là ai để ghim hàng của bạn →
-					</button>
-				) : null}
-			</div>
-
-			{!summaryLocked || showTutorialFilter ? (
-				<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-					{!summaryLocked ? (
-						<label className="min-w-0 flex-1 sm:max-w-xs">
+				{!summaryLocked ? (
+					<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+						<label className="min-w-0 sm:w-64">
 							<span className="sr-only">Tìm sinh viên</span>
 							<input
 								type="search"
@@ -154,35 +137,30 @@ export function ClassGradebook({
 								className="mc-input w-full rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-sm text-ink placeholder:text-ink-tertiary"
 							/>
 						</label>
-					) : null}
-					{showTutorialFilter ? (
-						<div className="flex items-center gap-2 sm:ml-auto">
-							<label
-								htmlFor="public-tutorial"
-								className="shrink-0 text-xs font-semibold text-ink-secondary"
-							>
-								Tutorial
+						{showTutorialFilter ? (
+							<label className="flex items-center gap-2">
+								<span className="shrink-0 text-xs text-ink-secondary">Tutorial</span>
+								<select
+									id="public-tutorial"
+									value={tutorialId}
+									onChange={(event) => onTutorialChange(event.target.value)}
+									className="min-h-11 flex-1 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-sm text-ink sm:flex-none"
+								>
+									<option value={PUBLIC_TUTORIAL_ALL}>Toàn lớp</option>
+									{hasUnassigned ? (
+										<option value={PUBLIC_TUTORIAL_UNASSIGNED}>Chưa phân tutorial</option>
+									) : null}
+									{board.tutorials.map((tutorial) => (
+										<option key={tutorial.id} value={tutorial.id}>
+											{tutorial.code} · {tutorial.name}
+										</option>
+									))}
+								</select>
 							</label>
-							<select
-								id="public-tutorial"
-								value={tutorialId}
-								onChange={(event) => onTutorialChange(event.target.value)}
-								className="min-h-11 flex-1 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-sm text-ink sm:flex-none"
-							>
-								<option value={PUBLIC_TUTORIAL_ALL}>Toàn lớp</option>
-								{hasUnassigned ? (
-									<option value={PUBLIC_TUTORIAL_UNASSIGNED}>Chưa phân tutorial</option>
-								) : null}
-								{board.tutorials.map((tutorial) => (
-									<option key={tutorial.id} value={tutorial.id}>
-										{tutorial.code} · {tutorial.name}
-									</option>
-								))}
-							</select>
-						</div>
-					) : null}
-				</div>
-			) : null}
+						) : null}
+					</div>
+				) : null}
+			</div>
 
 			{summaryLocked ? (
 				<StudentSummaryPanel
@@ -194,59 +172,41 @@ export function ClassGradebook({
 					highlightedEnrollmentId={meId}
 				/>
 			) : (
-				<div className="mc-surface overflow-hidden">
+				<>
+					<div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+						{view === 'summary' ? (
+							<p className="text-xs text-ink-secondary">
+								Tổng = Chuyên cần + CP · đã chốt đủ {summaryLock.totalWeeks} tuần
+							</p>
+						) : (
+							<GradebookLegend view={view} />
+						)}
+						{!meId ? (
+							<button
+								type="button"
+								onClick={onOpenMe}
+								className="inline-flex min-h-11 items-center text-xs text-ink-secondary hover:text-accent"
+							>
+								Chọn tên bạn để ghim lên đầu →
+							</button>
+						) : null}
+					</div>
 					{filteredStudents.length === 0 ? (
-						<p role="status" className="p-4 text-sm text-ink-secondary">
-							{students.length === 0
-								? tutorialId === PUBLIC_TUTORIAL_UNASSIGNED
-									? 'Chưa có sinh viên chưa phân tutorial.'
-									: tutorialId
-										? 'Tutorial này chưa có sinh viên.'
-										: 'Lớp này chưa có sinh viên.'
-								: 'Không tìm thấy sinh viên phù hợp. Hãy thử tên hoặc mã khác.'}
+						<p role="status" className="border-y border-mc-rule py-6 text-sm text-ink-secondary">
+							{emptyMessage}
 						</p>
-					) : null}
-					{view === 'attendance' ? (
-						<div ref={gridWrapRef}>
-							<AttendanceGrid
-								students={visibleStudents}
-								highlightedEnrollmentId={meId}
-								sessions={scopedSessions}
-								totalWeeks={board.policy.totalWeeks}
-								attendanceMaxPoints={board.policy.attendanceMaxPoints}
-								showEligibilityColumn={false}
-								readOnly
-								publicCompact
-								scrollMode="page"
-							/>
-						</div>
-					) : view === 'cp' ? (
-						<div ref={gridWrapRef}>
-							<ParticipationGrid
-								students={visibleStudents}
-								highlightedEnrollmentId={meId}
-								sessions={scopedSessions}
-								totalWeeks={board.policy.totalWeeks}
-								attendanceMaxPoints={board.policy.attendanceMaxPoints}
-								cpMaxPoints={board.policy.cpMaxPoints}
-								readOnly
-								publicCompact
-								scrollMode="page"
-							/>
-						</div>
 					) : (
-						<div ref={gridWrapRef}>
-							<StudentSummaryPanel
-								students={visibleStudents}
-								sessions={summarySessions}
-								totalWeeks={board.policy.totalWeeks}
-								attendanceMaxPoints={board.policy.attendanceMaxPoints}
-								cpMaxPoints={board.policy.cpMaxPoints}
-								highlightedEnrollmentId={meId}
-							/>
-						</div>
+						<ClassRoster
+							students={visibleStudents}
+							sessions={view === 'summary' ? summarySessions : scopedSessions}
+							totalWeeks={board.policy.totalWeeks}
+							view={view}
+							meId={meId}
+							attendanceMaxPoints={board.policy.attendanceMaxPoints}
+							cpMaxPoints={board.policy.cpMaxPoints}
+						/>
 					)}
-				</div>
+				</>
 			)}
 		</div>
 	);
