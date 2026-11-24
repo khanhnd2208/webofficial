@@ -119,7 +119,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await context.clearCookies();
 			await page.goto(`/lop/${slug}?tab=notes`);
 			await expect(page.getByRole('tab', { name: 'Ghi chú lớp' })).toHaveCount(0);
-			await expect(page.getByRole('tab', { name: 'Điểm danh' })).toHaveAttribute(
+			await expect(page.getByRole('tab', { name: 'Của tôi' })).toHaveAttribute(
 				'aria-selected',
 				'true',
 			);
@@ -134,7 +134,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await context.clearCookies();
 			await page.goto(`/lop/${slug}?tab=notes`);
 			await expect(page.getByRole('tab', { name: 'Ghi chú lớp' })).toHaveCount(0);
-			await expect(page.getByRole('tab', { name: 'Điểm danh' })).toHaveAttribute(
+			await expect(page.getByRole('tab', { name: 'Của tôi' })).toHaveAttribute(
 				'aria-selected',
 				'true',
 			);
@@ -257,21 +257,21 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await page.getByRole('combobox', { name: 'Chọn sinh viên trong lớp' }).fill(learnerName);
 			await page.getByRole('option', { name: new RegExp(learnerName, 'i') }).click();
 			await page.getByLabel('Mật khẩu ngày sinh').fill('29052006');
-			await page.getByRole('button', { name: 'Enter experience' }).click();
+			await page.getByRole('button', { name: 'Vào trải nghiệm' }).click();
 
-			await expect(page.getByRole('heading', { name: 'Choose your learning style' })).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Chọn phong cách học' })).toBeVisible();
 			await page.getByRole('button', { name: 'Chọn thử thách' }).click();
-			await expect(page.getByRole('button', { name: 'Đã chọn' })).toBeVisible();
-			await expect(page.getByText(/Challenge accepted/)).toBeVisible();
+			await expect(page.getByText(/Đã lưu phong cách học: Teach me a lesson/)).toBeVisible();
+			await expect(page.getByText(/Phong cách học:/)).toContainText('Teach me a lesson');
 
 			await context.clearCookies();
+			await page.evaluate(() => window.localStorage.clear());
 			await page.goto(`/lop/${slug}?tab=learning`);
 			await page.getByRole('combobox', { name: 'Chọn sinh viên trong lớp' }).fill(openLearnerName);
 			await page.getByRole('option', { name: new RegExp(openLearnerName, 'i') }).click();
-			await expect(page.getByText('Có thể vào ngay')).toBeVisible();
 			await expect(page.getByLabel('Mật khẩu ngày sinh')).toHaveCount(0);
 			await page.getByRole('button', { name: 'Vào trải nghiệm' }).click();
-			await expect(page.getByRole('heading', { name: 'Choose your learning style' })).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Chọn phong cách học' })).toBeVisible();
 		} finally {
 			await context.clearCookies();
 			await addAdminSession(context);
@@ -457,27 +457,30 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			const robots = page.locator('meta[name="robots"]');
 			await expect(robots.first()).toHaveAttribute('content', /noindex/i);
 
-			// Verify tabs
-			await expect(page.getByRole('tab', { name: 'Điểm danh' })).toBeVisible();
-			await expect(page.getByRole('tab', { name: 'Điểm CP' })).toBeVisible();
-			await expect(page.getByRole('tab', { name: 'Tổng kết' })).toBeVisible();
+			// Verify tabs: defaults to Của tôi with Bảng điểm beside it
+			await expect(page.getByRole('tab', { name: 'Của tôi' })).toHaveAttribute(
+				'aria-selected',
+				'true',
+			);
+			await expect(page.getByRole('tab', { name: 'Bảng điểm' })).toBeVisible();
 			await expect(page.getByRole('tab', { name: 'Ghi chú lớp' })).toHaveCount(0);
 			await expect(page.getByRole('tab', { name: 'Link quan trọng' })).toHaveCount(0);
 
-			// Verify read-only mode: no editable button cell
+			// Open Bảng điểm and verify read-only mode
+			await page.getByRole('tab', { name: 'Bảng điểm' }).click();
 			await expect(page.locator('button.mc-grid-cell')).toHaveCount(0);
 			await expect(page.locator('span.mc-grid-cell').first()).toBeVisible();
 
-			// Switch to CP tab
-			await page.getByRole('tab', { name: 'Điểm CP' }).click();
+			// Switch to CP view
+			await page.getByRole('button', { name: 'CP', exact: true }).click();
 			await expect(page.getByTestId('participation-grid').first()).toBeVisible();
 			await expect(page.getByRole('columnheader', { name: 'Gift', exact: true })).toBeVisible();
 			await expect(page.getByRole('columnheader', { name: 'Tổng /10', exact: true })).toBeVisible();
 
-			// Switch to Summary tab (locked until all weeks are finalized)
-			await page.getByRole('tab', { name: 'Tổng kết' }).click();
+			// Switch to Summary view (locked until all weeks are finalized)
+			await page.getByRole('button', { name: 'Tổng kết', exact: true }).click();
 			await expect(page.getByTestId('summary-locked')).toBeVisible();
-			await expect(page.getByRole('heading', { name: 'Chưa mở bảng điểm tổng kết' })).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Chưa mở bảng tổng kết' })).toBeVisible();
 			await expect(page.getByTestId('summary-grid')).toHaveCount(0);
 
 			// Responsive viewport overflow check
@@ -557,7 +560,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await addAdminSession(context);
 
 			// The public URL stays read-only even for an admin.
-			await page.goto(`/lop/${slug}`);
+			await page.goto(`/lop/${slug}?tab=attendance`);
 			await expect(page.locator('.mc-grid-wrap[data-scroll-mode="page"]')).toHaveCount(1);
 			await expect(page.getByRole('columnheader', { name: 'Trạng thái', exact: true })).toHaveCount(
 				0,
@@ -590,7 +593,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await expect(page.locator('button.mc-grid-cell')).toHaveCount(0);
 			await expect(page.locator('button.mc-grid-participation-cell')).toHaveCount(0);
 
-			const search = page.getByPlaceholder('Tìm tên hoặc MSV');
+			const search = page.getByPlaceholder('Tìm trong 1 sinh viên');
 			const publicCode = `SVADM${suffix}`.slice(0, 10);
 			await expect(page.locator('[data-testid="attendance-grid"] tbody tr')).toHaveCount(1);
 			await search.fill(publicCode.slice(-2));
@@ -601,7 +604,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await expect(page.locator('[data-testid="attendance-grid"] tbody tr')).toHaveCount(1);
 			await expect(page.getByText('Không tìm thấy mã sinh viên phù hợp.')).toBeVisible();
 
-			await page.getByRole('tab', { name: 'Điểm CP' }).click();
+			await page.getByRole('button', { name: 'CP', exact: true }).click();
 			await expect(page.locator('button.mc-grid-participation-cell')).toHaveCount(0);
 		} finally {
 			await addAdminSession(context);
@@ -658,8 +661,8 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			expect(enrolled.ok()).toBe(true);
 
 			await context.clearCookies();
-			await page.goto(`/lop/${slug}`);
-			await expect(page.getByText('1 SV')).toBeVisible();
+			await page.goto(`/lop/${slug}?tab=attendance`);
+			await expect(page.getByPlaceholder('Tìm trong 1 sinh viên')).toBeVisible();
 			await expect(page.getByLabel('Tutorial')).toHaveValue('');
 			await expect(page.locator('#public-tutorial option[value="__unassigned__"]')).toHaveCount(1);
 			await expect(page.locator('[data-testid="attendance-grid"] tbody tr')).toHaveCount(1);

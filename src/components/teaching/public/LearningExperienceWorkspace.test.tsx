@@ -57,16 +57,64 @@ describe('LearningExperienceWorkspace', () => {
 		fireEvent.change(screen.getByLabelText('Mật khẩu ngày sinh'), {
 			target: { value: '05092006' },
 		});
-		const enterButton = screen.getByRole('button', { name: /enter experience/i });
+		const enterButton = screen.getByRole('button', { name: /vào trải nghiệm/i });
 		expect(enterButton).toBeEnabled();
 		fireEvent.click(enterButton);
 
 		await waitFor(() => expect(apiMock).toHaveBeenCalledTimes(2));
 		expect(screen.getByText('Nguyễn Minh Anh')).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Chọn phong cách học' })).toBeInTheDocument();
 		expect(apiMock).toHaveBeenLastCalledWith('/api/teaching/classes/hrm-01/learning-experience', {
 			method: 'POST',
 			body: JSON.stringify({ enrollmentId: 'enrollment-1', password: '05092006' }),
 		});
+	});
+
+	it('preselects the student when initialEnrollmentId is provided and notifies onChoiceSaved', async () => {
+		const onChoiceSaved = vi.fn();
+		apiMock
+			.mockResolvedValueOnce({ authenticated: false })
+			.mockResolvedValueOnce({
+				authenticated: true,
+				student: {
+					enrollmentId: 'enrollment-1',
+					studentCode: '2406090045',
+					fullName: 'Nguyễn Minh Anh',
+				},
+				choice: null,
+				selectedAt: null,
+			})
+			.mockResolvedValueOnce({
+				authenticated: true,
+				student: {
+					enrollmentId: 'enrollment-1',
+					studentCode: '2406090045',
+					fullName: 'Nguyễn Minh Anh',
+				},
+				choice: 'CHALLENGE',
+				selectedAt: '2026-08-23T09:00:00.000Z',
+			});
+
+		render(
+			<LearningExperienceWorkspace
+				slug="hrm-01"
+				courseName="Human Resource Management"
+				students={students}
+				initialEnrollmentId="enrollment-1"
+				onChoiceSaved={onChoiceSaved}
+			/>,
+		);
+
+		expect(await screen.findByText('Nguyễn Minh Anh')).toBeInTheDocument();
+		expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+
+		fireEvent.change(screen.getByLabelText('Mật khẩu ngày sinh'), {
+			target: { value: '05092006' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: /vào trải nghiệm/i }));
+
+		fireEvent.click(await screen.findByRole('button', { name: /chọn thử thách/i }));
+		await waitFor(() => expect(onChoiceSaved).toHaveBeenCalledWith('CHALLENGE', 'enrollment-1'));
 	});
 
 	it('persists and marks the selected learning style', async () => {
@@ -103,7 +151,7 @@ describe('LearningExperienceWorkspace', () => {
 		fireEvent.click(await screen.findByRole('button', { name: /chọn hỗ trợ/i }));
 
 		await waitFor(() => expect(screen.getByText('Lựa chọn của bạn')).toBeInTheDocument());
-		expect(screen.getByText(/royal support unlocked/i)).toBeInTheDocument();
+		expect(screen.getByText(/Prince \/ Princess treatment — lựa chọn/i)).toBeInTheDocument();
 		expect(apiMock).toHaveBeenLastCalledWith('/api/teaching/classes/hrm-01/learning-experience', {
 			method: 'PUT',
 			body: JSON.stringify({ choice: 'SUPPORT' }),
@@ -134,7 +182,7 @@ describe('LearningExperienceWorkspace', () => {
 		fireEvent.change(picker, { target: { value: 'Trần Bình' } });
 		fireEvent.click(screen.getByRole('option', { name: /\*{8}99.*Trần Bình/i }));
 
-		expect(screen.getByText('Có thể vào ngay')).toBeInTheDocument();
+		expect(screen.getByText('Trần Bình')).toBeInTheDocument();
 		expect(screen.queryByLabelText('Mật khẩu ngày sinh')).not.toBeInTheDocument();
 		const enterButton = screen.getByRole('button', { name: /vào trải nghiệm/i });
 		expect(enterButton).toBeEnabled();
@@ -180,7 +228,7 @@ describe('LearningExperienceWorkspace', () => {
 		fireEvent.change(screen.getByLabelText('Mật khẩu ngày sinh'), {
 			target: { value: '01012006' },
 		});
-		fireEvent.click(screen.getByRole('button', { name: /enter experience/i }));
+		fireEvent.click(screen.getByRole('button', { name: /vào trải nghiệm/i }));
 
 		await waitFor(() => expect(apiMock).toHaveBeenCalledTimes(2));
 		expect(apiMock).toHaveBeenLastCalledWith('/api/teaching/classes/hrm-01/learning-experience', {
@@ -221,7 +269,7 @@ describe('LearningExperienceWorkspace', () => {
 
 		await user.clear(password);
 		await user.type(password, '05/09/2006');
-		expect(screen.getByRole('button', { name: /enter experience/i })).toBeEnabled();
+		expect(screen.getByRole('button', { name: /vào trải nghiệm/i })).toBeEnabled();
 		await user.click(screen.getByRole('button', { name: 'Hiện mật khẩu' }));
 		expect(password).toHaveAttribute('type', 'text');
 	});

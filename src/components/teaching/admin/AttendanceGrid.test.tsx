@@ -182,6 +182,22 @@ describe('AttendanceGrid', () => {
 		expect(screen.queryByText(/Đủ điều kiện/)).not.toBeInTheDocument();
 	});
 
+	it('keeps only the single attendance score subtitle on read-only public phone rows', () => {
+		render(
+			<AttendanceGrid
+				students={[student({ studentCode: '********45' })]}
+				sessions={sessions()}
+				totalWeeks={10}
+				publicCompact
+				readOnly
+				scrollMode="page"
+			/>,
+		);
+
+		expect(screen.queryByText(/0\/10 vắng/)).not.toBeInTheDocument();
+		expect(screen.getByText('Chuyên cần 5,0/5')).toBeInTheDocument();
+	});
+
 	it('cycles attendance with three clicks: present, late, absent', () => {
 		const onMarkChange = vi.fn();
 		render(

@@ -357,16 +357,55 @@
 	min-height: 44px;
 }
 [data-surface='teaching'] .teaching-public-board .mc-tabbar {
-	margin: 0.75rem 0;
+	margin: 0;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	padding-block: 0.25rem;
 }
-/* On a phone the six class tabs wrap instead of scrolling, so none hides off the right edge. */
 @media (max-width: 639px) {
-	[data-surface='teaching'] .teaching-public-board .mc-tabbar {
-		flex-wrap: wrap;
-		overflow-x: visible;
-	}
 	[data-surface='teaching'] .teaching-public-board .mc-tabbar :is(a, button) {
 		padding-inline: 0.625rem;
+		font-size: 0.8125rem;
+	}
+}
+@media (max-width: 479px) {
+	[data-surface='teaching'] .teaching-public-board .teaching-public-tab-icon {
+		display: none;
+	}
+}
+@media (max-width: 767px) {
+	[data-surface='teaching'] .teaching-public-board .mc-grid-wrap-public .mc-grid-public-identity {
+		width: clamp(8.5rem, 42vw, 11rem);
+		min-width: clamp(8.5rem, 42vw, 11rem);
+		max-width: clamp(8.5rem, 42vw, 11rem);
+		white-space: normal;
+	}
+	[data-surface='teaching'] .teaching-public-board .mc-grid-public-identity .mc-avatar {
+		display: none;
+	}
+	[data-surface='teaching']
+		.teaching-public-board
+		.mc-grid-public-identity
+		.mc-grid-public-meta-line {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	[data-surface='teaching'] .teaching-public-board .mc-grid-wrap-public .mc-grid-week {
+		min-width: 3rem;
+		width: 3rem;
+		padding-inline: 0.2rem;
+	}
+	[data-surface='teaching']
+		.teaching-public-board
+		.mc-grid-wrap-public
+		.mc-grid-week
+		:is(.mc-grid-week-state, .mc-grid-week-sub) {
+		letter-spacing: -0.02em;
+	}
+	[data-surface='teaching'] .teaching-public-board .mc-grid-wrap-public .mc-grid tbody td {
+		height: 3.5rem;
+		padding-block: 0.35rem;
 	}
 }
 /* Outranks the uppercase My Class tab rule; Vietnamese reads better in sentence case. */

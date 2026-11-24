@@ -81,18 +81,17 @@ export function StudentSummaryPanel({
 	if (!lockStatus.unlocked) {
 		return (
 			<section
-				className="mc-surface space-y-2 p-5 sm:p-6"
+				className="mc-surface space-y-1.5 p-4 sm:p-5"
 				data-testid="summary-locked"
 				role="status"
 			>
-				<h2 className="text-base font-semibold text-ink">Chưa mở bảng điểm tổng kết</h2>
+				<h2 className="text-base font-semibold text-ink">Chưa mở bảng tổng kết</h2>
 				<p className="text-sm text-ink-secondary">
-					Điểm tổng kết sẽ hiển thị khi tất cả {lockStatus.totalWeeks} tuần điểm danh và điểm CP đã
-					được khóa.
+					Mở khi khoá đủ {lockStatus.totalWeeks} tuần điểm danh và CP.
 				</p>
-				<p className="mc-num text-sm font-medium text-ink">
-					Tiến độ khóa điểm: Điểm danh {lockStatus.lockedAttendanceWeeks}/{lockStatus.totalWeeks}{' '}
-					tuần · Điểm CP {lockStatus.lockedCpWeeks}/{lockStatus.totalWeeks} tuần
+				<p className="mc-num text-xs font-medium text-ink-secondary">
+					Đã khoá: Điểm danh {lockStatus.lockedAttendanceWeeks}/{lockStatus.totalWeeks} · CP{' '}
+					{lockStatus.lockedCpWeeks}/{lockStatus.totalWeeks}
 				</p>
 			</section>
 		);

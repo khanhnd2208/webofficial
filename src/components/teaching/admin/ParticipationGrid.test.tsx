@@ -115,8 +115,8 @@ describe('ParticipationGrid', () => {
 			'data-scroll-mode',
 			'page',
 		);
-		expect(screen.getByText('SV01 · Gift −0')).toBeInTheDocument();
-		expect(screen.getByText('Chuyên cần 5,0/5 · CP 0,0/5 · Tổng 5,0/10')).toBeInTheDocument();
+		expect(screen.queryByText('SV01 · Gift −0')).not.toBeInTheDocument();
+		expect(screen.getByText('CP 0,0/5 · Tổng 5,0/10')).toBeInTheDocument();
 	});
 
 	it('renders the 5 + 5 score columns without repeating attendance absences', () => {

@@ -1,79 +1,39 @@
 'use client';
-import { TeachingMark } from '@/components/site/TeachingMark';
-import { TeachingIcon } from '../ui/TeachingIcon';
-import { StudentClassIntro } from './StudentClassIntro';
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent } from 'react';
 
-import { AttendanceGrid } from '../admin/AttendanceGrid';
-import {
-	isRepeatedClassSummary,
-	pinStudent,
-	readStudentIdentity,
-	studentIdentitySummary,
-	writeStudentIdentity,
-} from './studentIdentity';
-import { ParticipationGrid } from '../admin/ParticipationGrid';
+import { TeachingMark } from '@/components/site/TeachingMark';
 import { GroupBoardWorkspaceLoader } from '@/components/teaching/groups/GroupBoardWorkspaceLoader';
-import { LearningExperienceWorkspace } from './LearningExperienceWorkspace';
-import { ClassNotesWorkspace } from './ClassNotesWorkspace';
-import { getPublicSummaryLockStatus, StudentSummaryPanel } from './StudentSummaryPanel';
-import { Sheet } from '@/components/ui/Dialog';
-import { routes } from '@/config/routes';
-import type { BoardGridStudent } from '../board/gridTypes';
-import { getCpPolicyText } from '@/features/teaching/types';
-import type { PublicClassBoard } from '@/features/teaching/types';
+import { Dialog, Toast } from '@/components/ui/Dialog';
 import {
 	PUBLIC_TUTORIAL_ALL,
-	PUBLIC_TUTORIAL_UNASSIGNED,
-	hasUnassignedPublicStudents,
 	resolvePublicTutorialId,
-	sessionMatchesPublicTutorial,
-	shouldShowPublicTutorialFilter,
-	studentMatchesPublicTutorial,
 } from '@/features/teaching/domain/publicBoardFilter';
+import type { LearningExperienceChoice, PublicClassBoard } from '@/features/teaching/types';
 
-type PublicTab = 'attendance' | 'cp' | 'summary' | 'groups' | 'learning' | 'notes' | 'recall';
+import { TeachingIcon, type TeachingIconName } from '../ui/TeachingIcon';
+import { ClassGradebook } from './ClassGradebook';
+import { ClassNotesWorkspace } from './ClassNotesWorkspace';
+import { LearningExperienceWorkspace } from './LearningExperienceWorkspace';
+import {
+	getPublicNavSections,
+	resolvePublicBoardRoute,
+	toPublicTabParam,
+	type GradebookView,
+	type PublicSection,
+} from './publicBoardNav';
+import { RecallDeckList } from './RecallDeckList';
+import { StudentHome } from './StudentHome';
+import { readStudentIdentity, writeStudentIdentity } from './studentIdentity';
 
-function resolvePublicTab(value?: string | null): PublicTab {
-	return value === 'cp' ||
-		value === 'summary' ||
-		value === 'groups' ||
-		value === 'learning' ||
-		value === 'notes' ||
-		value === 'recall'
-		? value
-		: 'attendance';
-}
-
-function resolveAvailableTab(
-	requested: PublicTab,
-	groupBoardEnabled: boolean,
-	notesEnabled: boolean,
-	recallEnabled: boolean,
-): PublicTab {
-	if (requested === 'groups' && !groupBoardEnabled) return 'attendance';
-	if (requested === 'notes' && !notesEnabled) return 'attendance';
-	if (requested === 'recall' && !recallEnabled) return 'attendance';
-	return requested;
-}
-
-function toGridStudent(student: PublicClassBoard['students'][number]): BoardGridStudent {
-	return {
-		enrollmentId: student.enrollmentId,
-		orderNo: student.orderNo,
-		tutorialClassId: student.tutorialClassId,
-		enrolledFromWeek: student.enrolledFromWeek,
-		studentCode: student.studentCode,
-		familyName: student.familyName,
-		givenName: student.givenName,
-		marks: student.marks,
-		participation: student.participation,
-		cp: student.cp,
-		learningExperience: student.learningExperience,
-	};
-}
+const SECTION_META: Record<PublicSection, { label: string; icon: TeachingIconName }> = {
+	me: { label: 'Của tôi', icon: 'students' },
+	gradebook: { label: 'Bảng điểm', icon: 'attendance' },
+	groups: { label: 'Nhóm', icon: 'groups' },
+	recall: { label: 'Ôn tập', icon: 'recall' },
+	notes: { label: 'Ghi chú lớp', icon: 'notes' },
+};
 
 export function StudentClassBoard({
 	board,
@@ -90,24 +50,28 @@ export function StudentClassBoard({
 	initialTab?: string;
 	initialTutorialId?: string;
 }) {
-	const recallEnabled = (board.recallDecks ?? []).length > 0;
-	const [tab, setTab] = useState<PublicTab>(() =>
-		resolveAvailableTab(
-			resolvePublicTab(initialTab),
-			groupBoardEnabled,
-			notesEnabled,
-			recallEnabled,
-		),
+	const recallDecks = board.recallDecks ?? [];
+	const recallEnabled = recallDecks.length > 0;
+	const navOptions = useMemo(
+		() => ({ groupBoardEnabled, notesEnabled, recallEnabled }),
+		[groupBoardEnabled, notesEnabled, recallEnabled],
 	);
-	const [tutorialId, setTutorialId] = useState(() =>
-		resolvePublicTutorialId({
-			tutorials: board.tutorials,
-			students: board.students,
-			initialTutorialId,
-		}),
-	);
-	const [learningVisited, setLearningVisited] = useState(
-		() => resolvePublicTab(initialTab) === 'learning',
+	const navSections = useMemo(() => getPublicNavSections(navOptions), [navOptions]);
+	const initialRoute = resolvePublicBoardRoute(initialTab, navOptions);
+
+	const [section, setSection] = useState<PublicSection>(initialRoute.section);
+	const [gradebookView, setGradebookView] = useState<GradebookView>(initialRoute.view);
+	const [learningOpen, setLearningOpen] = useState(initialRoute.openLearning);
+	const [savedChoices, setSavedChoices] = useState<Record<string, LearningExperienceChoice>>({});
+	const [toast, setToast] = useState('');
+	const [tutorialOverride, setTutorialOverride] = useState<string | null>(() =>
+		initialTutorialId !== undefined
+			? resolvePublicTutorialId({
+					tutorials: board.tutorials,
+					students: board.students,
+					initialTutorialId,
+				})
+			: null,
 	);
 	const [query, setQuery] = useState('');
 	const [chosenMe, setChosenMe] = useState<{ slug: string; id: string | null } | null>(null);
@@ -117,25 +81,50 @@ export function StudentClassBoard({
 		() => null,
 	);
 	const meId = chosenMe?.slug === board.slug ? chosenMe.id : storedMeId;
-	const [rulesOpen, setRulesOpen] = useState(false);
+	const me = useMemo(
+		() => board.students.find((student) => student.enrollmentId === meId) ?? null,
+		[board.students, meId],
+	);
+	const tutorialId = useMemo(() => {
+		if (tutorialOverride !== null) return tutorialOverride;
+		return resolvePublicTutorialId({
+			tutorials: board.tutorials,
+			students: board.students,
+			initialTutorialId: me?.tutorialClassId ?? undefined,
+		});
+	}, [board.students, board.tutorials, me?.tutorialClassId, tutorialOverride]);
+	const effectiveLearningChoice = me
+		? (savedChoices[me.enrollmentId] ?? me.learningExperience ?? null)
+		: null;
 	const gridWrapRef = useRef<HTMLDivElement>(null);
 	const tabBarRef = useRef<HTMLElement>(null);
 
 	useEffect(() => {
 		const sync = () => {
-			const requested = resolvePublicTab(new URLSearchParams(window.location.search).get('tab'));
-			const nextTab = resolveAvailableTab(
-				requested,
-				groupBoardEnabled,
-				notesEnabled,
-				recallEnabled,
+			const next = resolvePublicBoardRoute(
+				new URLSearchParams(window.location.search).get('tab'),
+				navOptions,
 			);
-			if (nextTab === 'learning') setLearningVisited(true);
-			setTab(nextTab);
+			setSection(next.section);
+			if (next.section === 'gradebook') setGradebookView(next.view);
+			setLearningOpen(next.openLearning);
 		};
 		window.addEventListener('popstate', sync);
 		return () => window.removeEventListener('popstate', sync);
-	}, [groupBoardEnabled, notesEnabled, recallEnabled]);
+	}, [navOptions]);
+
+	function pushTabUrl(nextSection: PublicSection, nextView: GradebookView, nextLearning = false) {
+		const params = new URLSearchParams(window.location.search);
+		const tabValue = toPublicTabParam(nextSection, nextView, nextLearning);
+		if (!tabValue) params.delete('tab');
+		else params.set('tab', tabValue);
+		const queryString = params.toString();
+		window.history.pushState(
+			null,
+			'',
+			`${window.location.pathname}${queryString ? `?${queryString}` : ''}`,
+		);
+	}
 
 	function chooseMe(enrollmentId: string) {
 		const next = enrollmentId || null;
@@ -151,28 +140,57 @@ export function StudentClassBoard({
 			left: active.offsetLeft - (tabBar.clientWidth - active.clientWidth) / 2,
 			behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
 		});
-	}, [tab]);
+	}, [section]);
 
-	function changeTab(next: PublicTab) {
-		if (next === 'learning') setLearningVisited(true);
-		setTab(next);
-		const params = new URLSearchParams(window.location.search);
-		if (next === 'attendance') params.delete('tab');
-		else params.set('tab', next);
-		const queryString = params.toString();
-		window.history.pushState(
-			null,
-			'',
-			`${window.location.pathname}${queryString ? `?${queryString}` : ''}`,
-		);
-		requestAnimationFrame(() => {
-			const wrapper = gridWrapRef.current?.querySelector<HTMLElement>('.mc-grid-wrap');
-			wrapper?.scrollTo({ left: 0, behavior: 'auto' });
+	function changeSection(next: PublicSection, nextView: GradebookView = gradebookView) {
+		setSection(next);
+		setGradebookView(nextView);
+		setLearningOpen(false);
+		pushTabUrl(next, nextView, false);
+		if (next === 'gradebook') {
+			requestAnimationFrame(() => {
+				const wrapper = gridWrapRef.current?.querySelector<HTMLElement>('.mc-grid-wrap');
+				wrapper?.scrollTo({ left: 0, behavior: 'auto' });
+			});
+		}
+	}
+
+	function openLearningSheet() {
+		setSection('me');
+		setLearningOpen(true);
+		pushTabUrl('me', gradebookView, true);
+	}
+
+	function closeLearningSheet() {
+		setLearningOpen((open) => {
+			if (!open) return false;
+			const params = new URLSearchParams(window.location.search);
+			if (params.get('tab') === 'learning') {
+				pushTabUrl('me', gradebookView, false);
+			}
+			return false;
 		});
 	}
 
+	function handleLearningSaved(choice: LearningExperienceChoice, enrollmentId?: string) {
+		const targetId = enrollmentId ?? meId;
+		if (targetId) {
+			setSavedChoices((current) => ({ ...current, [targetId]: choice }));
+			if (!meId && board.students.some((student) => student.enrollmentId === targetId)) {
+				chooseMe(targetId);
+			}
+		}
+		setLearningOpen(false);
+		pushTabUrl('me', gradebookView, false);
+		setToast(
+			choice === 'CHALLENGE'
+				? 'Đã lưu phong cách học: Teach me a lesson.'
+				: 'Đã lưu phong cách học: Prince / Princess treatment.',
+		);
+	}
+
 	function changeTutorial(next: string) {
-		setTutorialId(next);
+		setTutorialOverride(next);
 		const params = new URLSearchParams(window.location.search);
 		if (next && next !== PUBLIC_TUTORIAL_ALL) params.set('tutorial', next);
 		else params.delete('tutorial');
@@ -199,281 +217,90 @@ export function StudentClassBoard({
 		tabs[next]?.focus();
 		tabs[next]?.click();
 	}
-	const hasUnassigned = useMemo(
-		() => hasUnassignedPublicStudents(board.students),
+
+	const learningStudents = useMemo(
+		() =>
+			board.students.map((student) => ({
+				enrollmentId: student.enrollmentId,
+				studentCode: student.studentCode,
+				fullName: `${student.familyName} ${student.givenName}`.trim(),
+				accessMode: student.hasDateOfBirth ? ('DOB_PASSWORD' as const) : ('OPEN' as const),
+			})),
 		[board.students],
 	);
-	const scopedStudents = useMemo(
-		() => board.students.filter((student) => studentMatchesPublicTutorial(student, tutorialId)),
-		[board.students, tutorialId],
-	);
-	const scopedSessions = useMemo(
-		() => board.sessions.filter((session) => sessionMatchesPublicTutorial(session, tutorialId)),
-		[board.sessions, tutorialId],
-	);
-	const summarySessions = scopedSessions.length > 0 ? scopedSessions : board.sessions;
-	const summaryLock = useMemo(
-		() => getPublicSummaryLockStatus(summarySessions, board.policy.totalWeeks),
-		[summarySessions, board.policy.totalWeeks],
-	);
-	const students = useMemo(() => scopedStudents.map(toGridStudent), [scopedStudents]);
-	const filteredStudents = useMemo(() => {
-		const value = query
-			.trim()
-			.toLowerCase()
-			.normalize('NFD')
-			.replace(/[\u0300-\u036f]/g, '')
-			.replace(/đ/g, 'd');
-		if (!value) return students;
-		return students.filter((student) =>
-			`${student.studentCode} ${student.familyName} ${student.givenName}`
-				.toLowerCase()
-				.normalize('NFD')
-				.replace(/[\u0300-\u036f]/g, '')
-				.replace(/đ/g, 'd')
-				.includes(value),
-		);
-	}, [query, students]);
-	const visibleStudents = useMemo(() => pinStudent(filteredStudents, meId), [filteredStudents, meId]);
-	const me = visibleStudents.find((student) => student.enrollmentId === meId) ?? null;
-	const classRules = board.rules.trim();
-	const commonRules = getCpPolicyText(board.policy);
-	const summary = board.summary.trim();
-	const repeatedSummary = isRepeatedClassSummary(summary, board);
-	const description = board.description.trim();
-	const announcement = board.announcement.trim();
 
 	return (
-		<div className="teaching-public-board min-w-0 space-y-3">
-			<header className="teaching-public-header flex flex-wrap items-end justify-between gap-3 border-b border-mc-rule pb-3">
+		<div className="teaching-public-board min-w-0 space-y-4">
+			<header className="teaching-public-header flex flex-wrap items-center justify-between gap-3 pb-1">
 				<div className="flex min-w-0 items-center gap-3">
 					<TeachingMark className="teaching-header-mark" />
 					<div className="min-w-0">
-						<p className="mc-eyebrow">
-							{board.courseCode} · Lớp {board.classCode ?? board.groupNo} · {board.term}
-						</p>
-						<h1 className="teaching-public-title mt-1 break-words text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+						<h1 className="teaching-public-title break-words text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
 							{board.title}
 						</h1>
+						<p className="mt-0.5 break-words text-xs leading-5 text-ink-secondary sm:text-sm">
+							{board.courseCode} · Lớp {board.classCode ?? board.groupNo} · {board.term}
+						</p>
 					</div>
 				</div>
 				{manageHref ? (
 					<Link
 						href={manageHref}
-						className="shrink-0 text-xs font-semibold text-accent hover:underline"
+						className="inline-flex min-h-11 shrink-0 items-center text-xs font-semibold text-accent hover:underline"
 					>
 						Quản lý lớp ↗
 					</Link>
 				) : null}
 			</header>
 
-			<StudentClassIntro
-				summary={repeatedSummary ? '' : summary}
-				description={description}
-				announcement={announcement}
-				links={board.links}
-			/>
+			<div className="teaching-public-nav sticky top-[calc(var(--site-header-height)+env(safe-area-inset-top))] z-30 border-b border-mc-rule bg-canvas/95 backdrop-blur-sm">
+				<nav
+					ref={tabBarRef}
+					onKeyDown={handleTabKeyDown}
+					className="mc-tabbar"
+					role="tablist"
+					aria-label="Mục lớp học"
+				>
+					{navSections.map((item) => {
+						const meta = SECTION_META[item];
+						const active = section === item;
+						return (
+							<button
+								key={item}
+								type="button"
+								role="tab"
+								id={`public-tab-${item}`}
+								aria-controls={`public-panel-${item}`}
+								aria-selected={active}
+								tabIndex={active ? 0 : -1}
+								data-active={active}
+								onClick={() => changeSection(item)}
+							>
+								<TeachingIcon name={meta.icon} size={18} className="teaching-public-tab-icon" />
+								<span>{meta.label}</span>
+							</button>
+						);
+					})}
+				</nav>
+			</div>
 
-			<details className="mc-surface hidden md:block">
-				<summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-ink">
-					Quy định lớp
-				</summary>
-				<div className="space-y-4 border-t border-mc-rule px-5 py-4 text-xs leading-5 text-ink-secondary">
-					<div>
-						<p className="mb-1 font-semibold text-ink">Quy định chung</p>
-						<ul className="space-y-1">
-							{commonRules.map((rule) => (
-								<li key={rule}>• {rule}</li>
-							))}
-						</ul>
-					</div>
-					{classRules ? (
-						<div>
-							<p className="mb-1 font-semibold text-ink">Nội quy lớp</p>
-							<p className="whitespace-pre-wrap">{classRules}</p>
-						</div>
-					) : null}
-				</div>
-			</details>
-			<button
-				type="button"
-				className="mc-surface flex min-h-11 w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-ink md:hidden"
-				onClick={() => setRulesOpen(true)}
-			>
-				<span>Quy định lớp</span>
-				<span aria-hidden>⌄</span>
-			</button>
-			<Sheet
-				open={rulesOpen}
-				onClose={() => setRulesOpen(false)}
-				title="Quy định lớp"
-				side="bottom"
-			>
-				<div className="space-y-4 text-sm leading-6 text-ink-secondary">
-					<div>
-						<p className="mb-1 font-semibold text-ink">Quy định chung</p>
-						<ul className="space-y-2">
-							{commonRules.map((rule) => (
-								<li key={rule}>• {rule}</li>
-							))}
-						</ul>
-					</div>
-					{classRules ? (
-						<div>
-							<p className="mb-1 font-semibold text-ink">Nội quy lớp</p>
-							<p className="whitespace-pre-wrap">{classRules}</p>
-						</div>
-					) : null}
-				</div>
-			</Sheet>
-
-			<nav
-				ref={tabBarRef}
-				onKeyDown={handleTabKeyDown}
-				className="mc-tabbar"
-				role="tablist"
-				aria-label="Bảng lớp học"
-			>
-				<button
-					type="button"
-					role="tab"
-					id="public-tab-attendance"
-					aria-controls="public-panel-attendance"
-					aria-selected={tab === 'attendance'}
-					tabIndex={tab === 'attendance' ? 0 : -1}
-					data-active={tab === 'attendance'}
-					onClick={() => changeTab('attendance')}
-				>
-					<TeachingIcon name="attendance" size={18} /> Điểm danh
-				</button>
-				<button
-					type="button"
-					role="tab"
-					id="public-tab-cp"
-					aria-controls="public-panel-cp"
-					aria-selected={tab === 'cp'}
-					tabIndex={tab === 'cp' ? 0 : -1}
-					data-active={tab === 'cp'}
-					onClick={() => changeTab('cp')}
-				>
-					<TeachingIcon name="cp" size={18} /> Điểm CP
-				</button>
-				<button
-					type="button"
-					role="tab"
-					id="public-tab-summary"
-					aria-controls="public-panel-summary"
-					aria-selected={tab === 'summary'}
-					tabIndex={tab === 'summary' ? 0 : -1}
-					data-active={tab === 'summary'}
-					onClick={() => changeTab('summary')}
-				>
-					<TeachingIcon name="summary" size={18} /> Tổng kết
-				</button>
-				{groupBoardEnabled ? (
-					<button
-						type="button"
-						role="tab"
-						id="public-tab-groups"
-						aria-controls="public-panel-groups"
-						aria-selected={tab === 'groups'}
-						tabIndex={tab === 'groups' ? 0 : -1}
-						data-active={tab === 'groups'}
-						onClick={() => changeTab('groups')}
-					>
-						<TeachingIcon name="groups" size={18} /> Xếp nhóm
-					</button>
-				) : null}
-				<button
-					type="button"
-					role="tab"
-					id="public-tab-learning"
-					aria-controls="public-panel-learning"
-					aria-selected={tab === 'learning'}
-					tabIndex={tab === 'learning' ? 0 : -1}
-					data-active={tab === 'learning'}
-					onClick={() => changeTab('learning')}
-				>
-					<TeachingIcon name="students" size={18} /> Trải nghiệm học tập
-				</button>
-				{notesEnabled ? (
-					<button
-						type="button"
-						role="tab"
-						id="public-tab-notes"
-						aria-controls="public-panel-notes"
-						aria-selected={tab === 'notes'}
-						tabIndex={tab === 'notes' ? 0 : -1}
-						data-active={tab === 'notes'}
-						onClick={() => changeTab('notes')}
-					>
-						<TeachingIcon name="notes" size={18} /> Ghi chú lớp
-					</button>
-				) : null}
-				{recallEnabled ? (
-					<button
-						type="button"
-						role="tab"
-						id="public-tab-recall"
-						aria-controls="public-panel-recall"
-						aria-selected={tab === 'recall'}
-						tabIndex={tab === 'recall' ? 0 : -1}
-						data-active={tab === 'recall'}
-						onClick={() => changeTab('recall')}
-					>
-						<TeachingIcon name="recall" size={18} /> Ôn tập
-					</button>
-				) : null}
-			</nav>
-			{shouldShowPublicTutorialFilter({
-				tutorialCount: board.tutorials.length,
-				hasUnassigned,
-			}) &&
-			(tab === 'attendance' || tab === 'cp' || tab === 'summary') ? (
-				<div className="flex flex-wrap items-center gap-2 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 py-2">
-					<label htmlFor="public-tutorial" className="text-xs font-semibold text-ink-secondary">
-						Tutorial
-					</label>
-					<select
-						id="public-tutorial"
-						value={tutorialId}
-						onChange={(event) => changeTutorial(event.target.value)}
-						className="min-h-10 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-sm text-ink"
-					>
-						<option value={PUBLIC_TUTORIAL_ALL}>Toàn lớp</option>
-						{hasUnassigned ? (
-							<option value={PUBLIC_TUTORIAL_UNASSIGNED}>Chưa phân tutorial</option>
-						) : null}
-						{board.tutorials.map((tutorial) => (
-							<option key={tutorial.id} value={tutorial.id}>
-								{tutorial.code} · {tutorial.name}
-							</option>
-						))}
-					</select>
-				</div>
+			{section === 'me' ? (
+				<StudentHome
+					board={board}
+					me={me}
+					learningChoice={effectiveLearningChoice}
+					groupBoardEnabled={groupBoardEnabled}
+					recallCount={recallDecks.length}
+					onSelectMe={chooseMe}
+					onClearMe={() => chooseMe('')}
+					onOpenGradebook={() => changeSection('gradebook', 'attendance')}
+					onOpenGroups={() => changeSection('groups')}
+					onOpenRecall={() => changeSection('recall')}
+					onOpenLearning={openLearningSheet}
+				/>
 			) : null}
 
-			{learningVisited ? (
-				<div
-					id="public-panel-learning"
-					role="tabpanel"
-					aria-labelledby="public-tab-learning"
-					hidden={tab !== 'learning'}
-					className="public-learning-panel"
-				>
-					<LearningExperienceWorkspace
-						slug={board.slug}
-						courseName={board.courseName}
-						students={board.students.map((student) => ({
-							enrollmentId: student.enrollmentId,
-							studentCode: student.studentCode,
-							fullName: `${student.familyName} ${student.givenName}`.trim(),
-							accessMode: student.hasDateOfBirth ? 'DOB_PASSWORD' : 'OPEN',
-						}))}
-					/>
-				</div>
-			) : null}
-			{notesEnabled && tab === 'notes' ? (
+			{notesEnabled && section === 'notes' ? (
 				<div
 					id="public-panel-notes"
 					role="tabpanel"
@@ -483,180 +310,61 @@ export function StudentClassBoard({
 					<ClassNotesWorkspace notes={board.notes ?? []} />
 				</div>
 			) : null}
-			{recallEnabled && tab === 'recall' ? (
-				<div
-					id="public-panel-recall"
-					role="tabpanel"
-					aria-labelledby="public-tab-recall"
-					className="public-notes-panel"
-				>
-					<Link
-						href={routes.teachingPublicRecallTest(board.slug)}
-						className="recall-test-cta mb-4"
-					>
-						<span className="recall-test-cta-title">Test yourself</span>
-						<span className="recall-test-cta-text">
-							Chọn bộ câu hỏi, gặp boss ngẫu nhiên và để boss kiểm tra bài cũ.
-						</span>
-						<span aria-hidden="true">→</span>
-					</Link>
-					<ul className="space-y-3">
-						{board.recallDecks!.map((deck) => (
-								<li key={deck.id}>
-									<Link
-										href={routes.teachingPublicRecallDeck(board.slug, deck.slug)}
-										className="mc-surface block px-4 py-4 hover:border-accent"
-									>
-										<p className="text-xs text-ink-secondary">{deck.lessonLabel || 'Bộ thẻ'}</p>
-										<p className="mt-1 text-base font-semibold text-ink">{deck.title}</p>
-										{deck.description ? (
-											<p className="mt-1 text-sm text-ink-secondary">{deck.description}</p>
-										) : null}
-										<p className="mt-2 text-xs tabular-nums text-ink-secondary">
-											{deck.cardCount} thẻ →
-										</p>
-									</Link>
-								</li>
-							))}
-						</ul>
-				</div>
+
+			{recallEnabled && section === 'recall' ? (
+				<RecallDeckList slug={board.slug} decks={recallDecks} />
 			) : null}
-			{groupBoardEnabled && tab === 'groups' ? (
+
+			{groupBoardEnabled && section === 'groups' ? (
 				<div
 					id="public-panel-groups"
 					role="tabpanel"
 					aria-labelledby="public-tab-groups"
 					className="public-groups-panel"
 				>
-					<GroupBoardWorkspaceLoader slug={board.slug} tutorials={board.tutorials} />
-				</div>
-			) : tab === 'summary' && !summaryLock.unlocked ? (
-				<div id="public-panel-summary" role="tabpanel" aria-labelledby="public-tab-summary">
-					<StudentSummaryPanel
-						students={visibleStudents}
-						sessions={summarySessions}
-						totalWeeks={board.policy.totalWeeks}
-						attendanceMaxPoints={board.policy.attendanceMaxPoints}
-						cpMaxPoints={board.policy.cpMaxPoints}
+					<GroupBoardWorkspaceLoader
+						slug={board.slug}
+						tutorials={board.tutorials}
 						highlightedEnrollmentId={meId}
+						initialTutorialId={me?.tutorialClassId ?? undefined}
 					/>
 				</div>
-			) : tab === 'attendance' || tab === 'cp' || tab === 'summary' ? (
-				<div
-					id={
-						tab === 'attendance'
-							? 'public-panel-attendance'
-							: tab === 'cp'
-								? 'public-panel-cp'
-								: 'public-panel-summary'
-					}
-					role="tabpanel"
-					aria-labelledby={
-						tab === 'attendance'
-							? 'public-tab-attendance'
-							: tab === 'cp'
-								? 'public-tab-cp'
-								: 'public-tab-summary'
-					}
-					className="mc-surface overflow-hidden"
-				>
-					<div className="mc-card-head mc-public-grid-head gap-2">
-						<div className="flex min-w-0 items-center gap-2">
-							<h2 className="text-base font-semibold text-ink">
-								{tab === 'attendance'
-									? 'Bảng điểm danh'
-									: tab === 'cp'
-										? 'Bảng điểm CP'
-										: 'Bảng điểm tổng kết'}
-							</h2>
-							<span className="mc-chip">{filteredStudents.length} SV</span>
-						</div>
-						<label>
-							<span className="sr-only">Mã sinh viên</span>
-							<input
-								value={query}
-								onChange={(event) => setQuery(event.target.value)}
-								placeholder="Tìm tên hoặc MSV"
-								className="mc-public-grid-search min-h-10 w-44 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-xs sm:min-h-8 sm:w-56"
-							/>
-						</label>
-						<label>
-							<span className="sr-only">Đây là tôi</span>
-							<select
-								value={meId ?? ''}
-								onChange={(event) => chooseMe(event.target.value)}
-								className="min-h-10 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-xs text-ink sm:min-h-8"
-							>
-								<option value="">Đây là tôi</option>
-								{students.map((student) => (
-									<option key={student.enrollmentId} value={student.enrollmentId}>
-										{student.familyName} {student.givenName}
-									</option>
-								))}
-							</select>
-						</label>
-					</div>
-					{me ? (
-						<p className="flex flex-wrap items-center gap-2 border-b border-mc-rule px-4 py-2 text-sm text-ink">
-							<span>{studentIdentitySummary(me, board.policy.totalWeeks, board.policy.attendanceMaxPoints ?? 5)}</span>
-							<button type="button" className="mc-button min-h-11 px-3 text-xs" onClick={() => chooseMe('')}>
-								Bỏ chọn
-							</button>
-						</p>
-					) : null}
-					{filteredStudents.length === 0 ? (
-						<p role="status" className="p-4 text-sm text-ink-secondary">
-							{students.length === 0
-								? tutorialId === PUBLIC_TUTORIAL_UNASSIGNED
-									? 'Chưa có sinh viên chưa phân tutorial.'
-									: tutorialId
-										? 'Tutorial này chưa có sinh viên.'
-										: 'Lớp này chưa có sinh viên.'
-								: 'Không tìm thấy sinh viên phù hợp. Hãy thử tên hoặc mã khác.'}
-						</p>
-					) : null}
-					{tab === 'attendance' ? (
-						<div ref={gridWrapRef}>
-							<AttendanceGrid
-								students={visibleStudents}
-								highlightedEnrollmentId={meId}
-								sessions={scopedSessions}
-								totalWeeks={board.policy.totalWeeks}
-								attendanceMaxPoints={board.policy.attendanceMaxPoints}
-								showEligibilityColumn={false}
-								readOnly
-								publicCompact
-								scrollMode="page"
-							/>
-						</div>
-					) : tab === 'cp' ? (
-						<div ref={gridWrapRef}>
-							<ParticipationGrid
-								students={visibleStudents}
-								highlightedEnrollmentId={meId}
-								sessions={scopedSessions}
-								totalWeeks={board.policy.totalWeeks}
-								attendanceMaxPoints={board.policy.attendanceMaxPoints}
-								cpMaxPoints={board.policy.cpMaxPoints}
-								readOnly
-								publicCompact
-								scrollMode="page"
-							/>
-						</div>
-					) : (
-						<div ref={gridWrapRef}>
-							<StudentSummaryPanel
-								students={visibleStudents}
-								sessions={summarySessions}
-								totalWeeks={board.policy.totalWeeks}
-								attendanceMaxPoints={board.policy.attendanceMaxPoints}
-								cpMaxPoints={board.policy.cpMaxPoints}
-								highlightedEnrollmentId={meId}
-							/>
-						</div>
-					)}
-				</div>
 			) : null}
+
+			{section === 'gradebook' ? (
+				<ClassGradebook
+					board={board}
+					view={gradebookView}
+					onViewChange={(nextView) => changeSection('gradebook', nextView)}
+					tutorialId={tutorialId}
+					onTutorialChange={changeTutorial}
+					query={query}
+					onQueryChange={setQuery}
+					meId={meId}
+					onOpenMe={() => changeSection('me')}
+					gridWrapRef={gridWrapRef}
+				/>
+			) : null}
+
+			<Dialog
+				open={learningOpen}
+				onClose={closeLearningSheet}
+				title="Phong cách học"
+				className="max-md:mt-auto max-md:mb-0 max-md:max-h-[92dvh] max-md:w-full max-md:max-w-none max-md:rounded-b-none max-md:rounded-t-2xl md:max-h-[90dvh] md:w-[min(100%-2rem,56rem)]"
+			>
+				{learningOpen ? (
+					<LearningExperienceWorkspace
+						key={meId ?? 'guest'}
+						slug={board.slug}
+						courseName={board.courseName}
+						students={learningStudents}
+						initialEnrollmentId={meId}
+						onChoiceSaved={handleLearningSaved}
+					/>
+				) : null}
+			</Dialog>
+
+			<Toast message={toast} visible={Boolean(toast)} onDismiss={() => setToast('')} />
 		</div>
 	);
 }

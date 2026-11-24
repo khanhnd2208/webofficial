@@ -465,15 +465,25 @@ export function ParticipationGrid({
 														{student.familyName} {student.givenName}
 													</strong>
 													<small className="mc-num mc-grid-public-meta block text-ink-secondary">
-														<span className="mc-grid-public-meta-line">
-															{student.studentCode} · Gift −{giftLabel(student.cp.giftDeduction)}
-														</span>
-														<span className="mc-grid-public-meta-line">
-															Chuyên cần {formatTeachingScore(student.cp.attendanceScore)}/
-															{attendanceMaxPoints} · CP {formatTeachingScore(student.cp.cp)}/
-															{cpMaxPoints} · Tổng {formatTeachingScore(student.cp.totalScore)}/
-															{TOTAL_MAX_POINTS}
-														</span>
+														{!readOnly ? (
+															<>
+																<span className="mc-grid-public-meta-line">
+																	{student.studentCode} · Gift −
+																	{giftLabel(student.cp.giftDeduction)}
+																</span>
+																<span className="mc-grid-public-meta-line">
+																	Chuyên cần {formatTeachingScore(student.cp.attendanceScore)}/
+																	{attendanceMaxPoints} · CP {formatTeachingScore(student.cp.cp)}/
+																	{cpMaxPoints} · Tổng {formatTeachingScore(student.cp.totalScore)}/
+																	{TOTAL_MAX_POINTS}
+																</span>
+															</>
+														) : (
+															<span className="mc-grid-public-meta-line">
+																CP {formatTeachingScore(student.cp.cp)}/{cpMaxPoints} · Tổng{' '}
+																{formatTeachingScore(student.cp.totalScore)}/{TOTAL_MAX_POINTS}
+															</span>
+														)}
 													</small>
 													{!readOnly ? (
 														<span className="mc-grid-mobile-gift-actions">
