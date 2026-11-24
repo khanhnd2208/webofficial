@@ -259,7 +259,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await page.getByLabel('Mật khẩu ngày sinh').fill('29052006');
 			await page.getByRole('button', { name: 'Vào trải nghiệm' }).click();
 
-			await expect(page.getByRole('heading', { name: 'Chọn phong cách học' }).last()).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Chọn phong cách học' })).toBeVisible();
 			await page.getByRole('button', { name: 'Chọn thử thách' }).click();
 			await expect(page.getByText(/Đã lưu phong cách học: Teach me a lesson/)).toBeVisible();
 			await expect(page.getByText(/Phong cách học:/)).toContainText('Teach me a lesson');
@@ -271,7 +271,7 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await page.getByRole('option', { name: new RegExp(openLearnerName, 'i') }).click();
 			await expect(page.getByLabel('Mật khẩu ngày sinh')).toHaveCount(0);
 			await page.getByRole('button', { name: 'Vào trải nghiệm' }).click();
-			await expect(page.getByRole('heading', { name: 'Chọn phong cách học' }).last()).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Chọn phong cách học' })).toBeVisible();
 		} finally {
 			await context.clearCookies();
 			await addAdminSession(context);

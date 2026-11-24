@@ -131,7 +131,7 @@ describe('StudentClassBoard', () => {
 	it('opens the learning style sheet over Của tôi for legacy ?tab=learning links', () => {
 		render(<StudentClassBoard board={board()} initialTab="learning" />);
 		expect(screen.getByRole('tab', { name: 'Của tôi' })).toHaveAttribute('aria-selected', 'true');
-		expect(screen.getByRole('dialog', { name: 'Chọn phong cách học' })).toBeInTheDocument();
+		expect(screen.getByRole('dialog', { name: 'Phong cách học' })).toBeInTheDocument();
 	});
 
 	it('lists enabled review decks under Ôn tập on the class board', () => {

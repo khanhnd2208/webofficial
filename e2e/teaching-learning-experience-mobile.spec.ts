@@ -71,7 +71,7 @@ test.describe('Learning Experience mobile access', () => {
 			await password.fill('09052006');
 			await expect(page.getByRole('button', { name: 'Vào trải nghiệm' })).toBeEnabled();
 			await page.getByRole('button', { name: 'Vào trải nghiệm' }).tap();
-			await expect(page.getByRole('heading', { name: 'Chọn phong cách học' }).last()).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Chọn phong cách học' })).toBeVisible();
 
 			await context.clearCookies();
 			await page.goto(`/lop/${slug}?tab=learning`);
@@ -79,7 +79,7 @@ test.describe('Learning Experience mobile access', () => {
 			await page.getByRole('option', { name: new RegExp(openName) }).tap();
 			await expect(page.getByLabel('Mật khẩu ngày sinh')).toHaveCount(0);
 			await page.getByRole('button', { name: 'Vào trải nghiệm' }).tap();
-			await expect(page.getByRole('heading', { name: 'Chọn phong cách học' }).last()).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Chọn phong cách học' })).toBeVisible();
 		} finally {
 			await context.clearCookies();
 			await addAdminSession(context);

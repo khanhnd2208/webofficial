@@ -349,7 +349,7 @@ export function StudentClassBoard({
 			<Dialog
 				open={learningOpen}
 				onClose={closeLearningSheet}
-				title="Chọn phong cách học"
+				title="Phong cách học"
 				className="max-md:mt-auto max-md:mb-0 max-md:max-h-[92dvh] max-md:w-full max-md:max-w-none max-md:rounded-b-none max-md:rounded-t-2xl md:max-h-[90dvh] md:w-[min(100%-2rem,56rem)]"
 			>
 				{learningOpen ? (
