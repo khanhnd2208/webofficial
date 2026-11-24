@@ -175,42 +175,71 @@
 	transform: rotate(8deg);
 }
 
-/* "Test yourself" entry: a slice of the dark boss room, the same in both themes. */
+/* Editorial entry card shared by the class tab and course deck list. */
 .recall-test-cta {
 	display: grid;
-	grid-template-columns: 1fr auto;
+	grid-template-columns: minmax(0, 1fr) auto;
 	align-items: center;
 	gap: 0.15rem 1rem;
 	margin-top: 1.5rem;
-	border: 1px solid rgb(196 181 253 / 30%);
-	border-radius: 1rem;
+	border: 1px solid var(--hairline);
+	border-left: 3px solid var(--bronze);
+	border-radius: 0.75rem;
 	padding: 1rem 1.25rem;
-	color: #f5f3ff;
-	background:
-		radial-gradient(ellipse 80% 120% at 0% 0%, rgb(124 58 237 / 45%), transparent 70%), #1d1438;
-	transition: transform var(--ui-duration-hover) var(--ui-ease);
+	color: var(--ink);
+	background: var(--paper);
+	transition: border-color var(--ui-duration-hover) var(--ui-ease);
 }
-.recall-test-cta:hover {
-	transform: translateY(-1px);
-	border-color: #fbbf24;
+
+.dark .recall-test-cta {
+	--bronze: color-mix(in srgb, var(--ink) 55%, var(--sunlight));
 }
+
+.recall-test-cta:focus-visible {
+	outline: 3px solid var(--bronze);
+	outline-offset: 4px;
+}
+
 .recall-test-cta-title {
-	font-size: 1.15rem;
-	font-weight: 800;
-	color: #fbbf24;
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-size: 1.25rem;
+	font-weight: 500;
 }
+
 .recall-test-cta-text {
 	grid-column: 1;
-	font-size: 0.9rem;
-	color: #c4b5fd;
+	font-size: 0.875rem;
+	color: var(--ink-secondary);
 	line-height: 1.5;
 }
+
 .recall-test-cta > span[aria-hidden] {
 	grid-column: 2;
 	grid-row: 1 / span 2;
 	font-size: 1.25rem;
-	color: #fbbf24;
+	color: var(--bronze);
+	transition: transform var(--ui-duration-hover) var(--ui-ease);
 }
+
+@media (hover: hover) {
+	.recall-test-cta:hover {
+		border-color: var(--bronze);
+	}
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+	.recall-test-cta:hover > span[aria-hidden] {
+		transform: translateX(2px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.recall-test-cta,
+	.recall-test-cta > span[aria-hidden] {
+		transition: none;
+	}
+}
+
 .recall-index-row {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) auto;

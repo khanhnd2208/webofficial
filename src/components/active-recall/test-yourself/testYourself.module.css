@@ -1,158 +1,155 @@
-/*
- * "Test yourself": the Recall Arena's dark boss room, sized for one learner on
- * a phone or a laptop instead of a projector. Always dark, like the Arena.
- */
+/* Editorial study surface shared by setup, battle, and summary. */
 .root {
-	--ty-bg: #120b24;
-	--ty-panel: #1d1438;
-	--ty-panel-2: #281c4d;
-	--ty-ink: #f5f3ff;
-	--ty-ink-2: #c4b5fd;
-	--ty-muted: #a99fcc;
-	--ty-line: rgb(196 181 253 / 24%);
-	--ty-accent: #fbbf24;
-	--ty-ok: #34d399;
-	--ty-bad: #fb7185;
 	--recall-question-size: clamp(1.15rem, 2.4vw, 1.6rem);
 	--recall-answer-size: clamp(1rem, 2vw, 1.2rem);
 	min-height: 100svh;
 	overflow-x: clip;
-	color: var(--ty-ink);
-	background:
-		radial-gradient(ellipse 70% 40% at 50% 12%, rgb(124 58 237 / 36%), transparent 70%),
-		radial-gradient(ellipse 90% 40% at 50% 100%, rgb(251 191 36 / 9%), transparent 70%),
-		var(--ty-bg);
+	color: var(--ink);
+	background: var(--canvas);
 	font-family: var(--font-inter), Arial, Helvetica, sans-serif;
-	color-scheme: dark;
+}
+
+/* Keep the bronze controls legible on the dark canvas. */
+:global(.dark) .root {
+	--bronze: color-mix(in srgb, var(--ink) 55%, var(--sunlight));
 }
 
 .root :focus-visible {
-	outline: 2px solid var(--ty-accent);
-	outline-offset: 3px;
+	outline: 3px solid var(--bronze);
+	outline-offset: 4px;
 }
 
-/* Shared bits */
-.kicker {
-	margin: 0;
-	color: var(--ty-ink-2);
-	font-size: 0.8rem;
-	font-weight: 650;
+.kicker,
+.bubbleKicker,
+.answerLabel,
+.exampleLabel {
+	color: var(--ink-secondary);
+	font-size: 0.75rem;
+	font-weight: 600;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 }
 
-.back {
+.kicker {
+	margin: 0;
+}
+
+.back,
+.linkButton,
+.moreDecks > summary {
+	color: var(--bronze);
+	font-size: 0.8125rem;
+	font-weight: 600;
+}
+
+.back,
+.moreDecks > summary {
 	display: inline-flex;
 	min-height: 44px;
 	align-items: center;
-	color: var(--ty-muted);
-	font-size: 0.9rem;
-	text-decoration: none;
 }
 
-.back:hover {
-	color: var(--ty-ink);
+.back {
+	margin-bottom: 0.25rem;
+	text-decoration: none;
 }
 
 .startButton,
 .ghostButton,
 .knownButton,
 .againButton,
-.chip {
+.chip,
+.practiceButton,
+.laterButton {
 	display: inline-flex;
 	min-height: 44px;
 	align-items: center;
 	justify-content: center;
-	gap: 0.6rem;
-	border: 1px solid transparent;
-	border-radius: 999px;
-	padding: 0.6rem 1.25rem;
-	font: inherit;
-	font-weight: 650;
+	gap: 0.5rem;
+	border: 1px solid var(--hairline);
+	padding: 0.55rem 1rem;
+	color: var(--ink);
+	background: var(--paper);
+	font-size: 0.875rem;
+	font-weight: 600;
+	touch-action: manipulation;
 	cursor: pointer;
 	transition:
-		transform 120ms ease,
-		background 160ms ease,
-		border-color 160ms ease;
+		background-color var(--ui-duration-hover) var(--ui-ease),
+		border-color var(--ui-duration-hover) var(--ui-ease),
+		color var(--ui-duration-hover) var(--ui-ease);
 }
 
-.startButton:active,
-.knownButton:active,
-.againButton:active,
-.ghostButton:active {
-	transform: scale(0.97);
+.startButton,
+.knownButton {
+	border-color: var(--ink);
+	color: var(--paper);
+	background: var(--ink);
 }
 
-.startButton {
-	color: #1c1206;
-	background: var(--ty-accent);
-	box-shadow: 0 8px 26px rgb(251 191 36 / 28%);
-}
-
-.startButton:hover:not(:disabled) {
-	background: #fcd34d;
-}
-
-.startButton:disabled {
-	color: var(--ty-muted);
-	background: var(--ty-panel-2);
-	box-shadow: none;
+.root button:disabled {
+	opacity: 0.45;
 	cursor: not-allowed;
-}
-
-.ghostButton,
-.chip {
-	color: var(--ty-ink);
-	background: transparent;
-	border-color: var(--ty-line);
-}
-
-.ghostButton:hover,
-.chip:hover {
-	border-color: var(--ty-ink-2);
 }
 
 .chip {
 	width: 44px;
 	height: 44px;
 	padding: 0;
-	font-size: 0.85rem;
+	color: var(--ink-secondary);
 }
 
 .chip[aria-pressed='true'] {
-	border-color: var(--ty-ink-2);
-	background: var(--ty-panel-2);
+	border-color: var(--ink);
+	color: var(--ink);
 }
 
-.knownButton {
-	color: #052e1c;
-	background: var(--ty-ok);
+.knownButton svg {
+	color: var(--success);
 }
 
-.knownButton:hover {
-	background: #6ee7b7;
-}
-
-.againButton {
-	color: var(--ty-ink);
-	background: rgb(251 113 133 / 16%);
-	border-color: rgb(251 113 133 / 55%);
-}
-
-.againButton:hover {
-	background: rgb(251 113 133 / 26%);
+.againButton svg {
+	color: var(--error);
 }
 
 .knownButton kbd,
 .againButton kbd {
 	display: none;
 	min-width: 1.4rem;
-	border: 1px solid currentcolor;
-	border-radius: 0.35rem;
+	border: 1px solid var(--hairline);
 	padding: 0 0.3rem;
 	font: inherit;
 	font-size: 0.75rem;
-	opacity: 0.7;
+}
+
+@media (hover: hover) {
+	.back:hover,
+	.linkButton:hover,
+	.moreDecks > summary:hover {
+		text-decoration: underline;
+	}
+
+	.startButton:hover:enabled,
+	.knownButton:hover {
+		border-color: var(--bronze);
+		background: var(--bronze);
+	}
+
+	.ghostButton:hover:enabled,
+	.againButton:hover,
+	.chip:hover,
+	.practiceButton:hover {
+		border-color: var(--bronze);
+	}
+
+	.laterButton:hover,
+	.chip:hover {
+		color: var(--ink);
+	}
+
+	.deckOption:hover {
+		background: var(--accent-subtle);
+	}
 }
 
 /* Setup */
@@ -164,29 +161,41 @@
 }
 
 .setupHead {
-	margin-top: 1rem;
+	border-top: 1px solid var(--hairline);
+	padding-top: 1rem;
+}
+
+.setupHead .kicker {
+	font-size: 0.875rem;
+	font-weight: 400;
+	letter-spacing: normal;
+	text-transform: none;
+}
+
+.setupTitle,
+.bossName,
+.summaryTitle,
+.hardest h3 {
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-weight: 500;
 }
 
 .setupTitle {
-	margin: 0.4rem 0 0;
-	font-size: clamp(2.2rem, 8vw, 3.6rem);
-	font-weight: 800;
+	margin: 0.25rem 0 0;
+	font-size: clamp(2rem, 6vw, 3.25rem);
 	letter-spacing: -0.03em;
-	line-height: 1.05;
-	background: linear-gradient(180deg, #fff 30%, var(--ty-accent));
-	background-clip: text;
-	-webkit-text-fill-color: transparent;
+	line-height: 1.25;
 }
 
 .setupLead {
 	max-width: 38rem;
 	margin: 0.9rem 0 0;
-	color: var(--ty-ink-2);
+	color: var(--ink-secondary);
 	line-height: 1.6;
 }
 
 .setupLead strong {
-	color: var(--ty-ink);
+	color: var(--ink);
 }
 
 .deckPicker {
@@ -211,18 +220,13 @@
 	min-height: 44px;
 	border: 0;
 	padding: 0 0.25rem;
-	color: var(--ty-accent);
 	background: none;
-	font: inherit;
-	font-size: 0.9rem;
-	font-weight: 600;
 	cursor: pointer;
 }
 
 .deckList {
-	display: grid;
-	gap: 0.6rem;
 	margin: 0;
+	border-top: 1px solid var(--hairline);
 	padding: 0;
 	list-style: none;
 }
@@ -232,30 +236,21 @@
 	min-height: 56px;
 	align-items: center;
 	gap: 0.85rem;
-	border: 1px solid var(--ty-line);
-	border-radius: 0.9rem;
-	padding: 0.75rem 1rem;
-	background: var(--ty-panel);
+	border-bottom: 1px solid var(--hairline);
+	padding: 0.875rem 0;
 	cursor: pointer;
-	transition:
-		border-color 160ms ease,
-		background 160ms ease;
-}
-
-.deckOption:hover {
-	border-color: var(--ty-ink-2);
+	transition: background-color var(--ui-duration-hover) var(--ui-ease);
 }
 
 .deckOption[data-checked] {
-	border-color: var(--ty-accent);
-	background: var(--ty-panel-2);
+	background: var(--accent-subtle);
 }
 
 .deckOption input {
 	width: 1.15rem;
 	height: 1.15rem;
 	flex: none;
-	accent-color: var(--ty-accent);
+	accent-color: var(--ink);
 }
 
 .deckText {
@@ -266,7 +261,7 @@
 }
 
 .deckLesson {
-	color: var(--ty-muted);
+	color: var(--ink-secondary);
 	font-size: 0.8rem;
 }
 
@@ -277,7 +272,7 @@
 
 .deckCount {
 	flex: none;
-	color: var(--ty-muted);
+	color: var(--ink-secondary);
 	font-size: 0.85rem;
 	font-variant-numeric: tabular-nums;
 }
@@ -289,7 +284,7 @@
 	justify-content: center;
 	margin-top: 1.5rem;
 	padding: 1rem 0 calc(0.5rem + env(safe-area-inset-bottom));
-	background: linear-gradient(transparent, var(--ty-bg) 35%);
+	background: linear-gradient(transparent, var(--canvas) 35%);
 }
 
 .startRow[data-linked] {
@@ -305,11 +300,6 @@
 }
 
 .moreDecks > summary {
-	display: inline-flex;
-	min-height: 44px;
-	align-items: center;
-	color: var(--ty-accent);
-	font-weight: 650;
 	cursor: pointer;
 }
 
@@ -321,7 +311,7 @@
 	width: 100%;
 	max-width: 22rem;
 	min-height: 52px;
-	font-size: 1.05rem;
+	font-size: 0.9375rem;
 }
 
 /* Battle */
@@ -346,7 +336,15 @@
 
 .topTools {
 	display: flex;
+	align-items: center;
 	gap: 0.5rem;
+}
+
+.bossColumn {
+	display: grid;
+	width: 100%;
+	min-width: 0;
+	justify-items: center;
 }
 
 .bossHud {
@@ -358,71 +356,55 @@
 
 .bossName {
 	margin: 0;
-	font-size: 1.05rem;
-	font-weight: 800;
-	letter-spacing: 0.02em;
+	font-size: 1.125rem;
 }
 
 .hpBar {
-	height: 0.7rem;
+	height: 6px;
 	margin-top: 0.45rem;
 	overflow: hidden;
-	border: 1px solid rgb(251 113 133 / 45%);
-	border-radius: 999px;
-	background: rgb(0 0 0 / 35%);
+	background: color-mix(in srgb, var(--ink) 15%, transparent);
 }
 
 .hpBar span {
 	display: block;
 	height: 100%;
-	border-radius: inherit;
-	background: linear-gradient(90deg, #e11d48, var(--ty-bad));
-	transition: width 500ms cubic-bezier(0.3, 1.3, 0.5, 1);
+	background: var(--bronze);
+	transition: width var(--ui-duration-control) var(--ui-ease);
+}
+
+.bossHud[data-enraged] .hpBar span {
+	background: var(--error);
 }
 
 .hpText {
 	margin: 0.4rem 0 0;
-	color: var(--ty-muted);
+	color: var(--ink-secondary);
 	font-size: 0.8rem;
 	font-variant-numeric: tabular-nums;
-}
-
-.bossSlot {
-	margin-top: 0.5rem;
-}
-
-.bossSlot::before {
-	width: 22rem;
 }
 
 .bossSlot > * > * {
 	width: min(200px, 44vw) !important;
 }
 
-.bubble {
-	position: relative;
-	width: 100%;
-	margin-top: 1rem;
-	border: 1px solid var(--ty-line);
-	border-radius: 1.1rem;
-	padding: 1.1rem 1.2rem 1.25rem;
-	background: var(--ty-panel);
-	box-shadow: 0 18px 50px rgb(0 0 0 / 35%);
+/* Leave the character animation in place while taking out its stage lighting. */
+.root :is(.bossSlot, .miniBoss, .summaryBoss) [data-mood] {
+	filter: none;
 }
 
-/* The bubble's tail points at the boss. */
-.bubble::before {
-	position: absolute;
-	top: -9px;
-	left: 50%;
-	width: 16px;
-	height: 16px;
-	border-top: 1px solid var(--ty-line);
-	border-left: 1px solid var(--ty-line);
-	background: var(--ty-panel);
-	content: '';
-	rotate: 45deg;
-	translate: -50% 0;
+.root .bossSlot [data-mood='defeated'],
+.root .summaryBoss [data-mood='defeated'] {
+	filter: grayscale(0.7);
+}
+
+.bubble {
+	width: 100%;
+	margin-top: 1rem;
+	border: 1px solid var(--hairline);
+	padding: 1.1rem 1.2rem 1.25rem;
+	background: var(--paper);
+	box-shadow: 0 1px 0 rgb(23 23 23 / 0.04);
 }
 
 .bubbleKicker {
@@ -432,32 +414,30 @@
 	justify-content: space-between;
 	gap: 0.4rem 1rem;
 	margin: 0 0 0.6rem;
-	color: var(--ty-muted);
-	font-size: 0.8rem;
-	font-weight: 600;
 }
 
 .again {
-	border-radius: 999px;
+	border-radius: 4px;
 	padding: 0.1rem 0.55rem;
-	color: var(--ty-bad);
-	background: rgb(251 113 133 / 14%);
+	color: var(--error);
+	background: var(--error-subtle);
+	letter-spacing: normal;
+	text-transform: none;
 }
 
 .recallText {
 	max-width: none;
-	color: var(--ty-ink);
+	color: var(--ink);
 }
 
 .answer {
 	margin-top: 1rem;
-	border-top: 1px dashed var(--ty-line);
+	border-top: 1px solid var(--hairline);
 	padding-top: 0.9rem;
-	animation: ty-answer 260ms ease-out;
+	animation: ty-answer var(--ui-duration-control) var(--ui-ease);
 }
 
 .answer .recallText {
-	color: var(--ty-ink-2);
 	font-size: var(--recall-answer-size);
 	font-weight: 500;
 	line-height: 1.65;
@@ -465,11 +445,6 @@
 
 .answerLabel {
 	margin: 0 0 0.4rem;
-	color: var(--ty-ok);
-	font-size: 0.8rem;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
 }
 
 @keyframes ty-answer {
@@ -487,90 +462,78 @@
 	width: calc(100% + 2rem);
 	gap: 0.35rem;
 	margin: auto -1rem 0;
-	border-top: 1px solid var(--ty-line);
+	border-top: 1px solid var(--hairline);
 	padding: 0.75rem 1rem calc(0.4rem + env(safe-area-inset-bottom));
-	/* Solid, so the answer never shows through the buttons. */
-	background: var(--ty-bg);
-	box-shadow: 0 -12px 28px rgb(0 0 0 / 35%);
+	background: var(--canvas);
 }
 
 .gradeRow {
 	display: grid;
-	grid-template-columns: 1fr 1fr;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 0.6rem;
 }
 
 .laterButton {
-	min-height: 44px;
 	justify-self: center;
-	border: 0;
-	padding: 0 1rem;
-	color: var(--ty-muted);
+	border-color: transparent;
+	color: var(--ink-secondary);
 	background: none;
-	font: inherit;
-	font-size: 0.9rem;
-	font-weight: 600;
-	cursor: pointer;
-}
-
-.laterButton:hover {
-	color: var(--ty-ink);
 }
 
 .recallPrompt {
 	margin: 0.9rem 0 0;
-	color: var(--ty-muted);
+	color: var(--ink-secondary);
 	font-size: 0.9rem;
-	font-style: italic;
 }
 
 .example {
 	margin-top: 0.9rem;
-	border-left: 3px solid var(--ty-accent);
-	border-radius: 0 0.6rem 0.6rem 0;
+	border-left: 3px solid var(--bronze);
 	padding: 0.6rem 0.85rem;
-	background: rgb(251 191 36 / 7%);
+	background: var(--accent-subtle);
 }
 
 .example .recallText {
-	color: var(--ty-muted);
+	color: var(--ink-secondary);
 	font-size: calc(var(--recall-answer-size) * 0.94);
 }
 
 .exampleLabel {
 	margin: 0 0 0.3rem;
-	color: var(--ty-accent);
-	font-size: 0.75rem;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
+	color: var(--bronze);
 }
 
-/* EN | VI: both options visible, the active one filled. */
 .langSwitch {
 	display: inline-flex;
-	border: 1px solid var(--ty-line);
-	border-radius: 999px;
-	padding: 2px;
+	border: 1px solid var(--hairline);
+	background: var(--paper);
 }
 
 .langSwitch button {
-	min-width: 2.75rem;
+	min-width: 44px;
 	min-height: 44px;
 	border: 0;
-	border-radius: 999px;
 	padding: 0 0.7rem;
-	color: var(--ty-muted);
+	color: var(--ink);
 	background: transparent;
-	font: inherit;
-	font-size: 0.85rem;
-	font-weight: 700;
+	font-size: 0.875rem;
+	font-weight: 600;
+	touch-action: manipulation;
 	cursor: pointer;
 }
 
+.langSwitch button + button {
+	border-left: 1px solid var(--hairline);
+}
+
 .langSwitch button[aria-pressed='true'] {
-	color: #1c1206;
-	background: var(--ty-accent);
+	color: var(--paper);
+	background: var(--ink);
+}
+
+.langSwitch button:focus-visible {
+	position: relative;
+	z-index: 1;
 }
 
 .hudText {
@@ -584,10 +547,6 @@
 }
 
 /* "Đã nhớ lại!": the boss reels and the label pops above it. */
-.bossSlot {
-	position: relative;
-}
-
 .bossSlot[data-stunned] > :first-child {
 	animation: ty-stun 0.7s ease-in-out 2;
 }
@@ -598,12 +557,12 @@
 	left: 50%;
 	z-index: 1;
 	margin: 0;
-	border-radius: 999px;
-	padding: 0.35rem 0.9rem;
-	color: #052e1c;
-	background: var(--ty-ok);
-	box-shadow: 0 6px 22px rgb(52 211 153 / 45%);
-	font-weight: 800;
+	border: 1px solid var(--success);
+	border-radius: 4px;
+	padding: 0.35rem 0.75rem;
+	color: var(--success);
+	background: var(--success-subtle);
+	font-weight: 600;
 	white-space: nowrap;
 	translate: -50% 0;
 	animation: ty-cheer 1.4s ease-out forwards;
@@ -660,10 +619,6 @@
 	.battle[data-revealed] .miniBoss {
 		display: block;
 	}
-
-	.battle[data-revealed] .bubble::before {
-		display: none;
-	}
 }
 
 .actions[hidden] {
@@ -673,7 +628,7 @@
 .keyHint {
 	display: none;
 	margin: 0.5rem 0 0;
-	color: var(--ty-muted);
+	color: var(--ink-secondary);
 	font-size: 0.78rem;
 }
 
@@ -684,10 +639,10 @@
 		grid-template-columns: minmax(13rem, 1fr) minmax(0, 2fr);
 		grid-template-areas:
 			'tools tools'
-			'hud question'
-			'scene question'
-			'. actions'
-			'. keys';
+			'boss question'
+			'boss actions'
+			'boss keys';
+		grid-template-rows: auto auto auto 1fr;
 		align-content: start;
 		align-items: start;
 		column-gap: clamp(1.5rem, 4vw, 3rem);
@@ -697,25 +652,20 @@
 		grid-area: tools;
 		margin-bottom: 1.5rem;
 	}
-	.bossHud {
-		grid-area: hud;
-		margin: 0;
-		align-self: end;
+	.bossColumn {
+		grid-area: boss;
+		align-self: start;
 	}
-	.bossSlot {
-		grid-area: scene;
+	.bossHud {
+		margin: 0;
 	}
 	.bubble {
 		grid-area: question;
 		margin: 0;
 		padding: clamp(1.4rem, 3vw, 2.4rem);
 	}
-	.bubble::before {
-		top: 3rem;
-		left: 0;
-		rotate: -45deg;
-	}
 	.keyHint {
+		display: block;
 		grid-area: keys;
 		text-align: center;
 	}
@@ -727,7 +677,6 @@
 		border-top: 0;
 		padding-inline: 0;
 		background: transparent;
-		box-shadow: none;
 	}
 
 	.actions > :not(.laterButton),
@@ -737,7 +686,6 @@
 
 	.gradeRow {
 		width: 100%;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
 	.knownButton kbd,
@@ -745,12 +693,8 @@
 		display: inline-block;
 	}
 
-	.keyHint {
-		display: block;
-	}
-
 	.bossSlot > * > * {
-		width: 220px !important;
+		width: min(220px, 30vw) !important;
 	}
 }
 
@@ -772,41 +716,41 @@
 
 .summaryTitle {
 	margin: 0.4rem 0 0;
-	font-size: clamp(2rem, 7vw, 3rem);
-	font-weight: 800;
+	font-size: clamp(1.75rem, 5vw, 2.5rem);
 	letter-spacing: -0.03em;
 }
 
 .summaryLead {
 	margin: 0.6rem 0 0;
-	color: var(--ty-ink-2);
+	color: var(--ink-secondary);
 	line-height: 1.6;
 }
 
 .stats {
 	display: grid;
 	width: 100%;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 0.6rem;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
 	margin: 1.75rem 0 0;
+	border-block: 1px solid var(--hairline);
 }
 
 .stats div {
-	border: 1px solid var(--ty-line);
-	border-radius: 0.9rem;
-	padding: 0.8rem 0.5rem;
-	background: var(--ty-panel);
+	padding: 0.8rem 0.35rem;
+}
+
+.stats div + div {
+	border-left: 1px solid var(--hairline);
 }
 
 .stats dt {
-	color: var(--ty-muted);
-	font-size: 0.8rem;
+	color: var(--ink-secondary);
+	font-size: 0.8125rem;
 }
 
 .stats dd {
 	margin: 0.2rem 0 0;
 	font-size: 1.5rem;
-	font-weight: 800;
+	font-weight: 600;
 	font-variant-numeric: tabular-nums;
 }
 
@@ -818,13 +762,12 @@
 
 .hardest h3 {
 	margin: 0 0 0.6rem;
-	font-size: 1rem;
+	font-size: 1.125rem;
 }
 
 .hardest ol {
-	display: grid;
-	gap: 0.5rem;
 	margin: 0;
+	border-top: 1px solid var(--hairline);
 	padding: 0;
 	list-style: none;
 }
@@ -833,43 +776,26 @@
 	display: flex;
 	justify-content: space-between;
 	gap: 1rem;
-	border: 1px solid var(--ty-line);
-	border-radius: 0.75rem;
-	padding: 0.65rem 0.9rem;
-	background: var(--ty-panel);
-	color: var(--ty-ink-2);
+	border-bottom: 1px solid var(--hairline);
+	padding: 0.65rem 0;
+	overflow-wrap: anywhere;
 	line-height: 1.45;
 }
 
 .hardestMore {
 	margin: 0.5rem 0 0;
-	color: var(--ty-muted);
+	color: var(--ink-secondary);
 	font-size: 0.85rem;
 }
 
 .practiceButton {
-	display: flex;
 	width: 100%;
-	min-height: 48px;
-	align-items: center;
-	justify-content: center;
 	margin-top: 0.75rem;
-	border: 1px solid var(--ty-accent);
-	border-radius: 999px;
-	color: var(--ty-accent);
-	background: rgb(251 191 36 / 10%);
-	font: inherit;
-	font-weight: 700;
-	cursor: pointer;
-}
-
-.practiceButton:hover {
-	background: rgb(251 191 36 / 18%);
 }
 
 .hardestCount {
 	flex: none;
-	color: var(--ty-bad);
+	color: var(--error);
 	font-weight: 700;
 }
 
@@ -882,6 +808,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+	.root button,
+	.deckOption {
+		transition: none;
+	}
+
 	.answer,
 	.cheer,
 	.bossSlot[data-stunned] > :first-child,

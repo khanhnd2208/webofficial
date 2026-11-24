@@ -1,51 +1,45 @@
-/* A bounded backdrop leaves the card and its controls on a quiet reading surface. */
-.scene.scene {
+/* The learner's boss stands on a small floor drawn with the site palette. */
+.scene {
+	position: relative;
 	isolation: isolate;
+	display: grid;
 	width: 100%;
+	justify-items: center;
 	overflow: hidden;
 	margin: 0.75rem 0 0;
-	border: 1px solid rgb(171 180 255 / 34%);
-	border-radius: 1.15rem;
 	padding: 0.25rem 0 0.65rem;
-	background: #202047 url('/arena/recall-sanctum.webp') center 66% / cover no-repeat;
-	box-shadow:
-		inset 0 -0.6rem 1.3rem rgb(10 12 34 / 35%),
-		0 0.4rem 1.6rem rgb(8 8 25 / 28%);
+	pointer-events: none;
 }
 
-.scene.scene::before {
+.scene::before,
+.scene[data-stunned]::after {
+	position: absolute;
 	inset: auto auto 5% 50%;
-	width: clamp(8rem, 30%, 14rem);
+	z-index: -1;
+	width: clamp(8rem, 48%, 14rem);
 	height: 10%;
-	border: 1px solid rgb(147 236 247 / 75%);
+	border: 1px solid var(--hairline);
 	border-radius: 50%;
-	background: radial-gradient(ellipse, #5cdeec55 5%, #55d6e220 55%, transparent 73%);
-	box-shadow: 0 0 1rem #53dee74d;
-	mask-image: none;
+	content: '';
 	translate: -50% 0;
-	animation: none;
+}
+
+.scene::before {
+	background: var(--accent-subtle);
 }
 
 .actor {
 	align-self: end;
-	filter: drop-shadow(0 3px 2px #15102bcc);
 }
 
 .scene[data-enraged]::before {
-	border-color: #ffd3a2;
-	background: radial-gradient(ellipse, #ff936d88, transparent 70%);
-	box-shadow: 0 0 1.25rem #ff966f80;
+	border-color: var(--error);
+	background: var(--error-subtle);
 }
 
 .scene[data-stunned]::after {
-	position: absolute;
-	inset: auto auto 3% 50%;
-	width: clamp(8rem, 30%, 14rem);
-	height: 13%;
-	border: 2px solid #bcffe6;
-	border-radius: 50%;
-	content: '';
-	translate: -50% 0;
+	border-color: var(--success);
+	border-width: 2px;
 	animation: recall-ripple 650ms ease-out both;
 }
 

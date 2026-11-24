@@ -94,7 +94,7 @@ export default function TestYourselfSetup({
 				← {backLabel}
 			</Link>
 			<header className={styles.setupHead}>
-				<p className={styles.kicker}>Active Recall · {title}</p>
+				<p className={styles.kicker}>{title}</p>
 				<h1 className={styles.setupTitle}>Test yourself</h1>
 				<p className={styles.setupLead}>
 					Tự trả lời rồi mở đáp án để đối chiếu. Chọn <strong>Nhớ được</strong> để hạ máu boss hoặc{' '}
