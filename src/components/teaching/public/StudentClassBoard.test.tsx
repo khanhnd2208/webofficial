@@ -320,17 +320,75 @@ describe('StudentClassBoard', () => {
 	it('keeps the public board read-only and filters by student code or name', () => {
 		render(<StudentClassBoard board={board()} initialTab="attendance" />);
 		const grid = screen.getByTestId('attendance-grid');
-		const search = screen.getByPlaceholderText('Tìm tên hoặc MSV');
+		const search = screen.getByPlaceholderText('Tìm trong 2 sinh viên');
 
 		expect(grid.querySelectorAll('tbody tr')).toHaveLength(2);
 		expect(screen.queryByRole('columnheader', { name: 'Trạng thái' })).not.toBeInTheDocument();
+		expect(screen.queryByLabelText('Đây là tôi')).not.toBeInTheDocument();
 		expect(screen.queryAllByRole('button', { name: /tuần 1/i })).toHaveLength(0);
+		expect(
+			screen.getByRole('button', { name: /Chọn bạn là ai để ghim hàng của bạn/ }),
+		).toBeInTheDocument();
+
 		fireEvent.change(search, { target: { value: '45' } });
 		expect(grid.querySelectorAll('tbody tr')).toHaveLength(1);
 		expect(screen.getAllByText('Nguyễn An').length).toBeGreaterThan(0);
 		expect(grid.textContent).not.toContain('Trần Bình');
 		fireEvent.change(search, { target: { value: 'Nguyễn' } });
 		expect(grid.querySelectorAll('tbody tr')).toHaveLength(1);
+
+		fireEvent.click(screen.getByRole('button', { name: 'CP' }));
+		expect(screen.getByTestId('participation-grid')).toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Tổng kết' }));
+		expect(screen.getByTestId('summary-locked')).toBeInTheDocument();
+	});
+
+	it('defaults the gradebook tutorial filter to the identified student tutorial', () => {
+		const contentBoard = board();
+		contentBoard.tutorials = [
+			{
+				id: 'tutorial-1',
+				classId: 'class-1',
+				code: 'T01',
+				name: 'Nhóm 01',
+				room: '',
+				scheduleNote: '',
+				displayOrder: 0,
+				studentCount: 2,
+			},
+			{
+				id: 'tutorial-2',
+				classId: 'class-1',
+				code: 'T02',
+				name: 'Nhóm 02',
+				room: '',
+				scheduleNote: '',
+				displayOrder: 1,
+				studentCount: 1,
+			},
+		];
+		contentBoard.sessions.push({
+			...contentBoard.sessions[0]!,
+			id: 'session-2',
+			tutorialClassId: 'tutorial-2',
+		});
+		contentBoard.students.push({
+			...contentBoard.students[0]!,
+			enrollmentId: 'e3',
+			tutorialClassId: 'tutorial-2',
+			studentCode: '********77',
+			familyName: 'Lê',
+			givenName: 'Chi',
+			marks: { 'session-2': { status: 'PRESENT' } },
+			participation: { 'session-2': { points: 1, note: '' } },
+		});
+
+		render(<StudentClassBoard board={contentBoard} />);
+		fireEvent.click(screen.getByRole('button', { name: /Lê Chi/ }));
+		fireEvent.click(screen.getByRole('tab', { name: 'Bảng điểm' }));
+
+		expect(screen.getByLabelText('Tutorial')).toHaveValue('tutorial-2');
+		expect(screen.getByTestId('attendance-grid').querySelectorAll('tbody tr')).toHaveLength(1);
 	});
 
 	it('keeps a locked attendance week visible while leaving its stored mark intact', () => {

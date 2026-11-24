@@ -64,12 +64,14 @@ export function StudentClassBoard({
 	const [learningOpen, setLearningOpen] = useState(initialRoute.openLearning);
 	const [savedChoices, setSavedChoices] = useState<Record<string, LearningExperienceChoice>>({});
 	const [toast, setToast] = useState('');
-	const [tutorialId, setTutorialId] = useState(() =>
-		resolvePublicTutorialId({
-			tutorials: board.tutorials,
-			students: board.students,
-			initialTutorialId,
-		}),
+	const [tutorialOverride, setTutorialOverride] = useState<string | null>(() =>
+		initialTutorialId !== undefined
+			? resolvePublicTutorialId({
+					tutorials: board.tutorials,
+					students: board.students,
+					initialTutorialId,
+				})
+			: null,
 	);
 	const [query, setQuery] = useState('');
 	const [chosenMe, setChosenMe] = useState<{ slug: string; id: string | null } | null>(null);
@@ -83,6 +85,14 @@ export function StudentClassBoard({
 		() => board.students.find((student) => student.enrollmentId === meId) ?? null,
 		[board.students, meId],
 	);
+	const tutorialId = useMemo(() => {
+		if (tutorialOverride !== null) return tutorialOverride;
+		return resolvePublicTutorialId({
+			tutorials: board.tutorials,
+			students: board.students,
+			initialTutorialId: me?.tutorialClassId ?? undefined,
+		});
+	}, [board.students, board.tutorials, me?.tutorialClassId, tutorialOverride]);
 	const effectiveLearningChoice = me
 		? (savedChoices[me.enrollmentId] ?? me.learningExperience ?? null)
 		: null;
@@ -180,7 +190,7 @@ export function StudentClassBoard({
 	}
 
 	function changeTutorial(next: string) {
-		setTutorialId(next);
+		setTutorialOverride(next);
 		const params = new URLSearchParams(window.location.search);
 		if (next && next !== PUBLIC_TUTORIAL_ALL) params.set('tutorial', next);
 		else params.delete('tutorial');
@@ -319,13 +329,14 @@ export function StudentClassBoard({
 			{section === 'gradebook' ? (
 				<ClassGradebook
 					board={board}
-					tab={gradebookView}
+					view={gradebookView}
+					onViewChange={(nextView) => changeSection('gradebook', nextView)}
 					tutorialId={tutorialId}
 					onTutorialChange={changeTutorial}
 					query={query}
 					onQueryChange={setQuery}
 					meId={meId}
-					onChooseMe={chooseMe}
+					onOpenMe={() => changeSection('me')}
 					gridWrapRef={gridWrapRef}
 				/>
 			) : null}

@@ -15,8 +15,15 @@ import {
 	studentMatchesPublicTutorial,
 } from '@/features/teaching/domain/publicBoardFilter';
 
-import { pinStudent, studentIdentitySummary } from './studentIdentity';
+import type { GradebookView } from './publicBoardNav';
+import { matchesStudentQuery, pinStudent } from './studentIdentity';
 import { getPublicSummaryLockStatus, StudentSummaryPanel } from './StudentSummaryPanel';
+
+const VIEW_OPTIONS: Array<{ value: GradebookView; label: string }> = [
+	{ value: 'attendance', label: 'Điểm danh' },
+	{ value: 'cp', label: 'CP' },
+	{ value: 'summary', label: 'Tổng kết' },
+];
 
 function toGridStudent(student: PublicClassBoard['students'][number]): BoardGridStudent {
 	return {
@@ -36,23 +43,25 @@ function toGridStudent(student: PublicClassBoard['students'][number]): BoardGrid
 
 export function ClassGradebook({
 	board,
-	tab,
+	view,
+	onViewChange,
 	tutorialId,
 	onTutorialChange,
 	query,
 	onQueryChange,
 	meId,
-	onChooseMe,
+	onOpenMe,
 	gridWrapRef,
 }: {
 	board: PublicClassBoard;
-	tab: 'attendance' | 'cp' | 'summary';
+	view: GradebookView;
+	onViewChange: (next: GradebookView) => void;
 	tutorialId: string;
 	onTutorialChange: (next: string) => void;
 	query: string;
 	onQueryChange: (next: string) => void;
 	meId: string | null;
-	onChooseMe: (enrollmentId: string) => void;
+	onOpenMe: () => void;
 	gridWrapRef: RefObject<HTMLDivElement | null>;
 }) {
 	const hasUnassigned = useMemo(
@@ -73,144 +82,119 @@ export function ClassGradebook({
 		[summarySessions, board.policy.totalWeeks],
 	);
 	const students = useMemo(() => scopedStudents.map(toGridStudent), [scopedStudents]);
-	const filteredStudents = useMemo(() => {
-		const value = query
-			.trim()
-			.toLowerCase()
-			.normalize('NFD')
-			.replace(/[\u0300-\u036f]/g, '')
-			.replace(/đ/g, 'd');
-		if (!value) return students;
-		return students.filter((student) =>
-			`${student.studentCode} ${student.familyName} ${student.givenName}`
-				.toLowerCase()
-				.normalize('NFD')
-				.replace(/[\u0300-\u036f]/g, '')
-				.replace(/đ/g, 'd')
-				.includes(value),
-		);
-	}, [query, students]);
+	const filteredStudents = useMemo(
+		() => students.filter((student) => matchesStudentQuery(student, query)),
+		[query, students],
+	);
 	const visibleStudents = useMemo(
 		() => pinStudent(filteredStudents, meId),
 		[filteredStudents, meId],
 	);
-	const me = visibleStudents.find((student) => student.enrollmentId === meId) ?? null;
 
 	const showTutorialFilter = shouldShowPublicTutorialFilter({
 		tutorialCount: board.tutorials.length,
 		hasUnassigned,
 	});
+	const summaryLocked = view === 'summary' && !summaryLock.unlocked;
 
 	return (
-		<>
-			{showTutorialFilter ? (
-				<div className="flex flex-wrap items-center gap-2 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 py-2">
-					<label htmlFor="public-tutorial" className="text-xs font-semibold text-ink-secondary">
-						Tutorial
-					</label>
-					<select
-						id="public-tutorial"
-						value={tutorialId}
-						onChange={(event) => onTutorialChange(event.target.value)}
-						className="min-h-10 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-sm text-ink"
-					>
-						<option value={PUBLIC_TUTORIAL_ALL}>Toàn lớp</option>
-						{hasUnassigned ? (
-							<option value={PUBLIC_TUTORIAL_UNASSIGNED}>Chưa phân tutorial</option>
-						) : null}
-						{board.tutorials.map((tutorial) => (
-							<option key={tutorial.id} value={tutorial.id}>
-								{tutorial.code} · {tutorial.name}
-							</option>
-						))}
-					</select>
-				</div>
-			) : null}
-
-			{tab === 'summary' && !summaryLock.unlocked ? (
-				<div id="public-panel-summary" role="tabpanel" aria-labelledby="public-tab-summary">
-					<StudentSummaryPanel
-						students={visibleStudents}
-						sessions={summarySessions}
-						totalWeeks={board.policy.totalWeeks}
-						attendanceMaxPoints={board.policy.attendanceMaxPoints}
-						cpMaxPoints={board.policy.cpMaxPoints}
-						highlightedEnrollmentId={meId}
-					/>
-				</div>
-			) : (
+		<div
+			id="public-panel-gradebook"
+			role="tabpanel"
+			aria-labelledby="public-tab-gradebook"
+			className="space-y-3"
+		>
+			<div className="flex flex-wrap items-center justify-between gap-2">
 				<div
-					id={
-						tab === 'attendance'
-							? 'public-panel-attendance'
-							: tab === 'cp'
-								? 'public-panel-cp'
-								: 'public-panel-summary'
-					}
-					role="tabpanel"
-					aria-labelledby={
-						tab === 'attendance'
-							? 'public-tab-attendance'
-							: tab === 'cp'
-								? 'public-tab-cp'
-								: 'public-tab-summary'
-					}
-					className="mc-surface overflow-hidden"
+					role="group"
+					aria-label="Chế độ xem bảng điểm"
+					className="inline-grid w-full grid-cols-3 rounded-[var(--mc-r-sm)] border border-mc-rule bg-surface-sunken p-1 sm:w-auto"
 				>
-					<div className="mc-card-head mc-public-grid-head gap-2">
-						<div className="flex min-w-0 items-center gap-2">
-							<h2 className="text-base font-semibold text-ink">
-								{tab === 'attendance'
-									? 'Bảng điểm danh'
-									: tab === 'cp'
-										? 'Bảng điểm CP'
-										: 'Bảng điểm tổng kết'}
-							</h2>
-							<span className="mc-chip">{filteredStudents.length} SV</span>
-						</div>
-						<label>
-							<span className="sr-only">Mã sinh viên</span>
+					{VIEW_OPTIONS.map((option) => {
+						const active = view === option.value;
+						return (
+							<button
+								key={option.value}
+								type="button"
+								aria-pressed={active}
+								onClick={() => onViewChange(option.value)}
+								className={`min-h-11 rounded-[6px] px-3 text-sm font-semibold transition-colors ${
+									active
+										? 'bg-paper text-accent shadow-xs'
+										: 'text-ink-secondary hover:text-ink'
+								}`}
+							>
+								{option.label}
+							</button>
+						);
+					})}
+				</div>
+
+				{!meId ? (
+					<button
+						type="button"
+						onClick={onOpenMe}
+						className="inline-flex min-h-11 items-center text-xs font-medium text-ink-secondary hover:text-accent"
+					>
+						Chọn bạn là ai để ghim hàng của bạn →
+					</button>
+				) : null}
+			</div>
+
+			{!summaryLocked || showTutorialFilter ? (
+				<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+					{!summaryLocked ? (
+						<label className="min-w-0 flex-1 sm:max-w-xs">
+							<span className="sr-only">Tìm sinh viên</span>
 							<input
+								type="search"
 								value={query}
 								onChange={(event) => onQueryChange(event.target.value)}
-								placeholder="Tìm tên hoặc MSV"
-								className="mc-public-grid-search min-h-10 w-44 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-xs sm:min-h-8 sm:w-56"
+								placeholder={`Tìm trong ${scopedStudents.length} sinh viên`}
+								className="mc-input w-full rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-sm text-ink placeholder:text-ink-tertiary"
 							/>
 						</label>
-						<label>
-							<span className="sr-only">Đây là tôi</span>
-							<select
-								value={meId ?? ''}
-								onChange={(event) => onChooseMe(event.target.value)}
-								className="min-h-10 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-xs text-ink sm:min-h-8"
+					) : null}
+					{showTutorialFilter ? (
+						<div className="flex items-center gap-2 sm:ml-auto">
+							<label
+								htmlFor="public-tutorial"
+								className="shrink-0 text-xs font-semibold text-ink-secondary"
 							>
-								<option value="">Đây là tôi</option>
-								{students.map((student) => (
-									<option key={student.enrollmentId} value={student.enrollmentId}>
-										{student.familyName} {student.givenName}
+								Tutorial
+							</label>
+							<select
+								id="public-tutorial"
+								value={tutorialId}
+								onChange={(event) => onTutorialChange(event.target.value)}
+								className="min-h-11 flex-1 rounded-[var(--mc-r-sm)] border border-mc-rule bg-paper px-3 text-sm text-ink sm:flex-none"
+							>
+								<option value={PUBLIC_TUTORIAL_ALL}>Toàn lớp</option>
+								{hasUnassigned ? (
+									<option value={PUBLIC_TUTORIAL_UNASSIGNED}>Chưa phân tutorial</option>
+								) : null}
+								{board.tutorials.map((tutorial) => (
+									<option key={tutorial.id} value={tutorial.id}>
+										{tutorial.code} · {tutorial.name}
 									</option>
 								))}
 							</select>
-						</label>
-					</div>
-					{me ? (
-						<p className="flex flex-wrap items-center gap-2 border-b border-mc-rule px-4 py-2 text-sm text-ink">
-							<span>
-								{studentIdentitySummary(
-									me,
-									board.policy.totalWeeks,
-									board.policy.attendanceMaxPoints ?? 5,
-								)}
-							</span>
-							<button
-								type="button"
-								className="mc-button min-h-11 px-3 text-xs"
-								onClick={() => onChooseMe('')}
-							>
-								Bỏ chọn
-							</button>
-						</p>
+						</div>
 					) : null}
+				</div>
+			) : null}
+
+			{summaryLocked ? (
+				<StudentSummaryPanel
+					students={visibleStudents}
+					sessions={summarySessions}
+					totalWeeks={board.policy.totalWeeks}
+					attendanceMaxPoints={board.policy.attendanceMaxPoints}
+					cpMaxPoints={board.policy.cpMaxPoints}
+					highlightedEnrollmentId={meId}
+				/>
+			) : (
+				<div className="mc-surface overflow-hidden">
 					{filteredStudents.length === 0 ? (
 						<p role="status" className="p-4 text-sm text-ink-secondary">
 							{students.length === 0
@@ -222,7 +206,7 @@ export function ClassGradebook({
 								: 'Không tìm thấy sinh viên phù hợp. Hãy thử tên hoặc mã khác.'}
 						</p>
 					) : null}
-					{tab === 'attendance' ? (
+					{view === 'attendance' ? (
 						<div ref={gridWrapRef}>
 							<AttendanceGrid
 								students={visibleStudents}
@@ -236,7 +220,7 @@ export function ClassGradebook({
 								scrollMode="page"
 							/>
 						</div>
-					) : tab === 'cp' ? (
+					) : view === 'cp' ? (
 						<div ref={gridWrapRef}>
 							<ParticipationGrid
 								students={visibleStudents}
@@ -264,6 +248,6 @@ export function ClassGradebook({
 					)}
 				</div>
 			)}
-		</>
+		</div>
 	);
 }
