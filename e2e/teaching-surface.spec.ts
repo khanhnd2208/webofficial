@@ -172,10 +172,12 @@ test('Teaching surfaces keep their theme, overlays and responsive navigation', a
 			await page.goto('/my-space/teaching');
 			await expect(page.getByRole('button', { name: /Đang dạy/ })).toBeVisible();
 			await page.goto(`/lop/${slug}`);
-			await page.getByLabel('Đây là tôi').selectOption({ index: 1 });
-			await expect(page.getByText(/Bạn: vắng/)).toBeVisible();
-			await page.getByRole('button', { name: 'Bỏ chọn' }).click();
-			await expect(page.getByText(/Bạn: vắng/)).toHaveCount(0);
+			await page.getByRole('button', { name: /Nguyễn Thị Hoàng Phương Minh Anh/ }).click();
+			await expect(
+				page.getByRole('heading', { name: 'Chào Nguyễn Thị Hoàng Phương Minh Anh' }),
+			).toBeVisible();
+			await page.getByRole('button', { name: 'Đổi' }).click();
+			await expect(page.getByRole('heading', { name: 'Bạn là ai trong lớp?' })).toBeVisible();
 			await page.emulateMedia({ reducedMotion: 'reduce' });
 			await page.goto(`/lop/${slug}/active-recall/${deck.slug}`);
 			await expect(page.locator('.recall-lang-option.is-nudge')).toHaveCSS(
@@ -210,10 +212,14 @@ test('Teaching surfaces keep their theme, overlays and responsive navigation', a
 			await expect(sheet).toHaveAttribute('data-surface', 'teaching');
 			await page.keyboard.press('Escape');
 			await page.goto(`/lop/${slug}`);
-			await page.getByRole('tab', { name: 'Điểm CP', exact: true }).click();
+			await page.getByRole('tab', { name: 'Bảng điểm', exact: true }).click();
+			await expect(page).toHaveURL(/tab=attendance/);
+			await page.getByRole('button', { name: 'CP', exact: true }).click();
 			await expect(page).toHaveURL(/tab=cp/);
 			await page.goBack();
-			await expect(page.getByRole('tab', { name: 'Điểm danh', exact: true })).toHaveAttribute(
+			await expect(page).toHaveURL(/tab=attendance/);
+			await page.goBack();
+			await expect(page.getByRole('tab', { name: 'Của tôi', exact: true })).toHaveAttribute(
 				'aria-selected',
 				'true',
 			);

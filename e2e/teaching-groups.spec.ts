@@ -170,7 +170,7 @@ test.describe('Teaching group list UX', () => {
 					).toBe(403);
 				}
 				await studentPage.goto(`/lop/${slug}?tab=groups`);
-				await studentPage.getByRole('button', { name: /Tutorial Class/ }).click();
+				await studentPage.getByRole('button', { name: /^Tutorial / }).click();
 				await studentPage.getByRole('option', { name: new RegExp(`^${t1.code} ·`) }).click();
 				await expect(studentPage.getByText('Kiểm thử Bình', { exact: true })).toBeVisible();
 				await expect(studentPage.getByRole('button', { name: 'Thêm sinh viên' })).toHaveCount(0);

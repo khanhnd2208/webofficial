@@ -127,7 +127,7 @@ test.describe('Learning Experience multi-device access', () => {
 				await Promise.all(learnerPages.map((learnerPage) => learnerPage.reload()));
 				for (const learnerPage of learnerPages) {
 					await expect(
-						learnerPage.getByRole('heading', { name: 'Choose your learning style' }),
+						learnerPage.getByRole('heading', { name: 'Chọn phong cách học' }).last(),
 					).toBeVisible();
 				}
 			} finally {

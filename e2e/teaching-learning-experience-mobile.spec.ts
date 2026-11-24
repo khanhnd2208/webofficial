@@ -69,9 +69,9 @@ test.describe('Learning Experience mobile access', () => {
 			const password = page.getByLabel('Mật khẩu ngày sinh');
 			await expect(password).toBeEnabled();
 			await password.fill('09052006');
-			await expect(page.getByRole('button', { name: 'Enter experience' })).toBeEnabled();
-			await page.getByRole('button', { name: 'Enter experience' }).tap();
-			await expect(page.getByRole('heading', { name: 'Choose your learning style' })).toBeVisible();
+			await expect(page.getByRole('button', { name: 'Vào trải nghiệm' })).toBeEnabled();
+			await page.getByRole('button', { name: 'Vào trải nghiệm' }).tap();
+			await expect(page.getByRole('heading', { name: 'Chọn phong cách học' }).last()).toBeVisible();
 
 			await context.clearCookies();
 			await page.goto(`/lop/${slug}?tab=learning`);
@@ -79,7 +79,7 @@ test.describe('Learning Experience mobile access', () => {
 			await page.getByRole('option', { name: new RegExp(openName) }).tap();
 			await expect(page.getByLabel('Mật khẩu ngày sinh')).toHaveCount(0);
 			await page.getByRole('button', { name: 'Vào trải nghiệm' }).tap();
-			await expect(page.getByRole('heading', { name: 'Choose your learning style' })).toBeVisible();
+			await expect(page.getByRole('heading', { name: 'Chọn phong cách học' }).last()).toBeVisible();
 		} finally {
 			await context.clearCookies();
 			await addAdminSession(context);
