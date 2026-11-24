@@ -41,7 +41,7 @@ Teaching owns its light palette through `data-surface="teaching"`; do not set th
 - Mobile class headers stay compact, tabs scroll, and management opens a bottom sheet. Full metadata remains available in the eyebrow title and accessible text.
 - Teaching styles live in `src/components/teaching/ui/styles/`; experience access and choice styles are separate CSS Modules. Shared studio primitives still provide controls and typography.
 - Paper rulings are reserved for empty states. Tables and form surfaces remain flat; shared hover/control transitions use 150/250ms and respect reduced motion.
-- Students see Active Recall decks as **Ôn tập**. The tab is hidden when a class has no decks, and the deck player (class or public) uses the editorial palette, not `surface="teaching"`.
+- Students see Active Recall decks as **Ôn tập**. The tab is hidden when a class has no decks. The deck player and **Test yourself** (class or public) use the site’s editorial tokens and follow the `.dark` theme. The projected classroom Arena keeps its dedicated dark boss room.
 
 See [Teaching implementation and verification](./teaching-ui-standardization.md) for the route checklist and acceptance checks.
 
