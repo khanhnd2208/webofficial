@@ -529,10 +529,12 @@ export function AttendanceGrid({
 														/>
 													</strong>
 													<small className="mc-num mc-grid-public-meta block text-ink-secondary">
-														<span className="mc-grid-public-meta-line">
-															{student.studentCode} · {student.cp.unexcusedAbsences}/{totalWeeks}{' '}
-															vắng
-														</span>
+														{!readOnly ? (
+															<span className="mc-grid-public-meta-line">
+																{student.studentCode} · {student.cp.unexcusedAbsences}/{totalWeeks}{' '}
+																vắng
+															</span>
+														) : null}
 														<span className="mc-grid-public-meta-line">
 															Chuyên cần {formatTeachingScore(student.cp.attendanceScore)}/
 															{attendanceMaxPoints}
