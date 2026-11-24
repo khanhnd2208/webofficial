@@ -394,6 +394,14 @@
 	[data-surface='teaching'] .teaching-public-board .mc-grid-wrap-public .mc-grid-week {
 		min-width: 3rem;
 		width: 3rem;
+		padding-inline: 0.2rem;
+	}
+	[data-surface='teaching']
+		.teaching-public-board
+		.mc-grid-wrap-public
+		.mc-grid-week
+		:is(.mc-grid-week-state, .mc-grid-week-sub) {
+		letter-spacing: -0.02em;
 	}
 	[data-surface='teaching'] .teaching-public-board .mc-grid-wrap-public .mc-grid tbody td {
 		height: 3.5rem;

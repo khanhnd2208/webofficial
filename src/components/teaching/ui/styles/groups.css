@@ -206,6 +206,9 @@
 }
 
 [data-surface='teaching'] .group-list-section-title {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
 	min-width: 0;
 	margin-right: auto;
 }

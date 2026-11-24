@@ -465,7 +465,7 @@ export function GroupListWorkspace({
 								data-my-group={isMyGroup ? 'true' : undefined}
 							>
 								<div className="group-list-section-head">
-									<div className="group-list-section-title flex items-center gap-2">
+									<div className="group-list-section-title">
 										<h3>Nhóm {sourceGroup.displayOrder + 1}</h3>
 										{isMyGroup ? (
 											<span className="rounded-full bg-accent-subtle px-2 py-0.5 text-xs font-semibold text-accent">
