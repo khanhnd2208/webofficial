@@ -128,6 +128,12 @@ describe('StudentClassBoard', () => {
 		expect(screen.getByRole('tab', { name: 'Của tôi' })).toHaveAttribute('aria-selected', 'true');
 	});
 
+	it('opens the learning style sheet over Của tôi for legacy ?tab=learning links', () => {
+		render(<StudentClassBoard board={board()} initialTab="learning" />);
+		expect(screen.getByRole('tab', { name: 'Của tôi' })).toHaveAttribute('aria-selected', 'true');
+		expect(screen.getByRole('dialog', { name: 'Chọn phong cách học' })).toBeInTheDocument();
+	});
+
 	it('lists enabled review decks under Ôn tập on the class board', () => {
 		const contentBoard = board();
 		contentBoard.recallDecks = [

@@ -5,11 +5,12 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type Keyboa
 
 import { TeachingMark } from '@/components/site/TeachingMark';
 import { GroupBoardWorkspaceLoader } from '@/components/teaching/groups/GroupBoardWorkspaceLoader';
+import { Dialog, Toast } from '@/components/ui/Dialog';
 import {
 	PUBLIC_TUTORIAL_ALL,
 	resolvePublicTutorialId,
 } from '@/features/teaching/domain/publicBoardFilter';
-import type { PublicClassBoard } from '@/features/teaching/types';
+import type { LearningExperienceChoice, PublicClassBoard } from '@/features/teaching/types';
 
 import { TeachingIcon, type TeachingIconName } from '../ui/TeachingIcon';
 import { ClassGradebook } from './ClassGradebook';
@@ -61,6 +62,8 @@ export function StudentClassBoard({
 	const [section, setSection] = useState<PublicSection>(initialRoute.section);
 	const [gradebookView, setGradebookView] = useState<GradebookView>(initialRoute.view);
 	const [learningOpen, setLearningOpen] = useState(initialRoute.openLearning);
+	const [savedChoices, setSavedChoices] = useState<Record<string, LearningExperienceChoice>>({});
+	const [toast, setToast] = useState('');
 	const [tutorialId, setTutorialId] = useState(() =>
 		resolvePublicTutorialId({
 			tutorials: board.tutorials,
@@ -80,6 +83,9 @@ export function StudentClassBoard({
 		() => board.students.find((student) => student.enrollmentId === meId) ?? null,
 		[board.students, meId],
 	);
+	const effectiveLearningChoice = me
+		? (savedChoices[me.enrollmentId] ?? me.learningExperience ?? null)
+		: null;
 	const gridWrapRef = useRef<HTMLDivElement>(null);
 	const tabBarRef = useRef<HTMLElement>(null);
 
@@ -139,15 +145,38 @@ export function StudentClassBoard({
 		}
 	}
 
-	function openLearningPanel() {
+	function openLearningSheet() {
 		setSection('me');
 		setLearningOpen(true);
 		pushTabUrl('me', gradebookView, true);
 	}
 
-	function closeLearningPanel() {
+	function closeLearningSheet() {
+		setLearningOpen((open) => {
+			if (!open) return false;
+			const params = new URLSearchParams(window.location.search);
+			if (params.get('tab') === 'learning') {
+				pushTabUrl('me', gradebookView, false);
+			}
+			return false;
+		});
+	}
+
+	function handleLearningSaved(choice: LearningExperienceChoice, enrollmentId?: string) {
+		const targetId = enrollmentId ?? meId;
+		if (targetId) {
+			setSavedChoices((current) => ({ ...current, [targetId]: choice }));
+			if (!meId && board.students.some((student) => student.enrollmentId === targetId)) {
+				chooseMe(targetId);
+			}
+		}
 		setLearningOpen(false);
 		pushTabUrl('me', gradebookView, false);
+		setToast(
+			choice === 'CHALLENGE'
+				? 'Đã lưu phong cách học: Teach me a lesson.'
+				: 'Đã lưu phong cách học: Prince / Princess treatment.',
+		);
 	}
 
 	function changeTutorial(next: string) {
@@ -246,38 +275,19 @@ export function StudentClassBoard({
 			</div>
 
 			{section === 'me' ? (
-				<>
-					{learningOpen ? (
-						<div className="space-y-3">
-							<button
-								type="button"
-								onClick={closeLearningPanel}
-								className="inline-flex min-h-11 items-center text-sm font-semibold text-accent hover:underline"
-							>
-								← Quay lại Của tôi
-							</button>
-							<LearningExperienceWorkspace
-								slug={board.slug}
-								courseName={board.courseName}
-								students={learningStudents}
-							/>
-						</div>
-					) : (
-						<StudentHome
-							board={board}
-							me={me}
-							learningChoice={me?.learningExperience ?? null}
-							groupBoardEnabled={groupBoardEnabled}
-							recallCount={recallDecks.length}
-							onSelectMe={chooseMe}
-							onClearMe={() => chooseMe('')}
-							onOpenGradebook={() => changeSection('gradebook', 'attendance')}
-							onOpenGroups={() => changeSection('groups')}
-							onOpenRecall={() => changeSection('recall')}
-							onOpenLearning={openLearningPanel}
-						/>
-					)}
-				</>
+				<StudentHome
+					board={board}
+					me={me}
+					learningChoice={effectiveLearningChoice}
+					groupBoardEnabled={groupBoardEnabled}
+					recallCount={recallDecks.length}
+					onSelectMe={chooseMe}
+					onClearMe={() => chooseMe('')}
+					onOpenGradebook={() => changeSection('gradebook', 'attendance')}
+					onOpenGroups={() => changeSection('groups')}
+					onOpenRecall={() => changeSection('recall')}
+					onOpenLearning={openLearningSheet}
+				/>
 			) : null}
 
 			{notesEnabled && section === 'notes' ? (
@@ -319,6 +329,26 @@ export function StudentClassBoard({
 					gridWrapRef={gridWrapRef}
 				/>
 			) : null}
+
+			<Dialog
+				open={learningOpen}
+				onClose={closeLearningSheet}
+				title="Chọn phong cách học"
+				className="max-md:mt-auto max-md:mb-0 max-md:max-h-[92dvh] max-md:w-full max-md:max-w-none max-md:rounded-b-none max-md:rounded-t-2xl md:max-h-[90dvh] md:w-[min(100%-2rem,56rem)]"
+			>
+				{learningOpen ? (
+					<LearningExperienceWorkspace
+						key={meId ?? 'guest'}
+						slug={board.slug}
+						courseName={board.courseName}
+						students={learningStudents}
+						initialEnrollmentId={meId}
+						onChoiceSaved={handleLearningSaved}
+					/>
+				) : null}
+			</Dialog>
+
+			<Toast message={toast} visible={Boolean(toast)} onDismiss={() => setToast('')} />
 		</div>
 	);
 }

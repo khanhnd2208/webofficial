@@ -22,6 +22,7 @@ import type {
 	LearningExperienceStudentOption,
 } from '@/features/teaching/types';
 
+import { matchesStudentQuery, normalizeStudentQuery } from './studentIdentity';
 import accessStyles from './LearningExperienceWorkspace.module.css';
 import choiceStyles from './LearningExperienceChoices.module.css';
 const styles = { ...accessStyles, ...choiceStyles };
@@ -30,21 +31,6 @@ const EXPERIENCE_IMAGES = {
 	CHALLENGE: '/brand/teaching/teach-you-a-lesson.png',
 	SUPPORT: '/brand/teaching/prince-princess-treatment.png',
 } satisfies Record<LearningExperienceChoice, string>;
-
-function normalizeSearch(value: string) {
-	return value
-		.normalize('NFD')
-		.replace(/[\u0300-\u036f]/g, '')
-		.toLowerCase()
-		.replace(/\s+/g, ' ')
-		.trim();
-}
-
-function studentMatchesQuery(student: LearningExperienceStudentOption, query: string) {
-	if (!query) return true;
-	if (/^\d+$/.test(query)) return student.studentCode.endsWith(query.slice(-2));
-	return normalizeSearch(`${student.studentCode} ${student.fullName}`).includes(query);
-}
 
 const experiences: Array<{
 	choice: LearningExperienceChoice;
@@ -56,7 +42,7 @@ const experiences: Array<{
 }> = [
 	{
 		choice: 'CHALLENGE',
-		mode: 'Challenge mode',
+		mode: 'Chế độ thử thách',
 		title: 'Teach me a lesson',
 		subtitle: 'Học qua tiêu chuẩn cao, kỷ luật và những thử thách đủ khó để bạn bứt phá.',
 		action: 'Chọn thử thách',
@@ -69,15 +55,15 @@ const experiences: Array<{
 	},
 	{
 		choice: 'SUPPORT',
-		mode: 'Royal support mode',
+		mode: 'Chế độ hỗ trợ',
 		title: 'Prince / Princess treatment',
 		subtitle: 'Học trong môi trường hỗ trợ, tôn trọng và truyền cảm hứng để bạn tiến bộ bền vững.',
 		action: 'Chọn hỗ trợ',
 		features: [
-			{ icon: 'record_voice_over', label: 'Coaching tận tâm' },
+			{ icon: 'record_voice_over', label: 'Đồng hành tận tâm' },
 			{ icon: 'chair', label: 'Học thoải mái' },
 			{ icon: 'favorite', label: 'Khích lệ tích cực' },
-			{ icon: 'forum', label: 'Feedback liên tục' },
+			{ icon: 'forum', label: 'Phản hồi liên tục' },
 		],
 	},
 ];
@@ -91,15 +77,29 @@ export function LearningExperienceWorkspace({
 	slug,
 	courseName,
 	students,
+	initialEnrollmentId = null,
+	onChoiceSaved,
 }: {
 	slug: string;
 	courseName: string;
 	students: LearningExperienceStudentOption[];
+	initialEnrollmentId?: string | null;
+	onChoiceSaved?: (choice: LearningExperienceChoice, enrollmentId?: string) => void;
 }) {
 	const endpoint = `/api/teaching/classes/${encodeURIComponent(slug)}/learning-experience`;
+	const initialStudent = useMemo(
+		() =>
+			initialEnrollmentId
+				? (students.find((student) => student.enrollmentId === initialEnrollmentId) ?? null)
+				: null,
+		[initialEnrollmentId, students],
+	);
 	const [session, setSession] = useState<LearningExperienceSession | null>(null);
-	const [studentSearch, setStudentSearch] = useState('');
-	const [selectedEnrollmentId, setSelectedEnrollmentId] = useState<string | null>(null);
+	const [studentSearch, setStudentSearch] = useState(() => initialStudent?.studentCode ?? '');
+	const [selectedEnrollmentId, setSelectedEnrollmentId] = useState<string | null>(
+		() => initialStudent?.enrollmentId ?? null,
+	);
+	const [changingStudent, setChangingStudent] = useState(() => !initialStudent);
 	const [password, setPassword] = useState('');
 	const [showPassword, setShowPassword] = useState(false);
 	const [error, setError] = useState('');
@@ -120,10 +120,10 @@ export function LearningExperienceWorkspace({
 		() => students.find((student) => student.enrollmentId === selectedEnrollmentId) ?? null,
 		[selectedEnrollmentId, students],
 	);
-	const normalizedStudentSearch = normalizeSearch(studentSearch);
+	const normalizedStudentSearch = normalizeStudentQuery(studentSearch);
 	const matchingStudents = useMemo(() => {
 		return students
-			.filter((student) => studentMatchesQuery(student, normalizedStudentSearch))
+			.filter((student) => matchesStudentQuery(student, normalizedStudentSearch))
 			.slice(0, 8);
 	}, [normalizedStudentSearch, students]);
 	const studentsReady = useMemo(
@@ -139,7 +139,7 @@ export function LearningExperienceWorkspace({
 			})
 			.catch((reason: unknown) => {
 				if (!active) return;
-				setError(reason instanceof Error ? reason.message : 'Không tải được Learning Experience.');
+				setError(reason instanceof Error ? reason.message : 'Không tải được phong cách học.');
 				setSession({ authenticated: false });
 			});
 		return () => {
@@ -148,16 +148,25 @@ export function LearningExperienceWorkspace({
 	}, [endpoint]);
 
 	useEffect(() => {
-		setHighlightedIndex(-1);
-	}, [normalizedStudentSearch]);
+		if (
+			session &&
+			!session.authenticated &&
+			!changingStudent &&
+			selectedStudent?.accessMode === 'DOB_PASSWORD'
+		) {
+			passwordRef.current?.focus();
+		}
+	}, [changingStudent, selectedStudent, session]);
 
 	function selectStudent(student: LearningExperienceStudentOption) {
 		setStudentSearch(student.studentCode);
 		setSelectedEnrollmentId(student.enrollmentId);
+		setChangingStudent(false);
 		setPassword('');
 		setShowPassword(false);
 		setError('');
 		setPickerOpen(false);
+		setHighlightedIndex(-1);
 		if (student.accessMode === 'DOB_PASSWORD') {
 			window.setTimeout(() => passwordRef.current?.focus(), 0);
 		}
@@ -190,6 +199,7 @@ export function LearningExperienceWorkspace({
 		event.preventDefault();
 		if (!selectedStudent) {
 			setError('Hãy chọn đúng một sinh viên từ danh sách lớp.');
+			setChangingStudent(true);
 			setPickerOpen(true);
 			return;
 		}
@@ -209,7 +219,7 @@ export function LearningExperienceWorkspace({
 			setNotice(
 				next.choice
 					? 'Đã khôi phục lựa chọn trước đây của bạn.'
-					: 'Đã mở quyền truy cập. Chọn trải nghiệm phù hợp với bạn.',
+					: 'Đã mở quyền truy cập. Chọn phong cách học phù hợp với bạn.',
 			);
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không thể xác thực.');
@@ -231,9 +241,10 @@ export function LearningExperienceWorkspace({
 			setSession(next);
 			setNotice(
 				choice === 'CHALLENGE'
-					? 'Challenge accepted — lựa chọn của bạn đã được ghi nhận.'
-					: 'Royal support unlocked — lựa chọn của bạn đã được ghi nhận.',
+					? 'Đã chọn Teach me a lesson — lựa chọn của bạn đã được ghi nhận.'
+					: 'Đã chọn Prince / Princess treatment — lựa chọn của bạn đã được ghi nhận.',
 			);
+			onChoiceSaved?.(choice, next.student?.enrollmentId ?? selectedEnrollmentId ?? undefined);
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : 'Không thể lưu lựa chọn.');
 		} finally {
@@ -257,6 +268,7 @@ export function LearningExperienceWorkspace({
 			setSession({ authenticated: false });
 			setStudentSearch('');
 			setSelectedEnrollmentId(null);
+			setChangingStudent(true);
 			setPassword('');
 			setNotice('');
 		} catch (reason) {
@@ -281,7 +293,7 @@ export function LearningExperienceWorkspace({
 		return (
 			<div className={styles.loading} role="status">
 				<span className={styles.loadingOrb} />
-				<span>Đang mở Learning Experience…</span>
+				<span>Đang tải phong cách học…</span>
 				<div className={styles.loadingSkeleton} aria-hidden="true">
 					<span />
 					<span />
@@ -292,16 +304,19 @@ export function LearningExperienceWorkspace({
 	}
 
 	if (!session.authenticated) {
+		const showPicker = changingStudent || !selectedStudent;
 		return (
 			<section className={styles.authStage} aria-labelledby="learning-login-title">
 				<div className={styles.authPanel}>
 					<div className={styles.authCrest} aria-hidden="true">
 						<TeachingIcon name="teaching" size={32} />
 					</div>
-					<p className={styles.kicker}>{courseName} · Player access</p>
+					<p className={styles.kicker}>{courseName} · Xác nhận sinh viên</p>
 					<h2 id="learning-login-title">Mở trải nghiệm học tập của bạn</h2>
 					<p className={styles.authCopy}>
-						Chọn hồ sơ sinh viên để mở lựa chọn riêng của bạn trong lớp {courseName}.
+						{showPicker
+							? `Chọn hồ sơ sinh viên để mở lựa chọn riêng của bạn trong lớp ${courseName}.`
+							: 'Xác nhận thông tin để chọn phong cách học của bạn.'}
 					</p>
 					<form className={styles.authForm} onSubmit={login}>
 						<div
@@ -312,80 +327,84 @@ export function LearningExperienceWorkspace({
 								if (!nextTarget || !event.currentTarget.contains(nextTarget)) setPickerOpen(false);
 							}}
 						>
-							<label htmlFor="learning-student-code">
-								<span>Chọn sinh viên trong lớp</span>
-							</label>
-							<div className={`${styles.inputShell} ${styles.studentPicker}`}>
-								<McIcon name="search" size={20} />
-								<input
-									id="learning-student-code"
-									value={studentSearch}
-									onChange={(event) => {
-										setStudentSearch(event.target.value.toUpperCase());
-										setSelectedEnrollmentId(null);
-										setPassword('');
-										setShowPassword(false);
-										setHighlightedIndex(-1);
-										setError('');
-										setPickerOpen(true);
-									}}
-									onFocus={() => setPickerOpen(true)}
-									onKeyDown={handleStudentKeyDown}
-									autoComplete="off"
-									autoCapitalize="characters"
-									placeholder="Tìm tên hoặc 2 số cuối MSV"
-									role="combobox"
-									aria-autocomplete="list"
-									aria-expanded={pickerOpen}
-									aria-controls="learning-student-options"
-									aria-activedescendant={
-										highlightedIndex >= 0
-											? `learning-student-option-${matchingStudents[highlightedIndex]?.enrollmentId}`
-											: undefined
-									}
-									required
-								/>
-								<McIcon name="expand_more" size={18} className={styles.pickerChevron} />
-							</div>
-							{pickerOpen ? (
-								<div
-									id="learning-student-options"
-									className={styles.studentOptions}
-									role="listbox"
-									aria-label="Sinh viên trong lớp"
-								>
-									{matchingStudents.map((student, index) => (
-										<button
-											type="button"
-											role="option"
-											aria-selected={selectedStudent?.enrollmentId === student.enrollmentId}
-											key={student.enrollmentId}
-											id={`learning-student-option-${student.enrollmentId}`}
-											data-access={student.accessMode}
-											data-highlighted={highlightedIndex === index}
-											onPointerDown={(event) => {
-												if (event.pointerType !== 'mouse') {
-													event.preventDefault();
-													selectStudent(student);
-												}
+							{showPicker ? (
+								<>
+									<label htmlFor="learning-student-code">
+										<span>Chọn sinh viên trong lớp</span>
+									</label>
+									<div className={`${styles.inputShell} ${styles.studentPicker}`}>
+										<McIcon name="search" size={20} />
+										<input
+											id="learning-student-code"
+											value={studentSearch}
+											onChange={(event) => {
+												setStudentSearch(event.target.value.toUpperCase());
+												setSelectedEnrollmentId(null);
+												setPassword('');
+												setShowPassword(false);
+												setHighlightedIndex(-1);
+												setError('');
+												setPickerOpen(true);
 											}}
-											onClick={() => selectStudent(student)}
+											onFocus={() => setPickerOpen(true)}
+											onKeyDown={handleStudentKeyDown}
+											autoComplete="off"
+											autoCapitalize="characters"
+											placeholder="Tìm tên hoặc 2 số cuối MSV"
+											role="combobox"
+											aria-autocomplete="list"
+											aria-expanded={pickerOpen}
+											aria-controls="learning-student-options"
+											aria-activedescendant={
+												highlightedIndex >= 0
+													? `learning-student-option-${matchingStudents[highlightedIndex]?.enrollmentId}`
+													: undefined
+											}
+											required
+										/>
+										<McIcon name="expand_more" size={18} className={styles.pickerChevron} />
+									</div>
+									{pickerOpen ? (
+										<div
+											id="learning-student-options"
+											className={styles.studentOptions}
+											role="listbox"
+											aria-label="Sinh viên trong lớp"
 										>
-											<span>
-												<strong>{student.studentCode}</strong>
-												<small>{student.fullName}</small>
-											</span>
-											<em>
-												{student.accessMode === 'DOB_PASSWORD'
-													? 'Cần mật khẩu ngày sinh'
-													: 'Vào không cần mật khẩu'}
-											</em>
-										</button>
-									))}
-									{matchingStudents.length === 0 ? (
-										<p>Không tìm thấy sinh viên phù hợp trong lớp.</p>
+											{matchingStudents.map((student, index) => (
+												<button
+													type="button"
+													role="option"
+													aria-selected={selectedStudent?.enrollmentId === student.enrollmentId}
+													key={student.enrollmentId}
+													id={`learning-student-option-${student.enrollmentId}`}
+													data-access={student.accessMode}
+													data-highlighted={highlightedIndex === index}
+													onPointerDown={(event) => {
+														if (event.pointerType !== 'mouse') {
+															event.preventDefault();
+															selectStudent(student);
+														}
+													}}
+													onClick={() => selectStudent(student)}
+												>
+													<span>
+														<strong>{student.studentCode}</strong>
+														<small>{student.fullName}</small>
+													</span>
+													<em>
+														{student.accessMode === 'DOB_PASSWORD'
+															? 'Cần mật khẩu ngày sinh'
+															: 'Vào không cần mật khẩu'}
+													</em>
+												</button>
+											))}
+											{matchingStudents.length === 0 ? (
+												<p>Không tìm thấy sinh viên phù hợp trong lớp.</p>
+											) : null}
+										</div>
 									) : null}
-								</div>
+								</>
 							) : null}
 							{selectedStudent ? (
 								<div className={styles.selectedStudent} data-access={selectedStudent.accessMode}>
@@ -397,11 +416,28 @@ export function LearningExperienceWorkspace({
 										<strong>{selectedStudent.fullName}</strong>
 										<small>{selectedStudent.studentCode}</small>
 									</p>
-									<em>
-										{selectedStudent.accessMode === 'DOB_PASSWORD'
-											? 'Nhập mật khẩu ngày sinh'
-											: 'Có thể vào ngay'}
-									</em>
+									{showPicker ? (
+										<em>
+											{selectedStudent.accessMode === 'DOB_PASSWORD'
+												? 'Nhập mật khẩu ngày sinh'
+												: 'Có thể vào ngay'}
+										</em>
+									) : (
+										<button
+											type="button"
+											className="inline-flex min-h-11 shrink-0 items-center px-2 text-xs font-semibold text-accent hover:underline"
+											onClick={() => {
+												setChangingStudent(true);
+												setStudentSearch('');
+												setSelectedEnrollmentId(null);
+												setPassword('');
+												setError('');
+												setPickerOpen(true);
+											}}
+										>
+											Đổi sinh viên
+										</button>
+									)}
 								</div>
 							) : (
 								<small>
@@ -447,7 +483,7 @@ export function LearningExperienceWorkspace({
 								<McIcon name="login" size={16} />
 								<p>
 									{selectedStudent
-										? 'Hồ sơ này không yêu cầu mật khẩu. Bạn có thể vào Learning Experience ngay.'
+										? 'Hồ sơ này không yêu cầu mật khẩu. Bạn có thể chọn phong cách học ngay.'
 										: 'Sau khi chọn sinh viên, hệ thống sẽ cho biết có cần mật khẩu hay không.'}
 								</p>
 							</div>
@@ -466,11 +502,7 @@ export function LearningExperienceWorkspace({
 								(selectedStudent.accessMode === 'DOB_PASSWORD' && password.length !== 8)
 							}
 						>
-							{submitting
-								? 'Đang mở…'
-								: selectedStudent?.accessMode === 'OPEN'
-									? 'Vào trải nghiệm'
-									: 'Enter experience'}
+							{submitting ? 'Đang mở…' : 'Vào trải nghiệm'}
 							<McIcon name="arrow_forward" size={18} />
 						</button>
 					</form>
@@ -487,7 +519,7 @@ export function LearningExperienceWorkspace({
 		<section className={styles.experience} aria-labelledby="learning-experience-title">
 			<div className={styles.playerBar}>
 				<div>
-					<span className={styles.playerLabel}>Learning Experience access</span>
+					<span className={styles.playerLabel}>Sinh viên đang chọn</span>
 					<strong>{session.student?.fullName}</strong>
 					<span>{session.student?.studentCode}</span>
 				</div>
@@ -497,18 +529,18 @@ export function LearningExperienceWorkspace({
 			</div>
 
 			<header className={styles.heroHeader}>
-				<p className={styles.kicker}>Learning experience · {courseName}</p>
-				<h2 id="learning-experience-title">Choose your learning style</h2>
+				<p className={styles.kicker}>Phong cách học · {courseName}</p>
+				<h2 id="learning-experience-title">Chọn phong cách học</h2>
 				<div className={styles.titleRule}>
 					<span />
-					<p>Different styles. Same goal. Your growth.</p>
+					<p>Khác phong cách, cùng mục tiêu tiến bộ.</p>
 					<span />
 				</div>
 			</header>
 
 			<div className={styles.choiceGrid}>
 				<div className={styles.orBadge} aria-hidden="true">
-					OR
+					HOẶC
 				</div>
 				{experiences.map((item, index) => {
 					const selected = session.choice === item.choice;
@@ -612,8 +644,8 @@ export function LearningExperienceWorkspace({
 				<div className="space-y-4">
 					<p className="text-sm text-ink-secondary">
 						{pendingChoice === 'CHALLENGE'
-							? 'Bạn sẽ chuyển sang Challenge mode — Teach me a lesson.'
-							: 'Bạn sẽ chuyển sang Royal support mode — Prince / Princess treatment.'}
+							? 'Bạn sẽ chuyển sang Teach me a lesson.'
+							: 'Bạn sẽ chuyển sang Prince / Princess treatment.'}
 					</p>
 					<div className="flex justify-end gap-2">
 						<button
