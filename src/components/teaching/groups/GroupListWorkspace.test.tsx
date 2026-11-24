@@ -80,4 +80,74 @@ describe('GroupListWorkspace', () => {
 		]);
 		expect(document.querySelector('.group-list-grid')).toBeTruthy();
 	});
+
+	it('uses Vietnamese labels and pins the student group first in public mode', () => {
+		render(
+			<GroupListWorkspace
+				slug="hrm-39-01"
+				tutorials={[tutorial('t1', 'T01', 'Tutorial 1')]}
+				highlightedEnrollmentId="e2"
+				initial={{
+					classId: 'class-1',
+					tutorialClassId: 't1',
+					tutorialCode: 'T01',
+					tutorialName: 'Tutorial 1',
+					groupCount: 2,
+					defaultGroupSize: 5,
+					version: 1,
+					configured: true,
+					activeStudentCount: 2,
+					assignedCount: 2,
+					groups: [
+						{
+							id: 'g1',
+							displayOrder: 0,
+							maxSize: null,
+							effectiveMaxSize: 5,
+							assignments: [
+								{
+									enrollmentId: 'e1',
+									groupId: 'g1',
+									groupOrder: 0,
+									memberOrder: 0,
+									studentCode: '********01',
+									familyName: 'Nguyễn',
+									givenName: 'An',
+								},
+							],
+						},
+						{
+							id: 'g2',
+							displayOrder: 1,
+							maxSize: null,
+							effectiveMaxSize: 5,
+							assignments: [
+								{
+									enrollmentId: 'e2',
+									groupId: 'g2',
+									groupOrder: 1,
+									memberOrder: 0,
+									studentCode: '********02',
+									familyName: 'Trần',
+									givenName: 'Bình',
+								},
+							],
+						},
+					],
+					unassigned: [],
+				}}
+			/>,
+		);
+
+		expect(screen.getByRole('heading', { name: 'Danh sách nhóm · T01' })).toBeInTheDocument();
+		expect(screen.queryByText(/GROUP DIRECTORY/i)).not.toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /Tutorial T01/ })).toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /Tutorial Class/ })).not.toBeInTheDocument();
+
+		const headings = screen.getAllByRole('heading', { level: 3 }).map((el) => el.textContent);
+		expect(headings).toEqual(['Nhóm 2', 'Nhóm 1']);
+		expect(screen.getByText('Nhóm của bạn')).toBeInTheDocument();
+		expect(document.querySelector('section[data-my-group="true"]')).toBeTruthy();
+		expect(document.querySelector('tr[data-me="true"]')).toHaveTextContent('Trần Bình');
+	});
 });

@@ -180,6 +180,21 @@
 	box-shadow: var(--mc-shadow-1);
 }
 
+[data-surface='teaching'] .group-list-section[data-my-group='true'] {
+	border-color: var(--accent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent),
+		var(--mc-shadow-1);
+}
+
+[data-surface='teaching'] .group-list-section[data-my-group='true'] .group-list-section-head {
+	background: color-mix(in srgb, var(--accent-subtle) 65%, var(--paper));
+}
+
+[data-surface='teaching'] .group-list-table tbody tr[data-me='true'] td {
+	background: var(--accent-subtle);
+}
+
 [data-surface='teaching'] .group-list-section-head {
 	display: flex;
 	align-items: center;

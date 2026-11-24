@@ -322,7 +322,12 @@ export function StudentClassBoard({
 					aria-labelledby="public-tab-groups"
 					className="public-groups-panel"
 				>
-					<GroupBoardWorkspaceLoader slug={board.slug} tutorials={board.tutorials} />
+					<GroupBoardWorkspaceLoader
+						slug={board.slug}
+						tutorials={board.tutorials}
+						highlightedEnrollmentId={meId}
+						initialTutorialId={me?.tutorialClassId ?? undefined}
+					/>
 				</div>
 			) : null}
 

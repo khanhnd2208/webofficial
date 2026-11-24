@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { teachingApi } from '@/components/teaching/admin/api';
 import { AdminApiError } from '@/lib/admin/client';
-import { TutorialSwitcher } from '@/components/teaching/admin/TutorialSwitcher';
 import { Dialog, Toast } from '@/components/ui/Dialog';
 import type {
 	TeachingGroupBoard,
@@ -12,12 +11,16 @@ import type {
 	TeachingTutorialRecord,
 } from '@/features/teaching/types';
 
+import { GroupListHeader } from './GroupListHeader';
+
 export type GroupListWorkspaceProps = {
 	classId?: string;
 	slug?: string;
 	tutorials: TeachingTutorialRecord[];
 	initial?: TeachingGroupBoard;
 	admin?: boolean;
+	highlightedEnrollmentId?: string | null;
+	initialTutorialId?: string | null;
 };
 
 type PreviewResult = {
@@ -48,9 +51,17 @@ export function GroupListWorkspace({
 	tutorials,
 	initial,
 	admin = false,
+	highlightedEnrollmentId = null,
+	initialTutorialId = null,
 }: GroupListWorkspaceProps) {
 	const [tutorialId, setTutorialId] = useState(
-		initial?.tutorialClassId ?? (tutorials.length === 1 ? (tutorials[0]?.id ?? '') : ''),
+		() =>
+			initial?.tutorialClassId ??
+			(initialTutorialId && tutorials.some((tutorial) => tutorial.id === initialTutorialId)
+				? initialTutorialId
+				: tutorials.length === 1
+					? (tutorials[0]?.id ?? '')
+					: ''),
 	);
 	const initialSeed = useRef(initial);
 	const [board, setBoard] = useState<TeachingGroupBoard | undefined>(initial);
@@ -147,18 +158,25 @@ export function GroupListWorkspace({
 	const filteredGroups = useMemo(() => {
 		if (!board) return [];
 		const q = query.trim().toLowerCase();
-		if (!q) return board.groups;
-		return board.groups
-			.map((group) => ({
-				...group,
-				assignments: group.assignments.filter((member) =>
-					`${member.studentCode} ${member.familyName} ${member.givenName}`
-						.toLowerCase()
-						.includes(q),
-				),
-			}))
-			.filter((group) => group.assignments.length > 0);
-	}, [board, query]);
+		const matching = !q
+			? board.groups
+			: board.groups
+					.map((group) => ({
+						...group,
+						assignments: group.assignments.filter((member) =>
+							`${member.studentCode} ${member.familyName} ${member.givenName}`
+								.toLowerCase()
+								.includes(q),
+						),
+					}))
+					.filter((group) => group.assignments.length > 0);
+		if (admin || !highlightedEnrollmentId) return matching;
+		const myIndex = matching.findIndex((group) =>
+			group.assignments.some((member) => member.enrollmentId === highlightedEnrollmentId),
+		);
+		if (myIndex <= 0) return matching;
+		return [matching[myIndex]!, ...matching.slice(0, myIndex), ...matching.slice(myIndex + 1)];
+	}, [admin, board, highlightedEnrollmentId, query]);
 
 	const filteredUnassigned = useMemo(() => {
 		if (!board) return [];
@@ -379,71 +397,23 @@ export function GroupListWorkspace({
 
 	return (
 		<div className="group-list-workspace" aria-busy={loading || saving}>
-			<header className="group-list-header mc-card-head">
-				<div className="group-list-heading-row">
-					<div>
-						<p className="group-list-eyebrow">
-							GROUP DIRECTORY · {admin ? 'ADMIN VIEW' : 'STUDENT VIEW'}
-						</p>
-						<h2 className="group-list-title">
-							DANH SÁCH PHÂN CHIA NHÓM
-							{board ? ` — TUTORIAL ${board.tutorialCode}` : ''}
-						</h2>
-						<p className="group-list-subtitle">
-							{board ? board.tutorialName : 'Chọn tutorial để xem danh sách thành viên.'}
-						</p>
-					</div>
-					<div className="group-list-header-actions">
-						<fieldset disabled={saving}>
-							<TutorialSwitcher
-								tutorials={tutorials}
-								value={tutorialId}
-								onChange={changeTutorial}
-							/>
-						</fieldset>
-						{admin ? (
-							<button
-								type="button"
-								className="mc-button mc-button-secondary min-h-11"
-								onClick={() => {
-									if (!board) return;
-									setGroupCountDraft(
-										String(
-											board.groupCount || Math.max(1, Math.ceil(board.activeStudentCount / 5)),
-										),
-									);
-									setDefaultSizeDraft(String(board.defaultGroupSize));
-									setConfigOpen(true);
-								}}
-								disabled={!board || saving || loading}
-							>
-								Thiết lập nhóm
-							</button>
-						) : null}
-					</div>
-				</div>
-				{board ? (
-					<div className="group-list-metrics" aria-label="Tổng quan phân nhóm">
-						<div className="group-list-metric">
-							<span>Đã xếp</span>
-							<strong>
-								{board.assignedCount}
-								<small>/{board.activeStudentCount}</small>
-							</strong>
-						</div>
-						<div className="group-list-metric">
-							<span>Số nhóm</span>
-							<strong>{board.groupCount}</strong>
-						</div>
-						<div
-							className={`group-list-metric ${board.unassigned.length ? 'is-warning' : 'is-complete'}`}
-						>
-							<span>Chưa xếp</span>
-							<strong>{board.unassigned.length}</strong>
-						</div>
-					</div>
-				) : null}
-			</header>
+			<GroupListHeader
+				admin={admin}
+				board={board}
+				tutorials={tutorials}
+				tutorialId={tutorialId}
+				saving={saving}
+				loading={loading}
+				onChangeTutorial={changeTutorial}
+				onOpenConfig={() => {
+					if (!board) return;
+					setGroupCountDraft(
+						String(board.groupCount || Math.max(1, Math.ceil(board.activeStudentCount / 5))),
+					);
+					setDefaultSizeDraft(String(board.defaultGroupSize));
+					setConfigOpen(true);
+				}}
+			/>
 
 			<div className="group-list-toolbar mt-4 flex flex-wrap items-center gap-3">
 				<input
@@ -481,15 +451,27 @@ export function GroupListWorkspace({
 						const ratio = sourceGroup.effectiveMaxSize
 							? sourceGroup.assignments.length / sourceGroup.effectiveMaxSize
 							: 0;
+						const isMyGroup =
+							!admin &&
+							Boolean(highlightedEnrollmentId) &&
+							sourceGroup.assignments.some(
+								(member) => member.enrollmentId === highlightedEnrollmentId,
+							);
 						return (
 							<section
 								key={group.id}
 								className="group-list-section mc-surface overflow-hidden"
 								data-density={ratio >= 1 ? 'full' : 'open'}
+								data-my-group={isMyGroup ? 'true' : undefined}
 							>
 								<div className="group-list-section-head">
-									<div className="group-list-section-title">
+									<div className="group-list-section-title flex items-center gap-2">
 										<h3>Nhóm {sourceGroup.displayOrder + 1}</h3>
+										{isMyGroup ? (
+											<span className="rounded-full bg-accent-subtle px-2 py-0.5 text-xs font-semibold text-accent">
+												Nhóm của bạn
+											</span>
+										) : null}
 									</div>
 									<span
 										className="group-list-capacity"
@@ -541,34 +523,42 @@ export function GroupListWorkspace({
 												</tr>
 											</thead>
 											<tbody>
-												{group.assignments.map((member) => (
-													<tr key={member.enrollmentId}>
-														<td className="group-list-student-code">{member.studentCode}</td>
-														<td>
-															<span className="group-list-student-name">
-																{fullName(member.familyName, member.givenName)}
-															</span>
-															{admin ? (
-																<div className="group-list-actions">
-																	<button
-																		type="button"
-																		className="mc-button mc-button-ghost text-xs"
-																		onClick={() => setMoveEnrollmentId(member.enrollmentId)}
-																	>
-																		Chuyển nhóm
-																	</button>
-																	<button
-																		type="button"
-																		className="mc-button mc-button-ghost text-xs text-danger"
-																		onClick={() => void moveMember(member.enrollmentId, null)}
-																	>
-																		Bỏ khỏi nhóm
-																	</button>
-																</div>
-															) : null}
-														</td>
-													</tr>
-												))}
+												{group.assignments.map((member) => {
+													const isMe = !admin && member.enrollmentId === highlightedEnrollmentId;
+													return (
+														<tr key={member.enrollmentId} data-me={isMe ? 'true' : undefined}>
+															<td className="group-list-student-code">{member.studentCode}</td>
+															<td>
+																<span className="group-list-student-name inline-flex items-center gap-2">
+																	<span>{fullName(member.familyName, member.givenName)}</span>
+																	{isMe ? (
+																		<span className="rounded-full bg-accent-subtle px-2 py-0.5 text-xs font-semibold text-accent">
+																			Bạn
+																		</span>
+																	) : null}
+																</span>
+																{admin ? (
+																	<div className="group-list-actions">
+																		<button
+																			type="button"
+																			className="mc-button mc-button-ghost text-xs"
+																			onClick={() => setMoveEnrollmentId(member.enrollmentId)}
+																		>
+																			Chuyển nhóm
+																		</button>
+																		<button
+																			type="button"
+																			className="mc-button mc-button-ghost text-xs text-danger"
+																			onClick={() => void moveMember(member.enrollmentId, null)}
+																		>
+																			Bỏ khỏi nhóm
+																		</button>
+																	</div>
+																) : null}
+															</td>
+														</tr>
+													);
+												})}
 											</tbody>
 										</table>
 									</div>

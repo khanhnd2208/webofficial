@@ -13,12 +13,14 @@ export function TutorialSwitcher({
 	onChange,
 	allowAll = false,
 	allLabel = 'Tất cả tutorial',
+	prefix = 'Tutorial Class:',
 }: {
 	tutorials: TeachingTutorialRecord[];
 	value: string;
 	onChange: (id: string) => void;
 	allowAll?: boolean;
 	allLabel?: string;
+	prefix?: string;
 }) {
 	const [open, setOpen] = useState(false);
 	const root = useRef<HTMLDivElement>(null);
@@ -49,7 +51,7 @@ export function TutorialSwitcher({
 				onClick={() => setOpen((val) => !val)}
 			>
 				<TeachingIcon name="groups" size={18} />
-				Tutorial Class: {current?.code ?? 'Tất cả'}
+				{prefix} {current?.code ?? 'Tất cả'}
 				<McIcon name="expand_more" size={16} />
 			</button>
 			{open ? (

@@ -60,7 +60,7 @@ const OVERSIZED_FILE_CAPS = {
 	'src/app/vocabulary/[id]/fill-blank/page.tsx': 931,
 	'src/features/myspace-tests/repositories/myspaceTestsRepository.ts': 918,
 	'src/features/my-class/services/assessmentService.ts': 903,
-	'src/components/teaching/groups/GroupListWorkspace.tsx': 893,
+	'src/components/teaching/groups/GroupListWorkspace.tsx': 882,
 	'src/components/forms/TiptapEditor.tsx': 854,
 	'src/components/active-recall/ActiveRecallEditor.tsx': 837,
 };
