@@ -181,7 +181,7 @@ describe('StudentHome', () => {
 
 		expect(screen.getByRole('note')).toHaveTextContent('Buổi học ngày mai bắt đầu lúc 08:00.');
 		expect(screen.getByRole('heading', { name: 'Bạn là ai trong lớp?' })).toBeInTheDocument();
-		expect(screen.getByText('Chỉ lưu trên thiết bị này.')).toBeInTheDocument();
+		expect(screen.getByText(/Lựa chọn chỉ lưu\s+trên thiết bị này\./)).toBeInTheDocument();
 
 		fireEvent.change(screen.getByPlaceholderText('Tìm theo tên hoặc 2 số cuối MSV'), {
 			target: { value: '45' },
@@ -261,13 +261,14 @@ describe('StudentHome', () => {
 			screen.getByText('Tổng kết mở khi khoá đủ 2 tuần (đã khoá 1/2)'),
 		).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: /Chọn phong cách học/ })).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: /Ôn tập · 1 bộ thẻ/ })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /1 bộ thẻ và Test yourself/ })).toBeInTheDocument();
 
-		expect(await screen.findByText('Nhóm 2 · 2 người')).toBeInTheDocument();
+		expect(await screen.findByText('Nhóm 2')).toBeInTheDocument();
+		expect(screen.getByText('2 người')).toBeInTheDocument();
 		expect(screen.getByText('Trần Bình')).toBeInTheDocument();
 	});
 
-	it('collapses the learning style task to a single summary line once chosen', () => {
+	it('moves a chosen learning style out of the task callout into the Học tập card', () => {
 		const board = sampleBoard();
 		render(
 			<StudentHome
@@ -286,9 +287,10 @@ describe('StudentHome', () => {
 		);
 
 		expect(screen.queryByRole('button', { name: /Chọn phong cách học/ })).not.toBeInTheDocument();
-		expect(screen.getByText(/Phong cách học:/)).toHaveTextContent(
-			'Phong cách học: Teach me a lesson',
+		expect(screen.getByRole('region', { name: 'Học tập' })).toHaveTextContent(
+			'Phong cách họcTeach me a lesson',
 		);
+		expect(screen.getByRole('button', { name: 'Đổi' })).toBeInTheDocument();
 		expect(screen.getByText('Có nguy cơ')).toBeInTheDocument();
 	});
 });
