@@ -327,7 +327,7 @@ export default function RecallTestYourself({
 					</div>
 				</div>
 
-				<div className={styles.bossHud}>
+				<div className={styles.bossHud} data-enraged={enraged || undefined}>
 					{revealed ? (
 						<div className={styles.miniBoss}>
 							<ArenaMonster boss={boss} mood="idle" size={56} enraged={enraged} decorative />
@@ -353,7 +353,7 @@ export default function RecallTestYourself({
 				</div>
 
 				<div
-					className={`${arenaStyles.monsterZone} ${styles.bossSlot} ${stage.scene}`}
+					className={`${styles.bossSlot} ${stage.scene}`}
 					data-enraged={enraged || undefined}
 					data-stunned={cheer ? true : undefined}
 				>
