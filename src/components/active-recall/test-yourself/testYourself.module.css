@@ -340,6 +340,13 @@
 	gap: 0.5rem;
 }
 
+.bossColumn {
+	display: grid;
+	width: 100%;
+	min-width: 0;
+	justify-items: center;
+}
+
 .bossHud {
 	width: 100%;
 	max-width: 26rem;
@@ -632,10 +639,10 @@
 		grid-template-columns: minmax(13rem, 1fr) minmax(0, 2fr);
 		grid-template-areas:
 			'tools tools'
-			'hud question'
-			'scene question'
-			'. actions'
-			'. keys';
+			'boss question'
+			'boss actions'
+			'boss keys';
+		grid-template-rows: auto auto auto 1fr;
 		align-content: start;
 		align-items: start;
 		column-gap: clamp(1.5rem, 4vw, 3rem);
@@ -645,13 +652,12 @@
 		grid-area: tools;
 		margin-bottom: 1.5rem;
 	}
-	.bossHud {
-		grid-area: hud;
-		margin: 0;
-		align-self: end;
+	.bossColumn {
+		grid-area: boss;
+		align-self: start;
 	}
-	.bossSlot {
-		grid-area: scene;
+	.bossHud {
+		margin: 0;
 	}
 	.bubble {
 		grid-area: question;
@@ -688,7 +694,7 @@
 	}
 
 	.bossSlot > * > * {
-		width: 220px !important;
+		width: min(220px, 30vw) !important;
 	}
 }
 

@@ -327,44 +327,46 @@ export default function RecallTestYourself({
 					</div>
 				</div>
 
-				<div className={styles.bossHud} data-enraged={enraged || undefined}>
-					{revealed ? (
-						<div className={styles.miniBoss}>
-							<ArenaMonster boss={boss} mood="idle" size={56} enraged={enraged} decorative />
+				<div className={styles.bossColumn}>
+					<div className={styles.bossHud} data-enraged={enraged || undefined}>
+						{revealed ? (
+							<div className={styles.miniBoss}>
+								<ArenaMonster boss={boss} mood="idle" size={56} enraged={enraged} decorative />
+							</div>
+						) : null}
+						<div className={styles.hudText}>
+							<p className={styles.bossName}>{boss.name}</p>
+							<div
+								className={styles.hpBar}
+								role="meter"
+								aria-label="Máu của boss"
+								aria-valuemin={0}
+								aria-valuemax={session.total}
+								aria-valuenow={hp}
+							>
+								<span style={{ width: `${(hp / session.total) * 100}%` }} />
+							</div>
+							<p className={styles.hpText}>
+								Đã nhớ {session.known.length}/{session.total} câu · còn {session.queue.length} câu
+								trong lượt
+							</p>
 						</div>
-					) : null}
-					<div className={styles.hudText}>
-						<p className={styles.bossName}>{boss.name}</p>
-						<div
-							className={styles.hpBar}
-							role="meter"
-							aria-label="Máu của boss"
-							aria-valuemin={0}
-							aria-valuemax={session.total}
-							aria-valuenow={hp}
-						>
-							<span style={{ width: `${(hp / session.total) * 100}%` }} />
-						</div>
-						<p className={styles.hpText}>
-							Đã nhớ {session.known.length}/{session.total} câu · còn {session.queue.length} câu
-							trong lượt
-						</p>
 					</div>
-				</div>
 
-				<div
-					className={`${styles.bossSlot} ${stage.scene}`}
-					data-enraged={enraged || undefined}
-					data-stunned={cheer ? true : undefined}
-				>
-					<div key={entry} className={`${arenaStyles.monsterEntry} ${stage.actor}`}>
-						<ArenaMonster boss={boss} mood={mood} size={200} enraged={enraged} decorative />
+					<div
+						className={`${styles.bossSlot} ${stage.scene}`}
+						data-enraged={enraged || undefined}
+						data-stunned={cheer ? true : undefined}
+					>
+						<div key={entry} className={`${arenaStyles.monsterEntry} ${stage.actor}`}>
+							<ArenaMonster boss={boss} mood={mood} size={200} enraged={enraged} decorative />
+						</div>
+						{cheer ? (
+							<p key={`cheer-${cheer}`} className={styles.cheer} role="status">
+								Đã nhớ lại!
+							</p>
+						) : null}
 					</div>
-					{cheer ? (
-						<p key={`cheer-${cheer}`} className={styles.cheer} role="status">
-							Đã nhớ lại!
-						</p>
-					) : null}
 				</div>
 
 				{card ? (
