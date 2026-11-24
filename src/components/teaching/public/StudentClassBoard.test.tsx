@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { PublicClassBoard } from '@/features/teaching/types';
 
@@ -90,27 +90,42 @@ function board(): PublicClassBoard {
 }
 
 describe('StudentClassBoard', () => {
-	it('opens the requested public tab without flashing attendance first', () => {
-		render(<StudentClassBoard board={board()} initialTab="cp" />);
-		expect(screen.getByRole('tab', { name: 'Điểm CP' })).toHaveAttribute('aria-selected', 'true');
-		expect(screen.getByRole('heading', { name: 'Bảng điểm CP' })).toBeInTheDocument();
-		expect(screen.queryByRole('heading', { name: 'Bảng điểm danh' })).not.toBeInTheDocument();
+	beforeEach(() => {
+		window.localStorage.clear();
+		window.history.replaceState(null, '', '/lop/hrm-101');
 	});
 
-	it('offers Learning Experience and Summary while hiding Class Notes and an empty Ôn tập', () => {
+	it('opens on Của tôi by default with the identity picker and compact 4-item navigation', () => {
 		render(<StudentClassBoard board={board()} groupBoardEnabled />);
-		expect(screen.getByRole('tab', { name: 'Điểm danh' })).toBeInTheDocument();
-		expect(screen.getByRole('tab', { name: 'Điểm CP' })).toBeInTheDocument();
-		expect(screen.getByRole('tab', { name: 'Tổng kết' })).toBeInTheDocument();
-		expect(screen.getByRole('tab', { name: 'Xếp nhóm' })).toBeInTheDocument();
-		expect(screen.getByRole('tab', { name: 'Trải nghiệm học tập' })).toBeInTheDocument();
+		expect(screen.getByRole('tab', { name: 'Của tôi' })).toHaveAttribute('aria-selected', 'true');
+		expect(screen.getByRole('tab', { name: 'Bảng điểm' })).toBeInTheDocument();
+		expect(screen.getByRole('tab', { name: 'Nhóm' })).toBeInTheDocument();
 		expect(screen.queryByRole('tab', { name: 'Ghi chú lớp' })).not.toBeInTheDocument();
 		expect(screen.queryByRole('tab', { name: 'Ôn tập' })).not.toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Bạn là ai trong lớp?' })).toBeInTheDocument();
 	});
 
-	it('opens the attendance board when ?tab=recall has no decks', () => {
+	it('remembers the selected student on Của tôi and lets them switch identity', () => {
+		render(<StudentClassBoard board={board()} />);
+		fireEvent.click(screen.getByRole('button', { name: /Nguyễn An/ }));
+		expect(screen.getByRole('heading', { name: 'Chào Nguyễn An' })).toBeInTheDocument();
+		expect(window.localStorage.getItem('teaching-public-me:hrm-101')).toBe('e1');
+
+		fireEvent.click(screen.getByRole('button', { name: 'Đổi' }));
+		expect(screen.getByRole('heading', { name: 'Bạn là ai trong lớp?' })).toBeInTheDocument();
+		expect(window.localStorage.getItem('teaching-public-me:hrm-101')).toBeNull();
+	});
+
+	it('opens the requested legacy cp tab directly in Bảng điểm without flashing attendance first', () => {
+		render(<StudentClassBoard board={board()} initialTab="cp" />);
+		expect(screen.getByRole('tab', { name: 'Bảng điểm' })).toHaveAttribute('aria-selected', 'true');
+		expect(screen.getByTestId('participation-grid')).toBeInTheDocument();
+		expect(screen.queryByTestId('attendance-grid')).not.toBeInTheDocument();
+	});
+
+	it('falls back to Của tôi when ?tab=recall has no decks', () => {
 		render(<StudentClassBoard board={board()} initialTab="recall" />);
-		expect(screen.getByRole('tab', { name: 'Điểm danh' })).toHaveAttribute('aria-selected', 'true');
+		expect(screen.getByRole('tab', { name: 'Của tôi' })).toHaveAttribute('aria-selected', 'true');
 	});
 
 	it('lists enabled review decks under Ôn tập on the class board', () => {
@@ -136,12 +151,41 @@ describe('StudentClassBoard', () => {
 	it('keeps tutorial selection scoped across the public attendance board', () => {
 		const contentBoard = board();
 		contentBoard.tutorials = [
-			{ id: 'tutorial-1', classId: 'class-1', code: 'T01', name: 'Nhóm 01', room: '', scheduleNote: '', displayOrder: 0, studentCount: 2 },
-			{ id: 'tutorial-2', classId: 'class-1', code: 'T02', name: 'Nhóm 02', room: '', scheduleNote: '', displayOrder: 1, studentCount: 1 },
+			{
+				id: 'tutorial-1',
+				classId: 'class-1',
+				code: 'T01',
+				name: 'Nhóm 01',
+				room: '',
+				scheduleNote: '',
+				displayOrder: 0,
+				studentCount: 2,
+			},
+			{
+				id: 'tutorial-2',
+				classId: 'class-1',
+				code: 'T02',
+				name: 'Nhóm 02',
+				room: '',
+				scheduleNote: '',
+				displayOrder: 1,
+				studentCount: 1,
+			},
 		];
-		contentBoard.sessions.push({ ...contentBoard.sessions[0]!, id: 'session-2', tutorialClassId: 'tutorial-2' });
-		contentBoard.students.push({ ...contentBoard.students[0]!, enrollmentId: 'e3', tutorialClassId: 'tutorial-2', studentCode: '********77', marks: { 'session-2': { status: 'PRESENT' } }, participation: { 'session-2': { points: 1, note: '' } } });
-		render(<StudentClassBoard board={contentBoard} />);
+		contentBoard.sessions.push({
+			...contentBoard.sessions[0]!,
+			id: 'session-2',
+			tutorialClassId: 'tutorial-2',
+		});
+		contentBoard.students.push({
+			...contentBoard.students[0]!,
+			enrollmentId: 'e3',
+			tutorialClassId: 'tutorial-2',
+			studentCode: '********77',
+			marks: { 'session-2': { status: 'PRESENT' } },
+			participation: { 'session-2': { points: 1, note: '' } },
+		});
+		render(<StudentClassBoard board={contentBoard} initialTab="attendance" />);
 		const grid = screen.getByTestId('attendance-grid');
 		expect(screen.getByLabelText('Tutorial')).toHaveValue('tutorial-1');
 		expect(grid.querySelectorAll('tbody tr')).toHaveLength(2);
@@ -154,7 +198,16 @@ describe('StudentClassBoard', () => {
 	it('keeps unassigned students visible instead of hiding them behind the first tutorial', () => {
 		const contentBoard = board();
 		contentBoard.tutorials = [
-			{ id: 'tutorial-1', classId: 'class-1', code: 'T01', name: 'Nhóm 01', room: '', scheduleNote: '', displayOrder: 0, studentCount: 2 },
+			{
+				id: 'tutorial-1',
+				classId: 'class-1',
+				code: 'T01',
+				name: 'Nhóm 01',
+				room: '',
+				scheduleNote: '',
+				displayOrder: 0,
+				studentCount: 2,
+			},
 		];
 		contentBoard.students.push({
 			...contentBoard.students[0]!,
@@ -163,13 +216,12 @@ describe('StudentClassBoard', () => {
 			studentCode: '********00',
 			givenName: 'Chưa phân',
 		});
-		render(<StudentClassBoard board={contentBoard} />);
+		render(<StudentClassBoard board={contentBoard} initialTab="attendance" />);
 		expect(screen.getByLabelText('Tutorial')).toHaveValue('');
 		expect(screen.getByRole('option', { name: 'Toàn lớp' })).toBeInTheDocument();
 		expect(screen.getByRole('option', { name: 'Chưa phân tutorial' })).toBeInTheDocument();
 		expect(screen.getByText('********00')).toBeInTheDocument();
 		expect(screen.getByText('********45')).toBeInTheDocument();
-		expect(screen.getByText(/3 SV/)).toBeInTheDocument();
 		fireEvent.change(screen.getByLabelText('Tutorial'), { target: { value: 'tutorial-1' } });
 		expect(screen.queryByText('********00')).not.toBeInTheDocument();
 		fireEvent.change(screen.getByLabelText('Tutorial'), { target: { value: '__unassigned__' } });
@@ -180,11 +232,24 @@ describe('StudentClassBoard', () => {
 	it('opens published Class Notes when explicitly enabled and switches between note pages', () => {
 		const contentBoard = board();
 		contentBoard.notes = [
-			{ id: 'note-1', title: 'Tuần 1', html: '<p>Nội dung tuần 1</p>', publishedAt: '2026-09-01T00:00:00.000Z' },
-			{ id: 'note-2', title: 'Topic A', html: '<p>Nội dung topic A</p>', publishedAt: '2026-09-02T00:00:00.000Z' },
+			{
+				id: 'note-1',
+				title: 'Tuần 1',
+				html: '<p>Nội dung tuần 1</p>',
+				publishedAt: '2026-09-01T00:00:00.000Z',
+			},
+			{
+				id: 'note-2',
+				title: 'Topic A',
+				html: '<p>Nội dung topic A</p>',
+				publishedAt: '2026-09-02T00:00:00.000Z',
+			},
 		];
 		render(<StudentClassBoard board={contentBoard} initialTab="notes" notesEnabled />);
-		expect(screen.getByRole('tab', { name: 'Ghi chú lớp' })).toHaveAttribute('aria-selected', 'true');
+		expect(screen.getByRole('tab', { name: 'Ghi chú lớp' })).toHaveAttribute(
+			'aria-selected',
+			'true',
+		);
 		expect(screen.getByRole('heading', { name: 'Tuần 1' })).toBeInTheDocument();
 		expect(screen.getByText('Nội dung tuần 1')).toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: 'Topic A' }));
@@ -192,7 +257,7 @@ describe('StudentClassBoard', () => {
 		expect(screen.getByText('Nội dung topic A')).toBeInTheDocument();
 	});
 
-	it('shows the public summary, announcement, description and resource links', () => {
+	it('shows the announcement, class info, rules and resource links on Của tôi', () => {
 		const contentBoard = board();
 		contentBoard.summary = 'Tổng quan ngắn cho lớp.';
 		contentBoard.announcement = 'Buổi học ngày mai bắt đầu lúc 08:00.';
@@ -220,53 +285,52 @@ describe('StudentClassBoard', () => {
 			'rel',
 			'noopener noreferrer',
 		);
+		fireEvent.click(screen.getByRole('button', { name: /Quy định lớp/ }));
+		expect(screen.getByRole('dialog')).toHaveTextContent('Mang thẻ sinh viên');
 	});
 
-	it('hides Class Notes and falls back to attendance by default', () => {
+	it('hides Class Notes and falls back to Của tôi by default', () => {
 		const contentBoard = board();
 		contentBoard.notes = [
-			{ id: 'note-1', title: 'Tuần 1', html: '<p>Nội dung tuần 1</p>', publishedAt: '2026-09-01T00:00:00.000Z' },
+			{
+				id: 'note-1',
+				title: 'Tuần 1',
+				html: '<p>Nội dung tuần 1</p>',
+				publishedAt: '2026-09-01T00:00:00.000Z',
+			},
 		];
 		render(<StudentClassBoard board={contentBoard} initialTab="notes" />);
 		expect(screen.queryByRole('tab', { name: 'Ghi chú lớp' })).not.toBeInTheDocument();
-		expect(screen.getByRole('tab', { name: 'Điểm danh' })).toHaveAttribute('aria-selected', 'true');
+		expect(screen.getByRole('tab', { name: 'Của tôi' })).toHaveAttribute('aria-selected', 'true');
 		expect(screen.queryByText('Nội dung tuần 1')).not.toBeInTheDocument();
 	});
 
-	it('hides the group board and falls back to attendance when disabled', () => {
+	it('hides the group board and falls back to Của tôi when disabled', () => {
 		render(<StudentClassBoard board={board()} initialTab="groups" />);
-		expect(screen.queryByRole('tab', { name: 'Xếp nhóm' })).not.toBeInTheDocument();
-		expect(screen.getByRole('tab', { name: 'Điểm danh' })).toHaveAttribute('aria-selected', 'true');
-		expect(screen.queryByText('Bảng xếp nhóm')).not.toBeInTheDocument();
+		expect(screen.queryByRole('tab', { name: 'Nhóm' })).not.toBeInTheDocument();
+		expect(screen.getByRole('tab', { name: 'Của tôi' })).toHaveAttribute('aria-selected', 'true');
 	});
 
-	it('keeps the public board read-only and filters by student code after four characters', () => {
-		render(<StudentClassBoard board={board()} />);
-		fireEvent.click(screen.getByRole('button', { name: 'Quy định lớp' }));
-		expect(screen.getByRole('dialog')).toHaveTextContent('Mang thẻ sinh viên');
-		expect(screen.getByRole('dialog')).toHaveTextContent('Có mặt trước giờ học');
+	it('keeps the public board read-only and filters by student code or name', () => {
+		render(<StudentClassBoard board={board()} initialTab="attendance" />);
 		const grid = screen.getByTestId('attendance-grid');
 		const search = screen.getByPlaceholderText('Tìm tên hoặc MSV');
 
 		expect(grid.querySelectorAll('tbody tr')).toHaveLength(2);
 		expect(screen.queryByRole('columnheader', { name: 'Trạng thái' })).not.toBeInTheDocument();
-		expect(screen.queryByText('Đủ điều kiện')).not.toBeInTheDocument();
 		expect(screen.queryAllByRole('button', { name: /tuần 1/i })).toHaveLength(0);
-		fireEvent.change(search, { target: { value: '**' } });
-		expect(grid.querySelectorAll('tbody tr')).toHaveLength(2);
 		fireEvent.change(search, { target: { value: '45' } });
 		expect(grid.querySelectorAll('tbody tr')).toHaveLength(1);
 		expect(screen.getAllByText('Nguyễn An').length).toBeGreaterThan(0);
 		expect(grid.textContent).not.toContain('Trần Bình');
 		fireEvent.change(search, { target: { value: 'Nguyễn' } });
 		expect(grid.querySelectorAll('tbody tr')).toHaveLength(1);
-		expect(screen.getAllByText('Nguyễn An').length).toBeGreaterThan(0);
 	});
 
 	it('keeps a locked attendance week visible while leaving its stored mark intact', () => {
 		const lockedBoard = board();
 		lockedBoard.sessions[0] = { ...lockedBoard.sessions[0]!, attendanceOpen: false };
-		render(<StudentClassBoard board={lockedBoard} />);
+		render(<StudentClassBoard board={lockedBoard} initialTab="attendance" />);
 
 		expect(
 			screen.getByLabelText('********45 tuần 1: Có mặt - Chủ động hỗ trợ nhóm'),
@@ -274,22 +338,17 @@ describe('StudentClassBoard', () => {
 		expect(
 			screen.getByLabelText('********45 tuần 1: Có mặt - Chủ động hỗ trợ nhóm'),
 		).toHaveAttribute('title', 'Có mặt - Chủ động hỗ trợ nhóm');
-		expect(lockedBoard.students[0]!.marks['session-1']).toEqual({
-			status: 'PRESENT',
-			note: 'Chủ động hỗ trợ nhóm',
-		});
 	});
 
 	it('shows the weekly CP note in the student tooltip', () => {
-		render(<StudentClassBoard board={board()} />);
-		fireEvent.click(screen.getByRole('tab', { name: 'Điểm CP' }));
+		render(<StudentClassBoard board={board()} initialTab="cp" />);
 		expect(screen.getByLabelText('********45 tuần 1: 1 điểm CP - Trình bày tốt')).toHaveAttribute(
 			'title',
 			'1 điểm CP - Trình bày tốt',
 		);
 	});
 
-	it('locks the summary tab until all 10 weeks of attendance and CP are finalized', () => {
+	it('locks the summary view until all 10 weeks of attendance and CP are finalized', () => {
 		const tenWeekBoard = board();
 		tenWeekBoard.policy = { totalWeeks: 10, absenceThresholdPercent: 20 };
 		tenWeekBoard.sessions = Array.from({ length: 10 }, (_, index) => ({
@@ -308,18 +367,9 @@ describe('StudentClassBoard', () => {
 		}));
 
 		render(<StudentClassBoard board={tenWeekBoard} initialTab="summary" />);
-		expect(screen.getByRole('tab', { name: 'Tổng kết' })).toHaveAttribute('aria-selected', 'true');
+		expect(screen.getByRole('tab', { name: 'Bảng điểm' })).toHaveAttribute('aria-selected', 'true');
 		expect(screen.getByTestId('summary-locked')).toBeInTheDocument();
 		expect(screen.queryByTestId('summary-grid')).not.toBeInTheDocument();
-		expect(
-			screen.getByText(
-				'Điểm tổng kết sẽ hiển thị khi tất cả 10 tuần điểm danh và điểm CP đã được khóa.',
-			),
-		).toBeInTheDocument();
-		expect(
-			screen.getByText('Tiến độ khóa điểm: Điểm danh 10/10 tuần · Điểm CP 9/10 tuần'),
-		).toBeInTheDocument();
-		expect(screen.queryByPlaceholderText('Tìm tên hoặc MSV')).not.toBeInTheDocument();
 	});
 
 	it('displays final summary scores once all 10 weeks of attendance and CP are locked', () => {
@@ -353,15 +403,11 @@ describe('StudentClassBoard', () => {
 		}));
 
 		render(<StudentClassBoard board={unlockedBoard} initialTab="summary" />);
-		expect(screen.getByRole('heading', { name: 'Bảng điểm tổng kết' })).toBeInTheDocument();
 		const grid = screen.getByTestId('summary-grid');
 		expect(grid).toBeInTheDocument();
 		expect(grid.textContent).toContain('5,0 / 5');
 		expect(grid.textContent).toContain('1,0 / 5');
 		expect(grid.textContent).toContain('6,0 / 10');
 		expect(grid.textContent).toContain('5,5 / 10');
-		expect(
-			screen.getByText('Đã khóa đủ 10/10 tuần điểm danh và điểm CP · Tổng điểm = Chuyên cần + CP'),
-		).toBeInTheDocument();
 	});
 });

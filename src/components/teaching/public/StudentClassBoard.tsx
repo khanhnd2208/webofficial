@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent } from 'react';
 
 import { TeachingMark } from '@/components/site/TeachingMark';
 import { GroupBoardWorkspaceLoader } from '@/components/teaching/groups/GroupBoardWorkspaceLoader';
@@ -11,38 +11,28 @@ import {
 } from '@/features/teaching/domain/publicBoardFilter';
 import type { PublicClassBoard } from '@/features/teaching/types';
 
-import { TeachingIcon } from '../ui/TeachingIcon';
+import { TeachingIcon, type TeachingIconName } from '../ui/TeachingIcon';
 import { ClassGradebook } from './ClassGradebook';
-import { ClassInfoList } from './ClassInfoList';
 import { ClassNotesWorkspace } from './ClassNotesWorkspace';
 import { LearningExperienceWorkspace } from './LearningExperienceWorkspace';
+import {
+	getPublicNavSections,
+	resolvePublicBoardRoute,
+	toPublicTabParam,
+	type GradebookView,
+	type PublicSection,
+} from './publicBoardNav';
 import { RecallDeckList } from './RecallDeckList';
+import { StudentHome } from './StudentHome';
 import { readStudentIdentity, writeStudentIdentity } from './studentIdentity';
 
-type PublicTab = 'attendance' | 'cp' | 'summary' | 'groups' | 'learning' | 'notes' | 'recall';
-
-function resolvePublicTab(value?: string | null): PublicTab {
-	return value === 'cp' ||
-		value === 'summary' ||
-		value === 'groups' ||
-		value === 'learning' ||
-		value === 'notes' ||
-		value === 'recall'
-		? value
-		: 'attendance';
-}
-
-function resolveAvailableTab(
-	requested: PublicTab,
-	groupBoardEnabled: boolean,
-	notesEnabled: boolean,
-	recallEnabled: boolean,
-): PublicTab {
-	if (requested === 'groups' && !groupBoardEnabled) return 'attendance';
-	if (requested === 'notes' && !notesEnabled) return 'attendance';
-	if (requested === 'recall' && !recallEnabled) return 'attendance';
-	return requested;
-}
+const SECTION_META: Record<PublicSection, { label: string; icon: TeachingIconName }> = {
+	me: { label: 'Của tôi', icon: 'students' },
+	gradebook: { label: 'Bảng điểm', icon: 'attendance' },
+	groups: { label: 'Nhóm', icon: 'groups' },
+	recall: { label: 'Ôn tập', icon: 'recall' },
+	notes: { label: 'Ghi chú lớp', icon: 'notes' },
+};
 
 export function StudentClassBoard({
 	board,
@@ -59,24 +49,24 @@ export function StudentClassBoard({
 	initialTab?: string;
 	initialTutorialId?: string;
 }) {
-	const recallEnabled = (board.recallDecks ?? []).length > 0;
-	const [tab, setTab] = useState<PublicTab>(() =>
-		resolveAvailableTab(
-			resolvePublicTab(initialTab),
-			groupBoardEnabled,
-			notesEnabled,
-			recallEnabled,
-		),
+	const recallDecks = board.recallDecks ?? [];
+	const recallEnabled = recallDecks.length > 0;
+	const navOptions = useMemo(
+		() => ({ groupBoardEnabled, notesEnabled, recallEnabled }),
+		[groupBoardEnabled, notesEnabled, recallEnabled],
 	);
+	const navSections = useMemo(() => getPublicNavSections(navOptions), [navOptions]);
+	const initialRoute = resolvePublicBoardRoute(initialTab, navOptions);
+
+	const [section, setSection] = useState<PublicSection>(initialRoute.section);
+	const [gradebookView, setGradebookView] = useState<GradebookView>(initialRoute.view);
+	const [learningOpen, setLearningOpen] = useState(initialRoute.openLearning);
 	const [tutorialId, setTutorialId] = useState(() =>
 		resolvePublicTutorialId({
 			tutorials: board.tutorials,
 			students: board.students,
 			initialTutorialId,
 		}),
-	);
-	const [learningVisited, setLearningVisited] = useState(
-		() => resolvePublicTab(initialTab) === 'learning',
 	);
 	const [query, setQuery] = useState('');
 	const [chosenMe, setChosenMe] = useState<{ slug: string; id: string | null } | null>(null);
@@ -86,24 +76,39 @@ export function StudentClassBoard({
 		() => null,
 	);
 	const meId = chosenMe?.slug === board.slug ? chosenMe.id : storedMeId;
+	const me = useMemo(
+		() => board.students.find((student) => student.enrollmentId === meId) ?? null,
+		[board.students, meId],
+	);
 	const gridWrapRef = useRef<HTMLDivElement>(null);
 	const tabBarRef = useRef<HTMLElement>(null);
 
 	useEffect(() => {
 		const sync = () => {
-			const requested = resolvePublicTab(new URLSearchParams(window.location.search).get('tab'));
-			const nextTab = resolveAvailableTab(
-				requested,
-				groupBoardEnabled,
-				notesEnabled,
-				recallEnabled,
+			const next = resolvePublicBoardRoute(
+				new URLSearchParams(window.location.search).get('tab'),
+				navOptions,
 			);
-			if (nextTab === 'learning') setLearningVisited(true);
-			setTab(nextTab);
+			setSection(next.section);
+			if (next.section === 'gradebook') setGradebookView(next.view);
+			setLearningOpen(next.openLearning);
 		};
 		window.addEventListener('popstate', sync);
 		return () => window.removeEventListener('popstate', sync);
-	}, [groupBoardEnabled, notesEnabled, recallEnabled]);
+	}, [navOptions]);
+
+	function pushTabUrl(nextSection: PublicSection, nextView: GradebookView, nextLearning = false) {
+		const params = new URLSearchParams(window.location.search);
+		const tabValue = toPublicTabParam(nextSection, nextView, nextLearning);
+		if (!tabValue) params.delete('tab');
+		else params.set('tab', tabValue);
+		const queryString = params.toString();
+		window.history.pushState(
+			null,
+			'',
+			`${window.location.pathname}${queryString ? `?${queryString}` : ''}`,
+		);
+	}
 
 	function chooseMe(enrollmentId: string) {
 		const next = enrollmentId || null;
@@ -119,24 +124,30 @@ export function StudentClassBoard({
 			left: active.offsetLeft - (tabBar.clientWidth - active.clientWidth) / 2,
 			behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
 		});
-	}, [tab]);
+	}, [section]);
 
-	function changeTab(next: PublicTab) {
-		if (next === 'learning') setLearningVisited(true);
-		setTab(next);
-		const params = new URLSearchParams(window.location.search);
-		if (next === 'attendance') params.delete('tab');
-		else params.set('tab', next);
-		const queryString = params.toString();
-		window.history.pushState(
-			null,
-			'',
-			`${window.location.pathname}${queryString ? `?${queryString}` : ''}`,
-		);
-		requestAnimationFrame(() => {
-			const wrapper = gridWrapRef.current?.querySelector<HTMLElement>('.mc-grid-wrap');
-			wrapper?.scrollTo({ left: 0, behavior: 'auto' });
-		});
+	function changeSection(next: PublicSection, nextView: GradebookView = gradebookView) {
+		setSection(next);
+		setGradebookView(nextView);
+		setLearningOpen(false);
+		pushTabUrl(next, nextView, false);
+		if (next === 'gradebook') {
+			requestAnimationFrame(() => {
+				const wrapper = gridWrapRef.current?.querySelector<HTMLElement>('.mc-grid-wrap');
+				wrapper?.scrollTo({ left: 0, behavior: 'auto' });
+			});
+		}
+	}
+
+	function openLearningPanel() {
+		setSection('me');
+		setLearningOpen(true);
+		pushTabUrl('me', gradebookView, true);
+	}
+
+	function closeLearningPanel() {
+		setLearningOpen(false);
+		pushTabUrl('me', gradebookView, false);
 	}
 
 	function changeTutorial(next: string) {
@@ -168,152 +179,108 @@ export function StudentClassBoard({
 		tabs[next]?.click();
 	}
 
+	const learningStudents = useMemo(
+		() =>
+			board.students.map((student) => ({
+				enrollmentId: student.enrollmentId,
+				studentCode: student.studentCode,
+				fullName: `${student.familyName} ${student.givenName}`.trim(),
+				accessMode: student.hasDateOfBirth ? ('DOB_PASSWORD' as const) : ('OPEN' as const),
+			})),
+		[board.students],
+	);
+
 	return (
-		<div className="teaching-public-board min-w-0 space-y-3">
-			<header className="teaching-public-header flex flex-wrap items-end justify-between gap-3 border-b border-mc-rule pb-3">
+		<div className="teaching-public-board min-w-0 space-y-4">
+			<header className="teaching-public-header flex flex-wrap items-center justify-between gap-3 pb-1">
 				<div className="flex min-w-0 items-center gap-3">
 					<TeachingMark className="teaching-header-mark" />
 					<div className="min-w-0">
-						<p className="mc-eyebrow">
-							{board.courseCode} · Lớp {board.classCode ?? board.groupNo} · {board.term}
-						</p>
-						<h1 className="teaching-public-title mt-1 break-words text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+						<h1 className="teaching-public-title break-words text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
 							{board.title}
 						</h1>
+						<p className="mt-0.5 break-words text-xs leading-5 text-ink-secondary sm:text-sm">
+							{board.courseCode} · Lớp {board.classCode ?? board.groupNo} · {board.term}
+						</p>
 					</div>
 				</div>
 				{manageHref ? (
 					<Link
 						href={manageHref}
-						className="shrink-0 text-xs font-semibold text-accent hover:underline"
+						className="inline-flex min-h-11 shrink-0 items-center text-xs font-semibold text-accent hover:underline"
 					>
 						Quản lý lớp ↗
 					</Link>
 				) : null}
 			</header>
 
-			<ClassInfoList board={board} />
+			<div className="teaching-public-nav sticky top-[calc(var(--site-header-height)+env(safe-area-inset-top))] z-30 border-b border-mc-rule bg-canvas/95 backdrop-blur-sm">
+				<nav
+					ref={tabBarRef}
+					onKeyDown={handleTabKeyDown}
+					className="mc-tabbar"
+					role="tablist"
+					aria-label="Mục lớp học"
+				>
+					{navSections.map((item) => {
+						const meta = SECTION_META[item];
+						const active = section === item;
+						return (
+							<button
+								key={item}
+								type="button"
+								role="tab"
+								id={`public-tab-${item}`}
+								aria-controls={`public-panel-${item}`}
+								aria-selected={active}
+								tabIndex={active ? 0 : -1}
+								data-active={active}
+								onClick={() => changeSection(item)}
+							>
+								<TeachingIcon name={meta.icon} size={18} className="teaching-public-tab-icon" />
+								<span>{meta.label}</span>
+							</button>
+						);
+					})}
+				</nav>
+			</div>
 
-			<nav
-				ref={tabBarRef}
-				onKeyDown={handleTabKeyDown}
-				className="mc-tabbar"
-				role="tablist"
-				aria-label="Bảng lớp học"
-			>
-				<button
-					type="button"
-					role="tab"
-					id="public-tab-attendance"
-					aria-controls="public-panel-attendance"
-					aria-selected={tab === 'attendance'}
-					tabIndex={tab === 'attendance' ? 0 : -1}
-					data-active={tab === 'attendance'}
-					onClick={() => changeTab('attendance')}
-				>
-					<TeachingIcon name="attendance" size={18} /> Điểm danh
-				</button>
-				<button
-					type="button"
-					role="tab"
-					id="public-tab-cp"
-					aria-controls="public-panel-cp"
-					aria-selected={tab === 'cp'}
-					tabIndex={tab === 'cp' ? 0 : -1}
-					data-active={tab === 'cp'}
-					onClick={() => changeTab('cp')}
-				>
-					<TeachingIcon name="cp" size={18} /> Điểm CP
-				</button>
-				<button
-					type="button"
-					role="tab"
-					id="public-tab-summary"
-					aria-controls="public-panel-summary"
-					aria-selected={tab === 'summary'}
-					tabIndex={tab === 'summary' ? 0 : -1}
-					data-active={tab === 'summary'}
-					onClick={() => changeTab('summary')}
-				>
-					<TeachingIcon name="summary" size={18} /> Tổng kết
-				</button>
-				{groupBoardEnabled ? (
-					<button
-						type="button"
-						role="tab"
-						id="public-tab-groups"
-						aria-controls="public-panel-groups"
-						aria-selected={tab === 'groups'}
-						tabIndex={tab === 'groups' ? 0 : -1}
-						data-active={tab === 'groups'}
-						onClick={() => changeTab('groups')}
-					>
-						<TeachingIcon name="groups" size={18} /> Xếp nhóm
-					</button>
-				) : null}
-				<button
-					type="button"
-					role="tab"
-					id="public-tab-learning"
-					aria-controls="public-panel-learning"
-					aria-selected={tab === 'learning'}
-					tabIndex={tab === 'learning' ? 0 : -1}
-					data-active={tab === 'learning'}
-					onClick={() => changeTab('learning')}
-				>
-					<TeachingIcon name="students" size={18} /> Trải nghiệm học tập
-				</button>
-				{notesEnabled ? (
-					<button
-						type="button"
-						role="tab"
-						id="public-tab-notes"
-						aria-controls="public-panel-notes"
-						aria-selected={tab === 'notes'}
-						tabIndex={tab === 'notes' ? 0 : -1}
-						data-active={tab === 'notes'}
-						onClick={() => changeTab('notes')}
-					>
-						<TeachingIcon name="notes" size={18} /> Ghi chú lớp
-					</button>
-				) : null}
-				{recallEnabled ? (
-					<button
-						type="button"
-						role="tab"
-						id="public-tab-recall"
-						aria-controls="public-panel-recall"
-						aria-selected={tab === 'recall'}
-						tabIndex={tab === 'recall' ? 0 : -1}
-						data-active={tab === 'recall'}
-						onClick={() => changeTab('recall')}
-					>
-						<TeachingIcon name="recall" size={18} /> Ôn tập
-					</button>
-				) : null}
-			</nav>
-
-			{learningVisited ? (
-				<div
-					id="public-panel-learning"
-					role="tabpanel"
-					aria-labelledby="public-tab-learning"
-					hidden={tab !== 'learning'}
-					className="public-learning-panel"
-				>
-					<LearningExperienceWorkspace
-						slug={board.slug}
-						courseName={board.courseName}
-						students={board.students.map((student) => ({
-							enrollmentId: student.enrollmentId,
-							studentCode: student.studentCode,
-							fullName: `${student.familyName} ${student.givenName}`.trim(),
-							accessMode: student.hasDateOfBirth ? 'DOB_PASSWORD' : 'OPEN',
-						}))}
-					/>
-				</div>
+			{section === 'me' ? (
+				<>
+					{learningOpen ? (
+						<div className="space-y-3">
+							<button
+								type="button"
+								onClick={closeLearningPanel}
+								className="inline-flex min-h-11 items-center text-sm font-semibold text-accent hover:underline"
+							>
+								← Quay lại Của tôi
+							</button>
+							<LearningExperienceWorkspace
+								slug={board.slug}
+								courseName={board.courseName}
+								students={learningStudents}
+							/>
+						</div>
+					) : (
+						<StudentHome
+							board={board}
+							me={me}
+							learningChoice={me?.learningExperience ?? null}
+							groupBoardEnabled={groupBoardEnabled}
+							recallCount={recallDecks.length}
+							onSelectMe={chooseMe}
+							onClearMe={() => chooseMe('')}
+							onOpenGradebook={() => changeSection('gradebook', 'attendance')}
+							onOpenGroups={() => changeSection('groups')}
+							onOpenRecall={() => changeSection('recall')}
+							onOpenLearning={openLearningPanel}
+						/>
+					)}
+				</>
 			) : null}
-			{notesEnabled && tab === 'notes' ? (
+
+			{notesEnabled && section === 'notes' ? (
 				<div
 					id="public-panel-notes"
 					role="tabpanel"
@@ -323,10 +290,12 @@ export function StudentClassBoard({
 					<ClassNotesWorkspace notes={board.notes ?? []} />
 				</div>
 			) : null}
-			{recallEnabled && tab === 'recall' ? (
-				<RecallDeckList slug={board.slug} decks={board.recallDecks!} />
+
+			{recallEnabled && section === 'recall' ? (
+				<RecallDeckList slug={board.slug} decks={recallDecks} />
 			) : null}
-			{groupBoardEnabled && tab === 'groups' ? (
+
+			{groupBoardEnabled && section === 'groups' ? (
 				<div
 					id="public-panel-groups"
 					role="tabpanel"
@@ -335,10 +304,12 @@ export function StudentClassBoard({
 				>
 					<GroupBoardWorkspaceLoader slug={board.slug} tutorials={board.tutorials} />
 				</div>
-			) : tab === 'attendance' || tab === 'cp' || tab === 'summary' ? (
+			) : null}
+
+			{section === 'gradebook' ? (
 				<ClassGradebook
 					board={board}
-					tab={tab}
+					tab={gradebookView}
 					tutorialId={tutorialId}
 					onTutorialChange={changeTutorial}
 					query={query}

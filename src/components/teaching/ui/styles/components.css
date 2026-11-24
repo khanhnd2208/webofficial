@@ -357,16 +357,20 @@
 	min-height: 44px;
 }
 [data-surface='teaching'] .teaching-public-board .mc-tabbar {
-	margin: 0.75rem 0;
+	margin: 0;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	padding-block: 0.25rem;
 }
-/* On a phone the six class tabs wrap instead of scrolling, so none hides off the right edge. */
 @media (max-width: 639px) {
-	[data-surface='teaching'] .teaching-public-board .mc-tabbar {
-		flex-wrap: wrap;
-		overflow-x: visible;
-	}
 	[data-surface='teaching'] .teaching-public-board .mc-tabbar :is(a, button) {
 		padding-inline: 0.625rem;
+		font-size: 0.8125rem;
+	}
+}
+@media (max-width: 479px) {
+	[data-surface='teaching'] .teaching-public-board .teaching-public-tab-icon {
+		display: none;
 	}
 }
 /* Outranks the uppercase My Class tab rule; Vietnamese reads better in sentence case. */

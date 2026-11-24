@@ -17,7 +17,7 @@ export function RecallDeckList({
 			id="public-panel-recall"
 			role="tabpanel"
 			aria-labelledby="public-tab-recall"
-			className="public-notes-panel"
+			className="public-notes-panel max-w-3xl"
 		>
 			<Link href={routes.teachingPublicRecallTest(slug)} className="recall-test-cta mb-4">
 				<span className="recall-test-cta-title">Test yourself</span>
@@ -26,19 +26,18 @@ export function RecallDeckList({
 				</span>
 				<span aria-hidden="true">→</span>
 			</Link>
-			<ul className="space-y-3">
+			<ul className="mc-surface divide-y divide-mc-rule overflow-hidden">
 				{decks.map((deck) => (
 					<li key={deck.id}>
 						<Link
 							href={routes.teachingPublicRecallDeck(slug, deck.slug)}
-							className="mc-surface block px-4 py-4 hover:border-accent"
+							className="block min-h-14 px-4 py-3 transition-colors hover:bg-surface-hover"
 						>
-							<p className="text-xs text-ink-secondary">{deck.lessonLabel || 'Bộ thẻ'}</p>
-							<p className="mt-1 text-base font-semibold text-ink">{deck.title}</p>
-							{deck.description ? (
-								<p className="mt-1 text-sm text-ink-secondary">{deck.description}</p>
-							) : null}
-							<p className="mt-2 text-xs tabular-nums text-ink-secondary">{deck.cardCount} thẻ →</p>
+							<div className="flex items-center justify-between gap-2 text-xs text-ink-secondary">
+								<span className="truncate">{deck.lessonLabel || 'Bộ thẻ'}</span>
+								<span className="mc-num shrink-0">{deck.cardCount} thẻ →</span>
+							</div>
+							<p className="mt-1 text-sm font-semibold text-ink sm:text-base">{deck.title}</p>
 						</Link>
 					</li>
 				))}

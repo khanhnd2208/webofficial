@@ -36,6 +36,14 @@ export function pinStudent<T extends { enrollmentId: string }>(
 	return [rows[index], ...rows.slice(0, index), ...rows.slice(index + 1)];
 }
 
+export type StudentEligibilityLabel = 'Cấm thi' | 'Có nguy cơ' | 'Đủ điều kiện';
+
+export function studentEligibility(riskLevel: string): StudentEligibilityLabel {
+	if (riskLevel === 'BANNED') return 'Cấm thi';
+	if (riskLevel === 'AT_RISK') return 'Có nguy cơ';
+	return 'Đủ điều kiện';
+}
+
 export function studentIdentitySummary(
 	student: {
 		cp: { unexcusedAbsences: number; attendanceScore: number; riskLevel: string };
@@ -43,13 +51,29 @@ export function studentIdentitySummary(
 	totalWeeks: number,
 	attendanceMax: number,
 ) {
-	const eligibility =
-		student.cp.riskLevel === 'BANNED'
-			? 'Cấm thi'
-			: student.cp.riskLevel === 'AT_RISK'
-				? 'Có nguy cơ'
-				: 'Đủ điều kiện';
+	const eligibility = studentEligibility(student.cp.riskLevel);
 	return `Bạn: vắng ${student.cp.unexcusedAbsences}/${totalWeeks} · Chuyên cần ${formatTeachingScore(student.cp.attendanceScore)}/${attendanceMax} · ${eligibility}`;
+}
+
+export function normalizeStudentQuery(value: string): string {
+	return value
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.replace(/[đĐ]/g, 'd')
+		.toLowerCase()
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
+export function matchesStudentQuery(
+	student: { studentCode: string; familyName?: string; givenName?: string; fullName?: string },
+	rawQuery: string,
+): boolean {
+	const query = normalizeStudentQuery(rawQuery);
+	if (!query) return true;
+	if (/^\d+$/.test(query)) return student.studentCode.endsWith(query.slice(-2));
+	const name = student.fullName ?? `${student.familyName ?? ''} ${student.givenName ?? ''}`.trim();
+	return normalizeStudentQuery(`${student.studentCode} ${name}`).includes(query);
 }
 
 function normalizeHeading(value: string) {

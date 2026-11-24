@@ -2,8 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
 	isRepeatedClassSummary,
+	matchesStudentQuery,
 	pinStudent,
 	readStudentIdentity,
+	studentEligibility,
 	studentIdentitySummary,
 	writeStudentIdentity,
 } from './studentIdentity';
@@ -15,6 +17,12 @@ describe('student identity', () => {
 		expect(pinStudent(rows, null)).toBe(rows);
 	});
 
+	it('maps risk levels to Vietnamese eligibility labels', () => {
+		expect(studentEligibility('OK')).toBe('Đủ điều kiện');
+		expect(studentEligibility('AT_RISK')).toBe('Có nguy cơ');
+		expect(studentEligibility('BANNED')).toBe('Cấm thi');
+	});
+
 	it('describes the chosen student in one line', () => {
 		expect(
 			studentIdentitySummary(
@@ -23,6 +31,16 @@ describe('student identity', () => {
 				5,
 			),
 		).toBe('Bạn: vắng 1/10 · Chuyên cần 4,5/5 · Đủ điều kiện');
+	});
+
+	it('matches students by Vietnamese name or the last two digits of the student code', () => {
+		const student = { studentCode: '********45', familyName: 'Nguyễn Thị', givenName: 'Đào' };
+		expect(matchesStudentQuery(student, '')).toBe(true);
+		expect(matchesStudentQuery(student, 'dao')).toBe(true);
+		expect(matchesStudentQuery(student, 'nguyen thi')).toBe(true);
+		expect(matchesStudentQuery(student, '45')).toBe(true);
+		expect(matchesStudentQuery(student, '2406090045')).toBe(true);
+		expect(matchesStudentQuery(student, '99')).toBe(false);
 	});
 
 	it('keeps working when localStorage throws', () => {
@@ -46,7 +64,11 @@ describe('student identity', () => {
 });
 
 describe('isRepeatedClassSummary', () => {
-	const board = { courseCode: '61MGT3HRM', groupNo: '39-01', term: 'HỌC KỲ 1 - NĂM HỌC 2026 - 2027' };
+	const board = {
+		courseCode: '61MGT3HRM',
+		groupNo: '39-01',
+		term: 'HỌC KỲ 1 - NĂM HỌC 2026 - 2027',
+	};
 	it('treats the summary filled in on sharing as a repeat of the header', () => {
 		expect(
 			isRepeatedClassSummary('61MGT3HRM · Nhóm 39-01 · HỌC KỲ 1 - NĂM HỌC 2026 - 2027', board),
@@ -58,4 +80,3 @@ describe('isRepeatedClassSummary', () => {
 		expect(isRepeatedClassSummary('', board)).toBe(false);
 	});
 });
-
