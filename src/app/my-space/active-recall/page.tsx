@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { listPublishedRecallDecks } from '@/features/active-recall';
+import { Icon } from '@/components/ui/Icon';
 import { routes } from '@/config/routes';
 
 export const dynamic = 'force-dynamic';
@@ -27,33 +28,41 @@ export default async function ActiveRecallIndexPage() {
 				<section className="mt-10 border-t border-hairline" aria-label="Các bộ thẻ công khai">
 					{decks.length ? (
 						decks.map((deck) => (
-							<Link
-								key={deck.id}
-								href={routes.activeRecallDeck(deck.slug)}
-								className="recall-deck-row group"
-							>
-								<div className="recall-stack-mark" aria-hidden="true">
-									<i />
-									<i />
-									<i />
-								</div>
-								<div className="min-w-0 flex-1">
-									<p className="text-sm text-ink-secondary">
-										{[deck.subject, deck.lessonLabel].filter(Boolean).join(' · ') || 'Bộ thẻ'}
-									</p>
-									<h2 className="mt-1 font-display text-2xl font-medium tracking-tight text-ink transition-colors group-hover:text-bronze">
-										{deck.title}
-									</h2>
-									{deck.description ? (
-										<p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-secondary">
-											{deck.description}
+							<div key={deck.id} className="recall-index-row">
+								<Link href={routes.activeRecallDeck(deck.slug)} className="recall-deck-row group">
+									<div className="recall-stack-mark" aria-hidden="true">
+										<i />
+										<i />
+										<i />
+									</div>
+									<div className="min-w-0 flex-1">
+										<p className="text-sm text-ink-secondary">
+											{[deck.subject, deck.lessonLabel].filter(Boolean).join(' · ') || 'Bộ thẻ'}
 										</p>
-									) : null}
-								</div>
-								<span className="shrink-0 text-sm tabular-nums text-ink-secondary">
-									{deck.cardCount} thẻ →
-								</span>
-							</Link>
+										<h2
+											id={`deck-${deck.id}`}
+											className="mt-1 font-display text-2xl font-medium tracking-tight text-ink transition-colors group-hover:text-bronze"
+										>
+											{deck.title}
+										</h2>
+										{deck.description ? (
+											<p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-secondary">
+												{deck.description}
+											</p>
+										) : null}
+									</div>
+									<span className="shrink-0 text-sm tabular-nums text-ink-secondary">
+										{deck.cardCount} thẻ →
+									</span>
+								</Link>
+								<Link
+									href={routes.activeRecallDeckTest(deck.slug)}
+									aria-describedby={`deck-${deck.id}`}
+									className="recall-test-link"
+								>
+									<Icon name="quiz" size={16} aria-hidden="true" /> Làm Test
+								</Link>
+							</div>
 						))
 					) : (
 						<p className="py-12 text-sm text-ink-secondary">Chưa có bộ thẻ nào được xuất bản.</p>

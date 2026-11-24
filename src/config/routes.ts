@@ -25,6 +25,8 @@ export const routes = {
 	activeRecall: '/my-space/active-recall',
 	/** Legacy standalone deck address. */
 	activeRecallDeck: (slug: string) => `/my-space/active-recall/${slug}` as const,
+	activeRecallDeckTest: (slug: string) =>
+		`/my-space/active-recall/${encodeURIComponent(slug)}?mode=test` as const,
 	mySpaceTests: '/my-space/tests',
 	mySpaceTest: (slug: string) => `/my-space/tests/${slug}` as const,
 	mySpaceTestPlay: (slug: string) => `/my-space/tests/${slug}/play` as const,
