@@ -44,6 +44,12 @@ test.describe('Active Recall', () => {
 		await expect(card).toHaveAttribute('data-side', 'question');
 		await expect(card.locator('.recall-text')).not.toHaveText(question!);
 		await expect(page.getByRole('button', { name: 'Hiện đáp án', exact: true })).toBeVisible();
+		const testLink = page.getByRole('link', { name: 'Làm Test', exact: true });
+		await expect(testLink).toBeVisible();
+		await testLink.click();
+		await expect(page.getByRole('heading', { name: 'Test yourself' })).toBeVisible();
+		await page.getByRole('button', { name: /Bắt đầu HRM/ }).click();
+		await expect(page.getByRole('button', { name: 'Xem đáp án' })).toBeVisible();
 	});
 
 	test('a learner can open a class deck, flip a card, and continue', async ({ page }) => {
