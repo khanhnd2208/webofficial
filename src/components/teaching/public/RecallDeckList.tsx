@@ -4,9 +4,9 @@ import Link from 'next/link';
 import { useSyncExternalStore } from 'react';
 
 import { routes } from '@/config/routes';
+import { parseDeckHeading } from '@/features/active-recall/deckHeading';
 import type { PublicRecallDeckListItem } from '@/features/teaching/types';
 
-import { parseDeckTitle } from './recallDeckTitle';
 
 /** Deck ids this browser has opened before; the player saves its place per deck. */
 function readStartedDecks(decks: PublicRecallDeckListItem[]): string {
@@ -61,7 +61,7 @@ export function RecallDeckList({
 			</div>
 			<ol className="recall-board-list">
 				{decks.map((deck) => {
-					const heading = parseDeckTitle(deck.title, deck.lessonLabel);
+					const heading = parseDeckHeading(deck.title, deck.lessonLabel);
 					const inProgress = startedIds.has(deck.id);
 					return (
 						<li key={deck.id}>

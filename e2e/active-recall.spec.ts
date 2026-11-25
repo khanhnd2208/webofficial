@@ -54,7 +54,7 @@ test.describe('Active Recall', () => {
 
 	test('a learner can open a class deck, flip a card, and continue', async ({ page }) => {
 		await page.goto('/lop/hrm-fall-2026?tab=recall', { waitUntil: 'networkidle' });
-		const deckLink = page.getByRole('link', { name: /HRM · Lesson 1/i }).first();
+		const deckLink = page.getByRole('link', { name: /Bài 1:\s*Introduction to HRM/i }).first();
 		if ((await deckLink.count()) === 0) {
 			test.skip(true, 'The class-linked HRM sample deck is not published on this public page.');
 			return;

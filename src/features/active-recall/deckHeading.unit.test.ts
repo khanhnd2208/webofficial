@@ -12,6 +12,14 @@ describe('parseDeckHeading', () => {
 			number: '1',
 			title: 'Introduction to HRM',
 		});
+		expect(parseDeckHeading('HRM - Lecture 2 — Work Analysis and Job Design')).toEqual({
+			number: '2',
+			title: 'Work Analysis and Job Design',
+		});
+		expect(parseDeckHeading('Bài 10: Quản trị hiệu suất')).toEqual({
+			number: '10',
+			title: 'Quản trị hiệu suất',
+		});
 		expect(parseDeckHeading('Bài 02: Phân tích công việc')).toEqual({
 			number: '2',
 			title: 'Phân tích công việc',
@@ -23,7 +31,8 @@ describe('parseDeckHeading', () => {
 			number: '5',
 			title: 'Ôn tập giữa kỳ',
 		});
-		expect(parseDeckHeading('Lesson 4')).toEqual({ number: null, title: 'Lesson 4' });
+		expect(parseDeckHeading('Key terms', 'Lesson 4')).toEqual({ number: '4', title: 'Key terms' });
+		expect(parseDeckHeading('Lecture 5')).toEqual({ number: null, title: 'Lecture 5' });
 		expect(parseDeckHeading('Tổng hợp')).toEqual({ number: null, title: 'Tổng hợp' });
 	});
 });
