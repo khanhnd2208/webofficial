@@ -49,7 +49,18 @@ function labelTable(table: HastNode) {
 	for (const body of elements(table, 'tbody')) {
 		for (const row of elements(body, 'tr')) {
 			elements(row, 'td').forEach((cell, index) => {
-				if (labels[index]) cell.properties = { ...cell.properties, dataLabel: labels[index] };
+				if (!labels[index]) return;
+				cell.properties = { ...cell.properties, dataLabel: labels[index] };
+				// One wrapper keeps text, bold and links flowing together when the cell becomes a
+				// two-column grid (label | value) on phones.
+				cell.children = [
+					{
+						type: 'element',
+						tagName: 'span',
+						properties: { className: ['ln-cell'] },
+						children: cell.children ?? [],
+					},
+				];
 			});
 		}
 	}

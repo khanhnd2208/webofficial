@@ -33,6 +33,18 @@ describe('rehypeTableLabels', () => {
 		expect(table.properties).toEqual({ role: 'table' });
 	});
 
+	it('wraps the whole cell so inline formatting stays in one value', () => {
+		const cell = el('td', [text('Trước '), el('strong', [text('quan trọng')]), text(' sau')]);
+		const table = el('table', [
+			el('thead', [el('tr', [el('th', [text('Mức')])])]),
+			el('tbody', [el('tr', [cell])]),
+		]);
+		rehypeTableLabels()({ type: 'root', children: [table] });
+		expect(cell.children).toHaveLength(1);
+		expect(cell.children?.[0].tagName).toBe('span');
+		expect(cell.children?.[0].children).toHaveLength(3);
+	});
+
 	it('leaves a table without headers alone', () => {
 		const row = el('tr', [el('td', [text('a')])]);
 		const table = el('table', [el('tbody', [row])]);
