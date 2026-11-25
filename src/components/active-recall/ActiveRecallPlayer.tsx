@@ -12,6 +12,7 @@ import {
 	type PointerEvent as ReactPointerEvent,
 } from 'react';
 
+import { usePresentationMode } from './usePresentationMode';
 import { useRecallStudy } from './useRecallStudy';
 
 import type { ActiveRecallStudyDeck } from '@/features/active-recall';
@@ -120,8 +121,6 @@ export default function ActiveRecallPlayer({
 	const [viMode, setViMode] = useState(false);
 	const [splitView, setSplitView] = useState(false);
 	const [hydrated, setHydrated] = useState(false);
-	const [presentation, setPresentation] = useState(false);
-	const [nativeFullscreen, setNativeFullscreen] = useState(false);
 	const [optionsOpen, setOptionsOpen] = useState(false);
 	const readingSize = useSyncExternalStore(
 		subscribeReadingSize,
@@ -133,14 +132,15 @@ export default function ActiveRecallPlayer({
 	const cardBodyRef = useRef<HTMLDivElement>(null);
 	const toolsRef = useRef<HTMLDivElement>(null);
 	const optionsToggleRef = useRef<HTMLButtonElement>(null);
-	const restoreFocusRef = useRef<HTMLElement | null>(null);
 	const cardGesture = useRef<CardGesture>({ x: 0, y: 0, skip: false, touch: false });
 	const storageKey = `active-recall:${deck.id}`;
 	const byId = useMemo(() => new Map(deck.cards.map((card) => [card.id, card])), [deck.cards]);
 	const currentIndex = Math.max(0, ids.indexOf(currentId));
 	const card = byId.get(currentId) ?? deck.cards[0];
-	const fallbackPresentation = presentation && !nativeFullscreen;
 	const language: RecallLanguage = splitView ? 'split' : viMode ? 'vi' : 'en';
+	const closeOptions = useCallback(() => setOptionsOpen(false), []);
+	const { presentation, fallbackPresentation, leavePresentation, togglePresentation } =
+		usePresentationMode(rootRef, closeOptions);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -162,7 +162,8 @@ export default function ActiveRecallPlayer({
 				window.clearTimeout(timer);
 			};
 		} catch {
-			setHydrated(true);
+			const timer = window.setTimeout(() => setHydrated(true), 0);
+			return () => window.clearTimeout(timer);
 		}
 	}, [byId, originalIds, showViToggle, storageKey]);
 
@@ -188,17 +189,6 @@ export default function ActiveRecallPlayer({
 			// Device-local resume is optional.
 		}
 	}, [card, hydrated, shuffled, showViToggle, splitView, storageKey, viMode]);
-
-	useEffect(() => {
-		const onFullscreen = () => {
-			const ours = document.fullscreenElement === rootRef.current;
-			setNativeFullscreen(ours);
-			if (ours) setPresentation(true);
-			else if (!document.fullscreenElement) setPresentation(false);
-		};
-		document.addEventListener('fullscreenchange', onFullscreen);
-		return () => document.removeEventListener('fullscreenchange', onFullscreen);
-	}, []);
 
 	useEffect(() => {
 		const body = cardBodyRef.current;
@@ -338,98 +328,6 @@ export default function ActiveRecallPlayer({
 	const chooseReadingSize = useCallback((size: (typeof READING_SIZES)[number]) => {
 		writeStoredReadingSize(size);
 	}, []);
-
-	const leavePresentation = useCallback(async () => {
-		try {
-			if (document.fullscreenElement === rootRef.current) {
-				await document.exitFullscreen?.();
-			}
-		} catch {
-			// Check the actual fullscreen state below; a browser can reject while completing
-			// the exit, or reject while still keeping the player fullscreen.
-		}
-		if (document.fullscreenElement === rootRef.current) return;
-		setNativeFullscreen(false);
-		setPresentation(false);
-		window.requestAnimationFrame(() => restoreFocusRef.current?.focus?.());
-	}, []);
-
-	const enterPresentation = useCallback(async () => {
-		const root = rootRef.current;
-		if (!root) return;
-		setOptionsOpen(false);
-		restoreFocusRef.current =
-			document.activeElement instanceof HTMLElement ? document.activeElement : null;
-		if (root.requestFullscreen) {
-			let timer = 0;
-			try {
-				await Promise.race([
-					root.requestFullscreen(),
-					new Promise((_, reject) => {
-						timer = window.setTimeout(() => reject(new Error('fullscreen-timeout')), 500);
-					}),
-				]);
-			} catch {
-				// Fall through to the visual fallback below.
-			} finally {
-				window.clearTimeout(timer);
-			}
-		}
-		setPresentation(true);
-	}, []);
-
-	const togglePresentation = useCallback(async () => {
-		if (presentation || document.fullscreenElement === rootRef.current) {
-			await leavePresentation();
-			return;
-		}
-		await enterPresentation();
-	}, [enterPresentation, leavePresentation, presentation]);
-
-	useEffect(() => {
-		if (!presentation || nativeFullscreen) return;
-		const previousOverflow = document.body.style.overflow;
-		const previousPadding = document.body.style.paddingRight;
-		const scrollbar = window.innerWidth - document.documentElement.clientWidth;
-		document.body.style.overflow = 'hidden';
-		if (scrollbar > 0) document.body.style.paddingRight = `${scrollbar}px`;
-		return () => {
-			document.body.style.overflow = previousOverflow;
-			document.body.style.paddingRight = previousPadding;
-		};
-	}, [nativeFullscreen, presentation]);
-
-	useEffect(() => {
-		if (!presentation || nativeFullscreen) return;
-		const root = rootRef.current;
-		if (!root) return;
-
-		const focusable = () =>
-			Array.from(
-				root.querySelectorAll<HTMLElement>(
-					'button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
-				),
-			).filter((element) => element.offsetParent !== null);
-
-		focusable()[0]?.focus();
-
-		const onKeyDown = (event: KeyboardEvent) => {
-			if (event.key !== 'Tab') return;
-			const items = focusable();
-			if (items.length === 0) return;
-			const first = items[0]!;
-			const last = items[items.length - 1]!;
-			if (event.shiftKey && document.activeElement === first) {
-				event.preventDefault();
-				last.focus();
-			} else if (!event.shiftKey && document.activeElement === last) {
-				event.preventDefault();
-				first.focus();
-			}
-		};
-		document.addEventListener('keydown', onKeyDown, true);
-		return () => document.removeEventListener('keydown', onKeyDown, true);
-	}, [nativeFullscreen, presentation]);
 
 	useEffect(() => {
 		const onKey = (event: KeyboardEvent) => {
