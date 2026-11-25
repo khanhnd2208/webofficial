@@ -3,6 +3,7 @@ import { isValidElement, type ReactNode } from 'react';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 
+import { normalizeTypedBullets } from '@/features/learn/bullets';
 import remarkLearnCallouts from '@/features/learn/remarkCallouts';
 import remarkLearnFootnotes from '@/features/learn/remarkFootnotes';
 import { headingId } from '@/features/learn/outline';
@@ -85,7 +86,7 @@ export default function LearnMarkdown({
 				remarkPlugins={[remarkGfm, remarkBreaks, remarkLearnCallouts, remarkLearnFootnotes]}
 				components={renderComponents}
 			>
-				{markdown}
+				{normalizeTypedBullets(markdown)}
 			</ReactMarkdown>
 		</div>
 	);

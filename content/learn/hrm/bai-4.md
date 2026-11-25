@@ -30,7 +30,7 @@ Bài này sẽ trả lời các câu hỏi:
 
 9. … để vừa sức trí óc?
 
-## Một hiểu lầm cần bỏ: Nhiều người nghĩ bản mô tả công việc là tờ giấy thủ tục, soạn ra để đăng tuyển rồi cất vào ngăn kéo. Thực ra, hiểu công việc là nền móng cho gần như mọi việc của quản trị nhân lực: tuyển ai, đào tạo gì, đánh giá thế nào, trả lương bao nhiêu. Nền móng lệch thì mọi thứ xây bên trên đều lệch theo.
+Một hiểu lầm cần bỏ: Nhiều người nghĩ bản mô tả công việc là tờ giấy thủ tục, soạn ra để đăng tuyển rồi cất vào ngăn kéo. Thực ra, hiểu công việc là nền móng cho gần như mọi việc của quản trị nhân lực: tuyển ai, đào tạo gì, đánh giá thế nào, trả lương bao nhiêu. Nền móng lệch thì mọi thứ xây bên trên đều lệch theo.
 
 Muốn tuyển đúng người, trước hết phải hiểu đúng việc.
 
