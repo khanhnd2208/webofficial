@@ -30,7 +30,7 @@ Bài này sẽ giúp bạn trả lời sáu câu hỏi:
 
 6. Nghề nhân sự có những con đường nào?
 
-## Một hiểu lầm cần bỏ ngay: "Nhân sự là phòng làm giấy tờ: chấm công, tính lương, lưu hồ sơ." Giấy tờ chỉ là phần nổi. Phần chìm, và quan trọng hơn, là những quyết định về ai làm việc cho tổ chức và họ làm việc thế nào. Chị Hạnh chưa có phòng nhân sự, nhưng ngày nào chị cũng đang làm quản trị nhân lực, chỉ là làm chưa có hệ thống.
+Một hiểu lầm cần bỏ ngay: "Nhân sự là phòng làm giấy tờ: chấm công, tính lương, lưu hồ sơ." Giấy tờ chỉ là phần nổi. Phần chìm, và quan trọng hơn, là những quyết định về ai làm việc cho tổ chức và họ làm việc thế nào. Chị Hạnh chưa có phòng nhân sự, nhưng ngày nào chị cũng đang làm quản trị nhân lực, chỉ là làm chưa có hệ thống.
 
 ## Về cách tôi viết bài giảng này
 
