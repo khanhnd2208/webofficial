@@ -40,7 +40,7 @@ test.describe('Active Recall', () => {
 		expect(answer).toBeTruthy();
 		expect(answer).not.toBe(question);
 
-		await page.getByRole('button', { name: 'Tiếp →' }).click();
+		await page.getByRole('button', { name: 'Chưa nhớ' }).click();
 		await expect(card).toHaveAttribute('data-side', 'question');
 		await expect(card.locator('.recall-text')).not.toHaveText(question!);
 		await expect(page.getByRole('button', { name: 'Hiện đáp án', exact: true })).toBeVisible();
@@ -48,13 +48,13 @@ test.describe('Active Recall', () => {
 		await expect(testLink).toBeVisible();
 		await testLink.click();
 		await expect(page.getByRole('heading', { name: 'Test yourself' })).toBeVisible();
-		await page.getByRole('button', { name: /Bắt đầu HRM/ }).click();
+		await page.getByRole('button', { name: /^Bắt đầu · \d+ câu$/ }).click();
 		await expect(page.getByRole('button', { name: 'Xem đáp án' })).toBeVisible();
 	});
 
 	test('a learner can open a class deck, flip a card, and continue', async ({ page }) => {
 		await page.goto('/lop/hrm-fall-2026?tab=recall', { waitUntil: 'networkidle' });
-		const deckLink = page.getByRole('link', { name: /HRM · Lesson 1/i }).first();
+		const deckLink = page.getByRole('link', { name: /Bài 1:\s*Introduction to HRM/i }).first();
 		if ((await deckLink.count()) === 0) {
 			test.skip(true, 'The class-linked HRM sample deck is not published on this public page.');
 			return;
@@ -82,7 +82,7 @@ test.describe('Active Recall', () => {
 		expect(answer).toBeTruthy();
 		expect(answer).not.toBe(question);
 
-		await page.getByRole('button', { name: 'Tiếp →' }).click();
+		await page.getByRole('button', { name: 'Chưa nhớ' }).click();
 		await expect(card).toHaveAttribute('data-side', 'question');
 		await expect(card.locator('.recall-text')).not.toHaveText(question!);
 		await expect(page.getByRole('button', { name: 'Hiện đáp án', exact: true })).toBeVisible();
@@ -155,10 +155,10 @@ test.describe('Active Recall', () => {
 
 			expect((await student.goto(coursePath))?.status()).toBe(200);
 			await expect(student.getByRole('heading', { level: 1 })).toHaveText(courseName);
-			await expect(student.getByRole('heading', { level: 2 })).toHaveText([
-				'Lecture9',
-				'Lecture 10',
-			]);
+			await expect(student.getByRole('heading', { level: 2 })).toHaveText(['Học theo bài']);
+			await expect(
+				student.getByRole('region', { name: 'Học theo bài' }).getByRole('link'),
+			).toHaveText([/Lecture9/, /Lecture 10/]);
 			await expect(student.getByTestId('site-header')).toHaveCount(0);
 			await expect(student.locator('a[href^="/lop/"], a[href^="/my-space/teaching"]')).toHaveCount(
 				0,

@@ -78,6 +78,8 @@ test('Teaching surfaces keep their theme, overlays and responsive navigation', a
 						{
 							question: 'Quản trị nguồn nhân lực là gì?',
 							answer: 'Các quyết định và hoạt động liên quan đến con người trong tổ chức.',
+							questionVi: 'Định nghĩa quản trị nguồn nhân lực.',
+							answerVi: 'Các quyết định về con người trong tổ chức.',
 						},
 						{
 							question: 'Ai tham gia quản trị nguồn nhân lực?',
@@ -186,7 +188,7 @@ test('Teaching surfaces keep their theme, overlays and responsive navigation', a
 			);
 			await page.getByRole('button', { name: 'Hiện đáp án', exact: true }).click();
 			await expect(page.locator('.recall-card')).toHaveAttribute('data-side', 'answer');
-			await page.getByRole('button', { name: 'Tiếp →' }).click();
+			await page.getByRole('button', { name: 'Chưa nhớ' }).click();
 			await expect(page.locator('.recall-card')).toHaveAttribute('data-side', 'question');
 			await expect(page.locator('.recall-card .recall-text')).toContainText('Ai tham gia');
 			await page.emulateMedia({ reducedMotion: 'no-preference' });

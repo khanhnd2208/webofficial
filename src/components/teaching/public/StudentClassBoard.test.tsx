@@ -151,7 +151,7 @@ describe('StudentClassBoard', () => {
 		];
 		render(<StudentClassBoard board={contentBoard} initialTab="recall" />);
 		expect(screen.getByRole('tab', { name: 'Ôn tập' })).toHaveAttribute('aria-selected', 'true');
-		expect(screen.getByRole('link', { name: /HRM · Lesson 1/i })).toHaveAttribute(
+		expect(screen.getByRole('link', { name: /Bài 1:\s*Introduction to HRM/i })).toHaveAttribute(
 			'href',
 			'/lop/hrm-101/active-recall/hrm-lesson-1',
 		);

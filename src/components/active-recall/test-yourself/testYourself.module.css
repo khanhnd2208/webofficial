@@ -289,10 +289,31 @@
 
 .startRow[data-linked] {
 	position: static;
-	justify-content: flex-start;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.875rem;
 	margin-top: 1.75rem;
 	padding: 0;
 	background: none;
+}
+
+.selectedDecks {
+	display: grid;
+	gap: 0.25rem;
+	width: 100%;
+	max-width: 32rem;
+	padding: 0.875rem 1rem;
+	border: 1px solid var(--hairline);
+	border-left: 3px solid var(--bronze);
+	border-radius: 0.75rem;
+	background: var(--paper);
+}
+
+.selectedNames {
+	font-size: 1rem;
+	font-weight: 650;
+	line-height: 1.4;
+	overflow-wrap: anywhere;
 }
 
 .moreDecks {
@@ -637,12 +658,16 @@
 		display: grid;
 		max-width: 68rem;
 		grid-template-columns: minmax(13rem, 1fr) minmax(0, 2fr);
+		/* One screen tall: the question box takes what it needs, up to the room
+		   left, and scrolls inside so the grading buttons never fall below the fold. */
+		height: 100svh;
 		grid-template-areas:
 			'tools tools'
 			'boss question'
 			'boss actions'
-			'boss keys';
-		grid-template-rows: auto auto auto 1fr;
+			'boss keys'
+			'boss .';
+		grid-template-rows: auto minmax(0, auto) auto auto 1fr;
 		align-content: start;
 		align-items: start;
 		column-gap: clamp(1.5rem, 4vw, 3rem);
@@ -661,8 +686,12 @@
 	}
 	.bubble {
 		grid-area: question;
+		min-height: 0;
+		max-height: 100%;
 		margin: 0;
 		padding: clamp(1.4rem, 3vw, 2.4rem);
+		overflow: auto;
+		overscroll-behavior: contain;
 	}
 	.keyHint {
 		display: block;
@@ -695,6 +724,18 @@
 
 	.bossSlot > * > * {
 		width: min(220px, 30vw) !important;
+	}
+}
+
+/* Very short windows: let the page scroll instead of squeezing the question. */
+@media (min-width: 720px) and (max-height: 560px) {
+	.battle {
+		height: auto;
+		min-height: 100svh;
+	}
+	.bubble {
+		max-height: none;
+		overflow: visible;
 	}
 }
 

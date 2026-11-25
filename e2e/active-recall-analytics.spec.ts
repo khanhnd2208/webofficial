@@ -117,7 +117,7 @@ test('anonymous Recall study, return visit, admin report and mobile history', as
 				r.url().endsWith('/api/active-recall/study/heartbeat') && r.request().method() === 'POST',
 			responseTimeout,
 		);
-		await page.getByRole('button', { name: 'Tiếp →' }).click();
+		await page.getByRole('button', { name: 'Thẻ tiếp theo' }).click();
 		expect((await classBeat).ok()).toBeTruthy();
 		const reportUrl = `/api/admin/active-recall/analytics?course=${courseId}`;
 		await expect

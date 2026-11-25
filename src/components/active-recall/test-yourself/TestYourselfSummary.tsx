@@ -1,6 +1,6 @@
 'use client';
 
-import { recallVisibleText } from '@/features/active-recall/richText';
+import { recallPreviewText } from '@/features/active-recall/richText';
 
 import { ArenaMonster } from '@/components/teaching/arena/ArenaFigures';
 import type { ArenaBoss } from '@/components/teaching/arena/arenaBosses';
@@ -97,7 +97,7 @@ export default function TestYourselfSummary({
 					<ol>
 						{hardest.map(([cardId, count]) => (
 							<li key={cardId}>
-								<span>{recallVisibleText(questionOf(cardId))}</span>
+								<span>{recallPreviewText(questionOf(cardId))}</span>
 								<span className={styles.hardestCount}>×{count}</span>
 							</li>
 						))}

@@ -212,11 +212,13 @@ export async function getPublishedRecallCourse(courseId: string) {
 				where: publishedDeckWhere,
 				orderBy: { slug: 'asc' },
 				select: {
+					id: true,
 					slug: true,
 					title: true,
 					lessonLabel: true,
 					description: true,
-					_count: { select: { cards: true } },
+					// Ids only, so this browser's progress can be matched to cards that still exist.
+					cards: { select: { id: true }, orderBy: { position: 'asc' } },
 				},
 			},
 		},
@@ -224,7 +226,9 @@ export async function getPublishedRecallCourse(courseId: string) {
 	if (!course?.decks.length) return null;
 	return {
 		courseName: course.courseName,
-		decks: course.decks.sort((left, right) => compareRecallDeckTitles(left.title, right.title)),
+		decks: course.decks
+			.sort((left, right) => compareRecallDeckTitles(left.title, right.title))
+			.map(({ cards, ...deck }) => ({ ...deck, cardIds: cards.map((card) => card.id) })),
 	};
 }
 

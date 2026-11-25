@@ -11,6 +11,9 @@ const { createRecallTracker, study, stop } = vi.hoisted(() => ({
 }));
 vi.mock('./recallTracker', () => ({ createRecallTracker }));
 
+const openMenu = () => fireEvent.click(screen.getByRole('button', { name: 'Tùy chọn' }));
+const stored = () => JSON.parse(localStorage.getItem('active-recall:deck-1') ?? '{}');
+
 const deck = {
 	id: 'deck-1',
 	slug: 'demo',
@@ -92,7 +95,8 @@ describe('ActiveRecallPlayer', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'Hiện đáp án' }));
 		expect(screen.getByText('Answer one')).toBeVisible();
 		expect(screen.getByText('Đáp án')).toBeVisible();
-		fireEvent.click(screen.getByRole('button', { name: 'Tiếp →' }));
+		expect(screen.queryByRole('button', { name: 'Thẻ tiếp theo' })).not.toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Chưa nhớ' }));
 		expect(screen.getByText('Question two')).toBeVisible();
 		expect(screen.queryByText('Answer two')).not.toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Hiện đáp án' })).toBeVisible();
@@ -127,7 +131,7 @@ describe('ActiveRecallPlayer', () => {
 
 	it('does not hijack Enter or Space from interactive controls', () => {
 		render(<ActiveRecallPlayer deck={deck} />);
-		const nextButton = screen.getByRole('button', { name: 'Tiếp →' });
+		const nextButton = screen.getByRole('button', { name: 'Thẻ tiếp theo' });
 		fireEvent.keyDown(nextButton, { key: 'Enter' });
 		expect(screen.queryByText('Answer one')).not.toBeInTheDocument();
 		expect(screen.getByText('Question one')).toBeVisible();
@@ -146,58 +150,36 @@ describe('ActiveRecallPlayer', () => {
 		vi.spyOn(Math, 'random').mockReturnValue(0);
 		const { unmount } = render(<ActiveRecallPlayer deck={deck} />);
 		await waitFor(() =>
-			expect(JSON.parse(localStorage.getItem('active-recall:deck-1') ?? '{}')).toEqual({
+			expect(stored()).toMatchObject({
 				currentId: 'a',
 				shuffled: false,
 				viMode: false,
 				splitView: false,
 			}),
 		);
+		expect(stored().studiedAt).toEqual(expect.any(Number));
 
 		expect(screen.getByText('Question one')).toBeVisible();
 		expect(screen.getByText('1/2')).toBeVisible();
-		expect(screen.getByRole('button', { name: 'Xáo câu' })).toHaveAttribute(
-			'aria-pressed',
-			'false',
-		);
+		openMenu();
+		const shuffleSwitch = () => screen.getByRole('switch', { name: 'Xáo thứ tự thẻ' });
+		expect(shuffleSwitch()).toHaveAttribute('aria-checked', 'false');
 
-		fireEvent.click(screen.getByRole('button', { name: 'Xáo câu' }));
+		fireEvent.click(shuffleSwitch());
 		expect(screen.getByText('Question two')).toBeVisible();
 		expect(screen.getByText('Câu hỏi')).toBeVisible();
 		expect(screen.getByText('1/2')).toBeVisible();
-		expect(screen.getByRole('button', { name: 'Về thứ tự ban đầu' })).toHaveAttribute(
-			'aria-pressed',
-			'true',
-		);
-		await waitFor(() =>
-			expect(JSON.parse(localStorage.getItem('active-recall:deck-1') ?? '{}')).toEqual({
-				currentId: 'b',
-				shuffled: true,
-				viMode: false,
-				splitView: false,
-			}),
-		);
+		await waitFor(() => expect(stored()).toMatchObject({ currentId: 'b', shuffled: true }));
 
 		fireEvent.click(screen.getByRole('button', { name: 'Hiện đáp án' }));
 		expect(screen.getByText('Answer two')).toBeVisible();
 
-		fireEvent.click(screen.getByRole('button', { name: 'Về thứ tự ban đầu' }));
+		openMenu();
+		expect(shuffleSwitch()).toHaveAttribute('aria-checked', 'true');
+		fireEvent.click(shuffleSwitch());
 		expect(screen.getByText('Question one')).toBeVisible();
-		expect(screen.getByText('Câu hỏi')).toBeVisible();
 		expect(screen.queryByText('Answer one')).not.toBeInTheDocument();
-		expect(screen.getByText('1/2')).toBeVisible();
-		expect(screen.getByRole('button', { name: 'Xáo câu' })).toHaveAttribute(
-			'aria-pressed',
-			'false',
-		);
-		await waitFor(() =>
-			expect(JSON.parse(localStorage.getItem('active-recall:deck-1') ?? '{}')).toEqual({
-				currentId: 'a',
-				shuffled: false,
-				viMode: false,
-				splitView: false,
-			}),
-		);
+		await waitFor(() => expect(stored()).toMatchObject({ currentId: 'a', shuffled: false }));
 
 		unmount();
 		render(<ActiveRecallPlayer deck={deck} />);
@@ -205,15 +187,8 @@ describe('ActiveRecallPlayer', () => {
 			await new Promise((resolve) => setTimeout(resolve, 0));
 		});
 		expect(screen.getByText('Question one')).toBeVisible();
-		expect(screen.getByText('Câu hỏi')).toBeVisible();
 		expect(screen.getByText('1/2')).toBeVisible();
-		expect(screen.getByRole('button', { name: 'Xáo câu' })).toBeVisible();
-		expect(JSON.parse(localStorage.getItem('active-recall:deck-1') ?? '{}')).toEqual({
-			currentId: 'a',
-			shuffled: false,
-			viMode: false,
-			splitView: false,
-		});
+		expect(stored()).toMatchObject({ currentId: 'a', shuffled: false });
 	});
 
 	it('renders stored HTML formatting on both sides of a card', () => {
@@ -268,14 +243,14 @@ describe('ActiveRecallPlayer', () => {
 	it('defaults to large reading size and remembers a new choice across decks', async () => {
 		const { unmount } = render(<ActiveRecallPlayer deck={deck} />);
 		expect(screen.getByRole('main')).toHaveAttribute('data-reading-size', DEFAULT_READING_SIZE);
+		openMenu();
 		expect(screen.queryByRole('radio', { name: 'Vừa' })).not.toBeInTheDocument();
 		expect(screen.getByRole('radio', { name: 'Lớn' })).toHaveAttribute('aria-checked', 'true');
 
 		fireEvent.click(screen.getByRole('radio', { name: 'Nhỏ' }));
 		expect(screen.getByRole('main')).toHaveAttribute('data-reading-size', 'small');
 		expect(localStorage.getItem(READING_SIZE_STORAGE_KEY)).toBe('small');
-		expect(screen.getByText('Cỡ chữ nhỏ')).toBeInTheDocument();
-		expect(screen.getByText('Cỡ chữ lớn')).toBeInTheDocument();
+		expect(screen.getByRole('radiogroup', { name: 'Cỡ chữ' })).toBeVisible();
 		expect(screen.getByText('Trình chiếu toàn màn hình')).toBeInTheDocument();
 		unmount();
 
@@ -283,6 +258,7 @@ describe('ActiveRecallPlayer', () => {
 		await waitFor(() =>
 			expect(screen.getByRole('main')).toHaveAttribute('data-reading-size', 'small'),
 		);
+		openMenu();
 		expect(screen.getByRole('radio', { name: 'Nhỏ' })).toHaveAttribute('aria-checked', 'true');
 	});
 
@@ -300,6 +276,7 @@ describe('ActiveRecallPlayer', () => {
 		await waitFor(() =>
 			expect(screen.getByRole('main')).toHaveAttribute('data-reading-size', 'large'),
 		);
+		openMenu();
 		expect(screen.getByRole('radio', { name: 'Lớn' })).toHaveAttribute('aria-checked', 'true');
 	});
 
@@ -315,7 +292,6 @@ describe('ActiveRecallPlayer', () => {
 			'href',
 			'/lop/hrm-fall-2026?tab=recall',
 		);
-		expect(screen.getByRole('main')).toHaveAttribute('data-has-back', 'true');
 	});
 
 	it('flips from the card itself unless the learner is selecting text', () => {
@@ -361,12 +337,13 @@ describe('ActiveRecallPlayer', () => {
 		});
 
 		render(<ActiveRecallPlayer deck={deck} />);
-		fireEvent.click(screen.getByRole('button', { name: 'Trình chiếu' }));
+		openMenu();
+		fireEvent.click(screen.getByRole('button', { name: /Trình chiếu toàn màn hình/ }));
 		await waitFor(() => expect(screen.getByRole('main')).toHaveClass('recall-player-presentation'));
 		expect(screen.getByRole('button', { name: 'Thoát' })).toBeVisible();
 		expect(screen.getByRole('button', { name: 'Hiện đáp án' })).toBeVisible();
-		expect(screen.getByRole('button', { name: '← Trước' })).toBeVisible();
-		expect(screen.getByRole('button', { name: 'Tiếp →' })).toBeVisible();
+		expect(screen.getByRole('button', { name: 'Thẻ trước' })).toBeVisible();
+		expect(screen.getByRole('button', { name: 'Thẻ tiếp theo' })).toBeVisible();
 		expect(screen.getByRole('main')).toHaveAttribute('data-mode', 'presentation');
 	});
 
@@ -376,9 +353,9 @@ describe('ActiveRecallPlayer', () => {
 		});
 
 		render(<ActiveRecallPlayer deck={deck} />);
-		const presentButton = screen.getByRole('button', { name: 'Trình chiếu' });
-		presentButton.focus();
-		fireEvent.click(presentButton);
+		const toggle = screen.getByRole('button', { name: 'Tùy chọn' });
+		fireEvent.click(toggle);
+		fireEvent.click(screen.getByRole('button', { name: /Trình chiếu toàn màn hình/ }));
 		await waitFor(() =>
 			expect(screen.getByRole('dialog', { name: 'Chế độ trình chiếu Active Recall' })).toHaveClass(
 				'recall-player-presentation',
@@ -396,7 +373,7 @@ describe('ActiveRecallPlayer', () => {
 		);
 		expect(document.body.style.overflow).toBe('');
 		expect(screen.queryByRole('button', { name: 'Thoát' })).not.toBeInTheDocument();
-		await waitFor(() => expect(presentButton).toHaveFocus());
+		await waitFor(() => expect(toggle).toHaveFocus());
 	});
 
 	it('keeps presentation controls when native fullscreen exit is rejected', async () => {
@@ -414,7 +391,8 @@ describe('ActiveRecallPlayer', () => {
 		});
 
 		render(<ActiveRecallPlayer deck={deck} />);
-		fireEvent.click(screen.getByRole('button', { name: 'Trình chiếu' }));
+		openMenu();
+		fireEvent.click(screen.getByRole('button', { name: /Trình chiếu toàn màn hình/ }));
 		await waitFor(() => expect(screen.getByRole('button', { name: 'Thoát' })).toBeVisible());
 		fireEvent.click(screen.getByRole('button', { name: 'Thoát' }));
 		await waitFor(() => expect(screen.getByRole('button', { name: 'Thoát' })).toBeVisible());
@@ -469,7 +447,7 @@ describe('ActiveRecallPlayer', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'Hiện đáp án' }));
 		expect(screen.getByText('Một hệ thống chính sách.')).toBeVisible();
 
-		fireEvent.click(screen.getByRole('button', { name: 'Tiếp →' }));
+		fireEvent.keyDown(window, { key: 'ArrowRight' });
 		expect(screen.getByText('Question two')).toBeVisible();
 
 		fireEvent.click(english);
@@ -520,7 +498,7 @@ describe('ActiveRecallPlayer', () => {
 		expect(screen.getByText('A system of policies.')).toBeVisible();
 		expect(screen.getByText('Một hệ thống chính sách.')).toBeVisible();
 
-		fireEvent.click(screen.getByRole('button', { name: 'Tiếp →' }));
+		fireEvent.keyDown(window, { key: 'ArrowRight' });
 		expect(screen.getByText('Question two')).toBeVisible();
 		expect(screen.getByText('Chưa có bản tiếng Việt')).toBeVisible();
 
@@ -531,7 +509,7 @@ describe('ActiveRecallPlayer', () => {
 		expect(screen.queryByText('Chưa có bản tiếng Việt')).not.toBeInTheDocument();
 
 		await waitFor(() =>
-			expect(JSON.parse(localStorage.getItem('active-recall:deck-1') ?? '{}')).toEqual({
+			expect(stored()).toMatchObject({
 				currentId: 'b',
 				shuffled: false,
 				viMode: true,
@@ -568,7 +546,7 @@ describe('ActiveRecallPlayer', () => {
 		expect(screen.queryByRole('radiogroup', { name: 'Ngôn ngữ' })).not.toBeInTheDocument();
 		expect(screen.getByText('Question one')).toBeVisible();
 		await waitFor(() =>
-			expect(JSON.parse(localStorage.getItem('active-recall:deck-1') ?? '{}')).toEqual({
+			expect(stored()).toMatchObject({
 				currentId: 'a',
 				shuffled: false,
 				viMode: true,
@@ -585,7 +563,8 @@ describe('ActiveRecallPlayer', () => {
 		expect(screen.getByText('Answer one')).toBeVisible();
 	});
 
-	it('ends the deck with a summary and lets the learner start again', () => {
+	it('ends the deck with a summary and lets the learner go back or study again', () => {
+		vi.spyOn(Math, 'random').mockReturnValue(0);
 		render(
 			<ActiveRecallPlayer
 				deck={deck}
@@ -593,28 +572,32 @@ describe('ActiveRecallPlayer', () => {
 				backLabel="Ôn tập của lớp"
 			/>,
 		);
-		fireEvent.click(screen.getByRole('button', { name: 'Tiếp →' }));
-		expect(screen.queryByRole('button', { name: 'Học lại từ đầu' })).not.toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Thẻ tiếp theo' }));
 		fireEvent.click(screen.getByRole('button', { name: 'Hoàn thành' }));
 
-		expect(screen.getByRole('heading', { name: 'Bạn đã ôn hết 2 thẻ.' })).toBeVisible();
+		expect(screen.getByRole('heading', { name: 'Bạn đã xem hết 2 thẻ.' })).toBeVisible();
 		expect(screen.queryByText('Question two')).not.toBeInTheDocument();
 		expect(screen.getAllByRole('link', { name: /Ôn tập của lớp/ })).toHaveLength(2);
 
-		fireEvent.click(screen.getByRole('button', { name: '← Trước' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Thẻ trước' }));
 		expect(screen.getByText('Question two')).toBeVisible();
 		fireEvent.keyDown(window, { key: 'ArrowRight' });
-		expect(screen.getByRole('heading', { name: 'Bạn đã ôn hết 2 thẻ.' })).toBeVisible();
+		expect(screen.getByRole('heading', { name: 'Bạn đã xem hết 2 thẻ.' })).toBeVisible();
 
-		fireEvent.click(screen.getByRole('button', { name: 'Học lại từ đầu' }));
-		expect(screen.getByText('Question one')).toBeVisible();
+		fireEvent.click(screen.getByRole('button', { name: 'Xáo và học lại cả bộ' }));
+		expect(screen.getByText('Question two')).toBeVisible();
 		expect(screen.getByText('1/2')).toBeVisible();
+		openMenu();
+		expect(screen.getByRole('switch', { name: 'Xáo thứ tự thẻ' })).toHaveAttribute(
+			'aria-checked',
+			'true',
+		);
 	});
 
-	it('offers the boss test under the title and again on the summary', () => {
+	it('offers the boss test in the toolbar and again on the summary', () => {
 		render(<ActiveRecallPlayer deck={deck} testHref="/lop/hrm/test-yourself?deck=demo" />);
 		expect(screen.getAllByRole('link', { name: /Làm Test/ })).toHaveLength(1);
-		fireEvent.click(screen.getByRole('button', { name: 'Tiếp →' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Thẻ tiếp theo' }));
 		fireEvent.click(screen.getByRole('button', { name: 'Hoàn thành' }));
 		const links = screen.getAllByRole('link', { name: /Làm Test/ });
 		expect(links).toHaveLength(2);
@@ -623,17 +606,58 @@ describe('ActiveRecallPlayer', () => {
 		}
 	});
 
-	it('shuffles and restarts from the summary', () => {
-		vi.spyOn(Math, 'random').mockReturnValue(0);
+	it('grades a card only after the answer is shown and remembers known cards', () => {
 		render(<ActiveRecallPlayer deck={deck} />);
-		fireEvent.click(screen.getByRole('button', { name: 'Tiếp →' }));
-		fireEvent.click(screen.getByRole('button', { name: 'Hoàn thành' }));
-		fireEvent.click(screen.getByRole('button', { name: 'Xáo thứ tự rồi học lại' }));
+		expect(screen.queryByRole('button', { name: 'Đã nhớ' })).not.toBeInTheDocument();
+		fireEvent.keyDown(window, { key: '2' });
+		expect(screen.getByText('Question one')).toBeVisible();
+		expect(stored().known).toBeUndefined();
+
+		fireEvent.click(screen.getByRole('button', { name: 'Hiện đáp án' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Đã nhớ' }));
 		expect(screen.getByText('Question two')).toBeVisible();
-		expect(screen.getByRole('button', { name: 'Về thứ tự ban đầu' })).toHaveAttribute(
-			'aria-pressed',
-			'true',
-		);
+		expect(stored().known).toEqual(['a']);
+
+		fireEvent.keyDown(window, { key: ' ' });
+		fireEvent.keyDown(window, { key: '1' });
+		expect(screen.getByRole('heading', { name: 'Bạn đã nhớ 1/2 thẻ.' })).toBeVisible();
+		expect(stored().known).toEqual(['a']);
+	});
+
+	it('reviews only the cards not yet known, then returns to the whole deck', () => {
+		localStorage.setItem('active-recall:deck-1', JSON.stringify({ known: ['a'] }));
+		render(<ActiveRecallPlayer deck={deck} />);
+		fireEvent.click(screen.getByRole('button', { name: 'Thẻ tiếp theo' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Hoàn thành' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Ôn 1 thẻ chưa nhớ' }));
+
+		expect(screen.getByText('Question two')).toBeVisible();
+		expect(screen.getByText('1/1')).toBeVisible();
+		fireEvent.click(screen.getByRole('button', { name: 'Hiện đáp án' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Đã nhớ' }));
+		expect(screen.getByRole('heading', { name: 'Bạn đã nhớ cả bộ thẻ.' })).toBeVisible();
+		expect(stored().known).toEqual(['a', 'b']);
+
+		fireEvent.click(screen.getByRole('button', { name: /Học cả bộ/ }));
+		expect(screen.getByText('1/2')).toBeVisible();
+	});
+
+	it('marks a known card and clears progress after a second confirming tap', () => {
+		localStorage.setItem('active-recall:deck-1', JSON.stringify({ known: ['a'] }));
+		render(<ActiveRecallPlayer deck={deck} />);
+		expect(document.querySelector('.recall-card-known')).toHaveTextContent('Đã nhớ');
+
+		openMenu();
+		fireEvent.click(screen.getByRole('button', { name: 'Xoá tiến độ (1 thẻ đã nhớ)' }));
+		expect(stored().known).toEqual(['a']);
+		fireEvent.click(screen.getByRole('button', { name: 'Bấm lần nữa để xoá' }));
+		expect(stored().known).toEqual([]);
+		expect(document.querySelector('.recall-card-known')).toBeNull();
+	});
+
+	it('hides the language switch when no card has a Vietnamese version', () => {
+		render(<ActiveRecallPlayer deck={deck} showViToggle />);
+		expect(screen.queryByRole('radiogroup', { name: 'Ngôn ngữ' })).not.toBeInTheDocument();
 	});
 
 	it('changes card with a sideways touch swipe but not with a mouse drag', () => {
@@ -688,7 +712,7 @@ describe('ActiveRecallPlayer', () => {
 		expect(toggle).toHaveFocus();
 
 		fireEvent.click(toggle);
-		fireEvent.click(screen.getByRole('button', { name: 'Xáo câu' }));
+		fireEvent.click(screen.getByRole('switch', { name: 'Xáo thứ tự thẻ' }));
 		expect(toggle).toHaveAttribute('aria-expanded', 'false');
 	});
 

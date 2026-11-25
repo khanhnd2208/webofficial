@@ -65,7 +65,8 @@ describe('RecallTestYourself', () => {
 
 	it('starts the linked deck by name and folds the other decks away', () => {
 		renderTest('bai-2');
-		expect(screen.getByRole('button', { name: 'Bắt đầu Bài 2 · 1 câu' })).toBeEnabled();
+		expect(screen.getByRole('button', { name: 'Bắt đầu · 1 câu' })).toBeEnabled();
+		expect(screen.getByText('Bộ đã chọn')).toBeInTheDocument();
 		expect(screen.getByText('Đổi hoặc chọn thêm bộ').closest('details')).not.toHaveAttribute(
 			'open',
 		);
@@ -117,7 +118,7 @@ describe('RecallTestYourself', () => {
 
 	it('pauses and resumes on the same card, then ends the session', () => {
 		renderTest('bai-1');
-		fireEvent.click(screen.getByRole('button', { name: 'Bắt đầu Bài 1 · 2 câu' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Bắt đầu · 2 câu' }));
 		const first = within(bubble()).getByText(/^Question/).textContent;
 		fireEvent.keyDown(window, { key: ' ' });
 		expect(screen.getByText('Ý cần nhớ')).toBeInTheDocument();
@@ -140,7 +141,7 @@ describe('RecallTestYourself', () => {
 
 	it('keeps the chosen language through the summary and drills the hard cards', () => {
 		renderTest('bai-1');
-		fireEvent.click(screen.getByRole('button', { name: 'Bắt đầu Bài 1 · 2 câu' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Bắt đầu · 2 câu' }));
 		fireEvent.click(screen.getByRole('button', { name: 'VI' }));
 		expect(screen.getByRole('button', { name: 'VI' })).toHaveAttribute('aria-pressed', 'true');
 		expect(screen.getByRole('button', { name: 'EN' })).toHaveAttribute('aria-pressed', 'false');
@@ -164,5 +165,18 @@ describe('RecallTestYourself', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'Đấu lại với boss mới' }));
 		expect(screen.getByRole('meter')).toHaveAttribute('aria-valuemax', '1');
 		expect(within(bubble()).getByText(hard)).toBeInTheDocument();
+	});
+
+	it("counts test answers toward each deck's progress", () => {
+		localStorage.clear();
+		renderTest('bai-1');
+		fireEvent.click(screen.getByRole('button', { name: 'Bắt đầu · 2 câu' }));
+		fireEvent.keyDown(window, { key: ' ' });
+		fireEvent.keyDown(window, { key: '1' });
+		fireEvent.keyDown(window, { key: ' ' });
+		fireEvent.keyDown(window, { key: '2' });
+		const progress = JSON.parse(localStorage.getItem('active-recall:d1') ?? '{}');
+		expect(progress.known).toHaveLength(1);
+		expect(progress.studiedAt).toEqual(expect.any(Number));
 	});
 });
