@@ -178,7 +178,7 @@ test('Teaching surfaces keep their theme, overlays and responsive navigation', a
 			await expect(
 				page.getByRole('heading', { name: 'Chào Nguyễn Thị Hoàng Phương Minh Anh' }),
 			).toBeVisible();
-			await page.getByRole('button', { name: 'Đổi' }).click();
+			await page.getByRole('button', { name: 'Chọn lại' }).click();
 			await expect(page.getByRole('heading', { name: 'Bạn là ai trong lớp?' })).toBeVisible();
 			await page.emulateMedia({ reducedMotion: 'reduce' });
 			await page.goto(`/lop/${slug}/active-recall/${deck.slug}`);

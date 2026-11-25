@@ -24,7 +24,7 @@ Câu hỏi của chị Thu chính là nội dung của bài này. Học xong, b�
 
 6. Người tuyển dụng quan trọng đến đâu, và làm gì để họ giúp được nhiều hơn?
 
-## Một hiểu lầm cần bỏ: "Thiếu người thì tuyển, thừa người thì cho nghỉ." Tuyển thêm chỉ là một trong nhiều cách xử lý thiếu người, và thường là cách chậm, khó rút lại. Cho nghỉ là cách nhanh nhất để hết thừa người, nhưng cũng gây tổn thương nhiều nhất. Người làm nhân sự giỏi nhìn trước để có nhiều lựa chọn hơn.
+Một hiểu lầm cần bỏ: "Thiếu người thì tuyển, thừa người thì cho nghỉ." Tuyển thêm chỉ là một trong nhiều cách xử lý thiếu người, và thường là cách chậm, khó rút lại. Cho nghỉ là cách nhanh nhất để hết thừa người, nhưng cũng gây tổn thương nhiều nhất. Người làm nhân sự giỏi nhìn trước để có nhiều lựa chọn hơn.
 
 ## Về cách tôi viết bài giảng này
 

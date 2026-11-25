@@ -46,9 +46,19 @@ export function StudentGroupCard({
 	const loading = fetched?.key !== requestKey;
 	if (loading) {
 		return (
-			<section className="mc-surface p-4 sm:p-5" aria-label="Nhóm của bạn">
-				<p className="text-xs font-semibold text-ink-secondary">Nhóm của bạn</p>
-				<p className="mt-2 text-sm text-ink-secondary">Đang tải thông tin nhóm…</p>
+			<section className="teaching-public-section" aria-label="Nhóm của bạn">
+				<div className="teaching-public-section-head">
+					<h3>Nhóm của bạn</h3>
+				</div>
+				<span className="sr-only" role="status">
+					Đang tải thông tin nhóm…
+				</span>
+				<span aria-hidden="true" className="mt-3 block space-y-2.5">
+					<span className="teaching-public-skeleton w-2/5" />
+					<span className="teaching-public-skeleton w-4/5" />
+					<span className="teaching-public-skeleton w-3/5" />
+					<span className="teaching-public-skeleton w-3/4" />
+				</span>
 			</section>
 		);
 	}
@@ -61,14 +71,19 @@ export function StudentGroupCard({
 	);
 
 	return (
-		<section className="mc-surface p-4 sm:p-5" aria-label="Nhóm của bạn">
-			<p className="text-xs font-semibold text-ink-secondary">Nhóm của bạn</p>
+		<section className="teaching-public-section" aria-label="Nhóm của bạn">
+			<div className="teaching-public-section-head">
+				<h3>Nhóm của bạn</h3>
+				{myGroup ? (
+					<span className="mc-num">{myGroup.assignments.length} người</span>
+				) : null}
+			</div>
 			{myGroup ? (
 				<>
-					<h3 className="mt-1 text-base font-semibold text-ink">
-						Nhóm {myGroup.displayOrder + 1} · {myGroup.assignments.length} người
-					</h3>
-					<ul className="mt-3 space-y-1.5 text-sm text-ink-secondary">
+					<p className="mt-3 text-base font-semibold text-ink">
+						Nhóm {myGroup.displayOrder + 1}
+					</p>
+					<ul className="mt-2 space-y-1.5 text-sm text-ink-secondary">
 						{myGroup.assignments.map((member) => {
 							const isMe = member.enrollmentId === enrollmentId;
 							return (
@@ -77,9 +92,7 @@ export function StudentGroupCard({
 										{member.familyName} {member.givenName}
 									</span>
 									{isMe ? (
-										<span className="rounded-full bg-accent-subtle px-2 py-0.5 text-xs font-medium text-accent">
-											Bạn
-										</span>
+										<span className="text-xs font-semibold text-accent">Bạn</span>
 									) : null}
 								</li>
 							);
@@ -87,17 +100,11 @@ export function StudentGroupCard({
 					</ul>
 				</>
 			) : (
-				<p className="mt-2 text-sm text-ink-secondary">Bạn chưa được xếp vào nhóm nào.</p>
+				<p className="mt-3 text-sm text-ink-secondary">Bạn chưa được xếp vào nhóm nào.</p>
 			)}
-			<div className="mt-3 border-t border-mc-rule pt-2">
-				<button
-					type="button"
-					onClick={onOpenGroups}
-					className="inline-flex min-h-11 items-center text-sm font-semibold text-accent hover:underline"
-				>
-					Xem tất cả nhóm →
-				</button>
-			</div>
+			<button type="button" onClick={onOpenGroups} className="teaching-public-link mt-2">
+				Xem tất cả nhóm →
+			</button>
 		</section>
 	);
 }

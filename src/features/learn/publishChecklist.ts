@@ -9,6 +9,9 @@ export interface CheckItem {
 	message: string;
 }
 
+/** A heading longer than this is almost always a paragraph that got a stray `#`. */
+const MAX_HEADING_LENGTH = 120;
+
 const DEFAULT_TITLES = new Set(['Mục mới', 'Bài học mới', 'Câu hỏi phản biện']);
 
 export function publishChecklist(input: { description: string; lessons: LearnStudioLesson[] }): {
@@ -53,6 +56,18 @@ export function publishChecklist(input: { description: string; lessons: LearnStu
 				id: `images-${section.id}`,
 				sectionId: section.id,
 				message: `${where}: ${images.length} ảnh chưa tải lên`,
+			});
+		}
+		const longHeadings = section.markdown
+			.split('\n')
+			.filter(
+				(line) => /^#{1,6}\s/.test(line) && line.replace(/^#+\s*/, '').length > MAX_HEADING_LENGTH,
+			);
+		if (longHeadings.length) {
+			warnings.push({
+				id: `long-heading-${section.id}`,
+				sectionId: section.id,
+				message: `${where}: ${longHeadings.length} tiêu đề dài như một đoạn văn (thừa dấu #?)`,
 			});
 		}
 		if (section.type === 'READING' && !section.markdown.trim()) {

@@ -93,16 +93,16 @@ export function ClassInfoList({ board }: { board: PublicClassBoard }) {
 	const activeSheetItem = items.find((item) => item.id === openSheet) ?? null;
 
 	return (
-		<section className="mc-surface overflow-hidden" aria-label="Thông tin lớp">
-			<div className="border-b border-mc-rule px-4 py-3">
-				<h2 className="text-xs font-semibold text-ink-secondary">Thông tin lớp</h2>
+		<section className="teaching-public-section" aria-label="Thông tin lớp">
+			<div className="teaching-public-section-head">
+				<h2>Thông tin lớp</h2>
 			</div>
 
 			{/* Desktop: expand in place */}
-			<div className="hidden divide-y divide-mc-rule md:block">
+			<div className="hidden md:block">
 				{items.map((item) => (
-					<details key={item.id} className="group">
-						<summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-4 py-2.5 text-sm font-semibold text-ink hover:bg-surface-hover">
+					<details key={item.id} className="group border-b border-mc-rule">
+						<summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-ink hover:text-accent">
 							<span>{item.label}</span>
 							<span
 								aria-hidden="true"
@@ -111,18 +111,18 @@ export function ClassInfoList({ board }: { board: PublicClassBoard }) {
 								⌄
 							</span>
 						</summary>
-						<div className="border-t border-mc-rule px-4 py-3">{item.content}</div>
+						<div className="pb-4">{item.content}</div>
 					</details>
 				))}
 			</div>
 
 			{/* Mobile: open in bottom sheet */}
-			<div className="divide-y divide-mc-rule md:hidden">
+			<div className="md:hidden">
 				{items.map((item) => (
 					<button
 						key={item.id}
 						type="button"
-						className="flex min-h-11 w-full items-center justify-between gap-2 px-4 py-2.5 text-left text-sm font-semibold text-ink hover:bg-surface-hover"
+						className="teaching-public-row text-sm font-semibold"
 						onClick={() => setOpenSheet(item.id)}
 					>
 						<span>{item.label}</span>

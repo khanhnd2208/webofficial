@@ -16,6 +16,7 @@ import LearnReaderPrefs from '@/components/learn/LearnReaderPrefs';
 import LearnStudyTracker from '@/components/learn/LearnStudyTracker';
 import { routes } from '@/config/routes';
 import { formatMinutes } from '@/features/learn/content';
+import { titleHasLessonNumber } from '@/features/learn/format';
 import { readingOutline } from '@/features/learn/outline';
 import { isRequiredSection, summarizeCourse, toCurriculumLessons } from '@/features/learn/progress';
 import {
@@ -182,7 +183,7 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 			) : (
 				<article className="ln-reader" key={section.id}>
 					<p className="ln-reader__eyebrow">
-						{/^bài\s*\d/i.test(current.lessonTitle) ? null : (
+						{titleHasLessonNumber(current.lessonTitle) ? null : (
 							<>
 								Bài {current.lessonIndex + 1}
 								<span aria-hidden="true"> · </span>

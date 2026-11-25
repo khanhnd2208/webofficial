@@ -89,6 +89,9 @@ function board(): PublicClassBoard {
 	};
 }
 
+/** Student rows of the public roster (the header row sits in the first rowgroup). */
+const BODY_ROWS = '[role="rowgroup"] + [role="rowgroup"] > [role="row"]';
+
 describe('StudentClassBoard', () => {
 	beforeEach(() => {
 		window.localStorage.clear();
@@ -111,7 +114,7 @@ describe('StudentClassBoard', () => {
 		expect(screen.getByRole('heading', { name: 'Chào Nguyễn An' })).toBeInTheDocument();
 		expect(window.localStorage.getItem('teaching-public-me:hrm-101')).toBe('e1');
 
-		fireEvent.click(screen.getByRole('button', { name: 'Đổi' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Chọn lại' }));
 		expect(screen.getByRole('heading', { name: 'Bạn là ai trong lớp?' })).toBeInTheDocument();
 		expect(window.localStorage.getItem('teaching-public-me:hrm-101')).toBeNull();
 	});
@@ -194,11 +197,11 @@ describe('StudentClassBoard', () => {
 		render(<StudentClassBoard board={contentBoard} initialTab="attendance" />);
 		const grid = screen.getByTestId('attendance-grid');
 		expect(screen.getByLabelText('Tutorial')).toHaveValue('tutorial-1');
-		expect(grid.querySelectorAll('tbody tr')).toHaveLength(2);
+		expect(grid.querySelectorAll(BODY_ROWS)).toHaveLength(2);
 		fireEvent.change(screen.getByLabelText('Tutorial'), { target: { value: 'tutorial-2' } });
-		expect(grid.querySelectorAll('tbody tr')).toHaveLength(1);
-		expect(screen.getByText('********77')).toBeInTheDocument();
-		expect(screen.queryByText('********45')).not.toBeInTheDocument();
+		expect(grid.querySelectorAll(BODY_ROWS)).toHaveLength(1);
+		expect(screen.getByText('•••77')).toBeInTheDocument();
+		expect(screen.queryByText('•••45')).not.toBeInTheDocument();
 	});
 
 	it('keeps unassigned students visible instead of hiding them behind the first tutorial', () => {
@@ -226,13 +229,13 @@ describe('StudentClassBoard', () => {
 		expect(screen.getByLabelText('Tutorial')).toHaveValue('');
 		expect(screen.getByRole('option', { name: 'Toàn lớp' })).toBeInTheDocument();
 		expect(screen.getByRole('option', { name: 'Chưa phân tutorial' })).toBeInTheDocument();
-		expect(screen.getByText('********00')).toBeInTheDocument();
-		expect(screen.getByText('********45')).toBeInTheDocument();
+		expect(screen.getByText('•••00')).toBeInTheDocument();
+		expect(screen.getByText('•••45')).toBeInTheDocument();
 		fireEvent.change(screen.getByLabelText('Tutorial'), { target: { value: 'tutorial-1' } });
-		expect(screen.queryByText('********00')).not.toBeInTheDocument();
+		expect(screen.queryByText('•••00')).not.toBeInTheDocument();
 		fireEvent.change(screen.getByLabelText('Tutorial'), { target: { value: '__unassigned__' } });
-		expect(screen.getByText('********00')).toBeInTheDocument();
-		expect(screen.queryByText('********45')).not.toBeInTheDocument();
+		expect(screen.getByText('•••00')).toBeInTheDocument();
+		expect(screen.queryByText('•••45')).not.toBeInTheDocument();
 	});
 
 	it('opens published Class Notes when explicitly enabled and switches between note pages', () => {
@@ -322,20 +325,18 @@ describe('StudentClassBoard', () => {
 		const grid = screen.getByTestId('attendance-grid');
 		const search = screen.getByPlaceholderText('Tìm trong 2 sinh viên');
 
-		expect(grid.querySelectorAll('tbody tr')).toHaveLength(2);
+		expect(grid.querySelectorAll(BODY_ROWS)).toHaveLength(2);
 		expect(screen.queryByRole('columnheader', { name: 'Trạng thái' })).not.toBeInTheDocument();
 		expect(screen.queryByLabelText('Đây là tôi')).not.toBeInTheDocument();
 		expect(screen.queryAllByRole('button', { name: /tuần 1/i })).toHaveLength(0);
-		expect(
-			screen.getByRole('button', { name: /Chọn bạn là ai để ghim hàng của bạn/ }),
-		).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /Chọn tên bạn để ghim lên đầu/ })).toBeInTheDocument();
 
 		fireEvent.change(search, { target: { value: '45' } });
-		expect(grid.querySelectorAll('tbody tr')).toHaveLength(1);
+		expect(grid.querySelectorAll(BODY_ROWS)).toHaveLength(1);
 		expect(screen.getAllByText('Nguyễn An').length).toBeGreaterThan(0);
 		expect(grid.textContent).not.toContain('Trần Bình');
 		fireEvent.change(search, { target: { value: 'Nguyễn' } });
-		expect(grid.querySelectorAll('tbody tr')).toHaveLength(1);
+		expect(grid.querySelectorAll(BODY_ROWS)).toHaveLength(1);
 
 		fireEvent.click(screen.getByRole('button', { name: 'CP' }));
 		expect(screen.getByTestId('participation-grid')).toBeInTheDocument();
@@ -388,7 +389,7 @@ describe('StudentClassBoard', () => {
 		fireEvent.click(screen.getByRole('tab', { name: 'Bảng điểm' }));
 
 		expect(screen.getByLabelText('Tutorial')).toHaveValue('tutorial-2');
-		expect(screen.getByTestId('attendance-grid').querySelectorAll('tbody tr')).toHaveLength(1);
+		expect(screen.getByTestId('attendance-grid').querySelectorAll(BODY_ROWS)).toHaveLength(1);
 	});
 
 	it('keeps a locked attendance week visible while leaving its stored mark intact', () => {
@@ -396,20 +397,17 @@ describe('StudentClassBoard', () => {
 		lockedBoard.sessions[0] = { ...lockedBoard.sessions[0]!, attendanceOpen: false };
 		render(<StudentClassBoard board={lockedBoard} initialTab="attendance" />);
 
-		expect(
-			screen.getByLabelText('********45 tuần 1: Có mặt - Chủ động hỗ trợ nhóm'),
-		).toHaveAttribute('data-status', 'PRESENT');
-		expect(
-			screen.getByLabelText('********45 tuần 1: Có mặt - Chủ động hỗ trợ nhóm'),
-		).toHaveAttribute('title', 'Có mặt - Chủ động hỗ trợ nhóm');
+		const cell = screen.getByLabelText('Tuần 1: Có mặt · Chủ động hỗ trợ nhóm');
+		expect(cell).toHaveAttribute('data-kind', 'status');
+		expect(cell).toHaveAttribute('data-note', 'true');
+		expect(cell).toHaveAttribute('title', 'Tuần 1: Có mặt · Chủ động hỗ trợ nhóm');
 	});
 
 	it('shows the weekly CP note in the student tooltip', () => {
 		render(<StudentClassBoard board={board()} initialTab="cp" />);
-		expect(screen.getByLabelText('********45 tuần 1: 1 điểm CP - Trình bày tốt')).toHaveAttribute(
-			'title',
-			'1 điểm CP - Trình bày tốt',
-		);
+		const cell = screen.getByLabelText('Tuần 1: 1,0 điểm CP · Trình bày tốt');
+		expect(cell).toHaveAttribute('data-points', '1');
+		expect(cell).toHaveTextContent('1');
 	});
 
 	it('locks the summary view until all 10 weeks of attendance and CP are finalized', () => {
@@ -469,9 +467,8 @@ describe('StudentClassBoard', () => {
 		render(<StudentClassBoard board={unlockedBoard} initialTab="summary" />);
 		const grid = screen.getByTestId('summary-grid');
 		expect(grid).toBeInTheDocument();
-		expect(grid.textContent).toContain('5,0 / 5');
-		expect(grid.textContent).toContain('1,0 / 5');
-		expect(grid.textContent).toContain('6,0 / 10');
-		expect(grid.textContent).toContain('5,5 / 10');
+		expect(grid.querySelectorAll(BODY_ROWS)).toHaveLength(2);
+		expect(grid.textContent).toContain('6,0/10');
+		expect(grid.textContent).toContain('5,5/10');
 	});
 });

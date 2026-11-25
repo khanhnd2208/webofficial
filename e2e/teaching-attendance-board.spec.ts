@@ -262,7 +262,9 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await expect(page.getByRole('heading', { name: 'Chọn phong cách học' })).toBeVisible();
 			await page.getByRole('button', { name: 'Chọn thử thách' }).click();
 			await expect(page.getByText(/Đã lưu phong cách học: Teach me a lesson/)).toBeVisible();
-			await expect(page.getByText(/Phong cách học:/)).toContainText('Teach me a lesson');
+			await expect(page.getByRole('region', { name: 'Học tập', exact: true })).toContainText(
+				'Teach me a lesson',
+			);
 
 			await context.clearCookies();
 			await page.evaluate(() => window.localStorage.clear());
@@ -469,13 +471,14 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			// Open Bảng điểm and verify read-only mode
 			await page.getByRole('tab', { name: 'Bảng điểm' }).click();
 			await expect(page.locator('button.mc-grid-cell')).toHaveCount(0);
-			await expect(page.locator('span.mc-grid-cell').first()).toBeVisible();
+			await expect(
+				page.getByTestId('attendance-grid').locator('.roster-cell').first(),
+			).toBeVisible();
 
 			// Switch to CP view
 			await page.getByRole('button', { name: 'CP', exact: true }).click();
 			await expect(page.getByTestId('participation-grid').first()).toBeVisible();
-			await expect(page.getByRole('columnheader', { name: 'Gift', exact: true })).toBeVisible();
-			await expect(page.getByRole('columnheader', { name: 'Tổng /10', exact: true })).toBeVisible();
+			await expect(page.getByRole('columnheader', { name: 'Điểm CP', exact: true })).toBeVisible();
 
 			// Switch to Summary view (locked until all weeks are finalized)
 			await page.getByRole('button', { name: 'Tổng kết', exact: true }).click();
@@ -561,29 +564,19 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 
 			// The public URL stays read-only even for an admin.
 			await page.goto(`/lop/${slug}?tab=attendance`);
-			await expect(page.locator('.mc-grid-wrap[data-scroll-mode="page"]')).toHaveCount(1);
+			const roster = page.getByTestId('attendance-grid');
+			await expect(roster).toBeVisible();
 			await expect(page.getByRole('columnheader', { name: 'Trạng thái', exact: true })).toHaveCount(
 				0,
 			);
-			const publicSummaryGeometry = await page.evaluate(() => {
-				const headers = Array.from(
-					document.querySelectorAll<HTMLElement>(
-						'[data-testid="attendance-grid"] thead .mc-grid-freeze-right',
+			// The week strip and the score column share one row and never overflow the page.
+			for (const width of [390, 1280]) {
+				await page.setViewportSize({ width, height: 800 });
+				expect(
+					await page.evaluate(
+						() => document.documentElement.scrollWidth - document.documentElement.clientWidth,
 					),
-				);
-				return headers.map((header) => {
-					const rect = header.getBoundingClientRect();
-					return { left: rect.left, right: rect.right, width: rect.width };
-				});
-			});
-			expect(publicSummaryGeometry.length).toBe(2);
-			for (const column of publicSummaryGeometry) {
-				expect(column.width).toBeGreaterThanOrEqual(96);
-			}
-			for (let index = 1; index < publicSummaryGeometry.length; index += 1) {
-				expect(publicSummaryGeometry[index]!.left).toBeGreaterThanOrEqual(
-					publicSummaryGeometry[index - 1]!.right - 1,
-				);
+				).toBeLessThanOrEqual(1);
 			}
 			await expect(page.getByText('Chế độ giảng viên')).toHaveCount(0);
 			await expect(page.getByRole('link', { name: 'Quản lý lớp ↗' })).toHaveAttribute(
@@ -594,15 +587,24 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await expect(page.locator('button.mc-grid-participation-cell')).toHaveCount(0);
 
 			const search = page.getByPlaceholder('Tìm trong 1 sinh viên');
-			const publicCode = `SVADM${suffix}`.slice(0, 10);
-			await expect(page.locator('[data-testid="attendance-grid"] tbody tr')).toHaveCount(1);
+			const publicCode = `SVADM${suffix}`.slice(-10);
+			const rows = page.locator(
+				'[data-testid="attendance-grid"] [role="rowgroup"] + [role="rowgroup"] > [role="row"]',
+			);
+			await expect(rows).toHaveCount(1);
 			await search.fill(publicCode.slice(-2));
-			await expect(page.locator('[data-testid="attendance-grid"] tbody tr')).toHaveCount(1);
+			await expect(rows).toHaveCount(1);
 			await search.fill('Bình');
-			await expect(page.locator('[data-testid="attendance-grid"] tbody tr')).toHaveCount(1);
+			await expect(rows).toHaveCount(1);
 			await search.fill('123');
-			await expect(page.locator('[data-testid="attendance-grid"] tbody tr')).toHaveCount(1);
-			await expect(page.getByText('Không tìm thấy mã sinh viên phù hợp.')).toBeVisible();
+			await expect(rows).toHaveCount(0);
+			await expect(page.getByText(/Không tìm thấy sinh viên phù hợp/)).toBeVisible();
+			await search.fill('');
+
+			// Tapping a name lists that student's weeks.
+			const toggle = roster.getByRole('button', { name: 'Trần Thị Bình' });
+			await toggle.click();
+			await expect(toggle).toHaveAttribute('aria-expanded', 'true');
 
 			await page.getByRole('button', { name: 'CP', exact: true }).click();
 			await expect(page.locator('button.mc-grid-participation-cell')).toHaveCount(0);
@@ -665,7 +667,11 @@ test.describe('Teaching class dashboard (/lop/[slug])', () => {
 			await expect(page.getByPlaceholder('Tìm trong 1 sinh viên')).toBeVisible();
 			await expect(page.getByLabel('Tutorial')).toHaveValue('');
 			await expect(page.locator('#public-tutorial option[value="__unassigned__"]')).toHaveCount(1);
-			await expect(page.locator('[data-testid="attendance-grid"] tbody tr')).toHaveCount(1);
+			await expect(
+				page.locator(
+					'[data-testid="attendance-grid"] [role="rowgroup"] + [role="rowgroup"] > [role="row"]',
+				),
+			).toHaveCount(1);
 		} finally {
 			await addAdminSession(context);
 			await cleanupTeachingClass(page.request, classId);
