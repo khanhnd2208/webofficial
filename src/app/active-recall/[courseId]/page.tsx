@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
 import RecallCourseIndex from '@/components/active-recall/RecallCourseIndex';
+import { routes } from '@/config/routes';
 import { getPublishedRecallCourse } from '@/features/active-recall';
 
 export const dynamic = 'force-dynamic';
@@ -24,6 +25,19 @@ export default async function PublicCourseRecallPage({ params }: PageProps) {
 	if (!course) notFound();
 
 	return (
-		<RecallCourseIndex courseName={course.courseName} decks={course.decks} courseId={courseId} />
+		<RecallCourseIndex
+			title={course.courseName}
+			testHref={routes.publicCourseRecallTest(courseId)}
+			groups={[
+				{
+					id: 'lessons',
+					title: 'Học theo bài',
+					decks: course.decks.map(({ slug, ...deck }) => ({
+						...deck,
+						href: routes.publicCourseRecallDeck(courseId, slug),
+					})),
+				},
+			]}
+		/>
 	);
 }

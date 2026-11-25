@@ -12,7 +12,7 @@ test.describe('Active Recall', () => {
 		page,
 	}) => {
 		await page.goto('/my-space/active-recall', { waitUntil: 'networkidle' });
-		const deck = page.getByRole('link', { name: /HRM · Lesson 1/i });
+		const deck = page.getByRole('link', { name: /Bài 1:\s*Introduction to HRM/i });
 		if ((await deck.count()) === 0) {
 			test.skip(true, 'The idempotent HRM sample deck has not been seeded in this environment.');
 			return;

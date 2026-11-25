@@ -149,6 +149,12 @@
 
 /* ── Lessons ─────────────────────────────────────────────────────────────── */
 
+.empty {
+	margin-top: 2rem;
+	font-size: 0.875rem;
+	color: var(--ink-secondary);
+}
+
 .sectionTitle {
 	margin: 2rem 0 0.5rem;
 	font-size: 0.8125rem;
