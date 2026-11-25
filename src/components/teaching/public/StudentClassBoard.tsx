@@ -96,8 +96,8 @@ export function StudentClassBoard({
 	const effectiveLearningChoice = me
 		? (savedChoices[me.enrollmentId] ?? me.learningExperience ?? null)
 		: null;
-	const gridWrapRef = useRef<HTMLDivElement>(null);
 	const tabBarRef = useRef<HTMLElement>(null);
+	const boardRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		const sync = () => {
@@ -132,6 +132,19 @@ export function StudentClassBoard({
 		writeStudentIdentity(board.slug, next);
 	}
 
+	/** Picking a name from a long list leaves the page scrolled; bring the new status into view. */
+	function selectMeFromList(enrollmentId: string) {
+		chooseMe(enrollmentId);
+		const root = boardRef.current;
+		if (!root || typeof window.scrollTo !== 'function') return;
+		const top = root.getBoundingClientRect().top + window.scrollY - 16;
+		if (window.scrollY <= top) return;
+		window.scrollTo({
+			top,
+			behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+		});
+	}
+
 	useEffect(() => {
 		const tabBar = tabBarRef.current;
 		const active = tabBar?.querySelector<HTMLElement>("[data-active='true']");
@@ -147,12 +160,6 @@ export function StudentClassBoard({
 		setGradebookView(nextView);
 		setLearningOpen(false);
 		pushTabUrl(next, nextView, false);
-		if (next === 'gradebook') {
-			requestAnimationFrame(() => {
-				const wrapper = gridWrapRef.current?.querySelector<HTMLElement>('.mc-grid-wrap');
-				wrapper?.scrollTo({ left: 0, behavior: 'auto' });
-			});
-		}
 	}
 
 	function openLearningSheet() {
@@ -230,7 +237,7 @@ export function StudentClassBoard({
 	);
 
 	return (
-		<div className="teaching-public-board min-w-0 space-y-4">
+		<div ref={boardRef} className="teaching-public-board min-w-0 space-y-4">
 			<header className="teaching-public-header flex flex-wrap items-center justify-between gap-3 pb-1">
 				<div className="flex min-w-0 items-center gap-3">
 					<TeachingMark className="teaching-header-mark" />
@@ -291,7 +298,7 @@ export function StudentClassBoard({
 					learningChoice={effectiveLearningChoice}
 					groupBoardEnabled={groupBoardEnabled}
 					recallCount={recallDecks.length}
-					onSelectMe={chooseMe}
+					onSelectMe={selectMeFromList}
 					onClearMe={() => chooseMe('')}
 					onOpenGradebook={() => changeSection('gradebook', 'attendance')}
 					onOpenGroups={() => changeSection('groups')}
@@ -342,7 +349,6 @@ export function StudentClassBoard({
 					onQueryChange={setQuery}
 					meId={meId}
 					onOpenMe={() => changeSection('me')}
-					gridWrapRef={gridWrapRef}
 				/>
 			) : null}
 

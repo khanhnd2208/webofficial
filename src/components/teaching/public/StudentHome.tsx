@@ -43,55 +43,62 @@ export function StudentHome({
 	const announcement = board.announcement.trim();
 
 	return (
-		<div
-			id="public-panel-me"
-			role="tabpanel"
-			aria-labelledby="public-tab-me"
-			className="max-w-5xl space-y-4"
-		>
+		<div id="public-panel-me" role="tabpanel" aria-labelledby="public-tab-me" className="space-y-8">
 			{announcement ? (
-				<div
-					className="mc-surface border-accent/20 bg-accent-subtle px-4 py-3 sm:px-5"
-					role="note"
-				>
-					<p className="text-xs font-semibold text-accent">Thông báo của giảng viên</p>
-					<p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-ink">
-						{announcement}
-					</p>
+				<div className="teaching-public-note" role="note">
+					<p className="teaching-public-note-label">Thông báo của giảng viên</p>
+					<p className="whitespace-pre-wrap break-words">{announcement}</p>
 				</div>
 			) : null}
 
 			{!me ? (
-				<div className="space-y-4">
+				<div className="grid gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:items-start">
 					<StudentIdentityPicker
 						students={board.students}
 						onSelect={onSelectMe}
 						onOpenGradebook={onOpenGradebook}
 					/>
-					<div className="max-w-2xl">
-						<ClassInfoList board={board} />
-					</div>
+					<ClassInfoList board={board} />
 				</div>
 			) : (
 				<>
-					<div className="flex flex-wrap items-center justify-between gap-2">
-						<h2 className="text-lg font-semibold text-ink sm:text-xl">
+					<div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
+						<h2 className="min-w-0 break-words text-xl font-semibold tracking-tight text-ink sm:text-2xl">
 							Chào {me.familyName} {me.givenName}
 						</h2>
-						<p className="flex items-center gap-1 text-xs text-ink-secondary">
-							<span>Không phải bạn?</span>
+						<p className="text-sm text-ink-secondary">
+							Không phải bạn?{' '}
 							<button
 								type="button"
 								onClick={onClearMe}
-								className="inline-flex min-h-11 items-center px-1.5 font-semibold text-accent hover:underline"
+								className="-my-3 inline-flex min-h-11 items-center px-1 font-semibold text-accent hover:underline"
 							>
-								Đổi
+								Chọn lại
 							</button>
 						</p>
 					</div>
 
-					<div className="grid gap-4 md:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] md:items-start">
-						<div className="space-y-4">
+					<div className="grid gap-x-12 gap-y-8 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:items-start">
+						<div className="space-y-8">
+							{!learningChoice ? (
+								<section className="teaching-public-section" aria-labelledby="todo-title">
+									<div className="teaching-public-section-head">
+										<h3 id="todo-title">Việc cần làm</h3>
+									</div>
+									<button type="button" onClick={onOpenLearning} className="teaching-public-row">
+										<span className="min-w-0">
+											<span className="teaching-public-row-title">Chọn phong cách học</span>
+											<span className="teaching-public-row-sub">
+												Teach me a lesson hoặc Prince / Princess treatment · khoảng 1 phút
+											</span>
+										</span>
+										<span aria-hidden="true" className="teaching-public-row-go">
+											›
+										</span>
+									</button>
+								</section>
+							) : null}
+
 							<StudentStatusCard
 								student={me}
 								sessions={board.sessions}
@@ -101,66 +108,46 @@ export function StudentHome({
 								onOpenGradebook={onOpenGradebook}
 							/>
 
-							<section className="mc-surface overflow-hidden" aria-label="Việc cần làm">
-								<div className="border-b border-mc-rule px-4 py-3">
-									<h3 className="text-xs font-semibold text-ink-secondary">Việc cần làm</h3>
-								</div>
-								<div className="divide-y divide-mc-rule">
-									{!learningChoice ? (
-										<button
-											type="button"
-											onClick={onOpenLearning}
-											className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-hover"
-										>
+							{learningChoice || recallCount > 0 ? (
+								<section className="teaching-public-section" aria-labelledby="study-card-title">
+									<div className="teaching-public-section-head">
+										<h3 id="study-card-title">Học tập</h3>
+									</div>
+									{learningChoice ? (
+										<div className="teaching-public-row">
 											<span className="min-w-0">
-												<span className="block text-sm font-semibold text-ink">
-													Chọn phong cách học
-												</span>
-												<span className="mt-0.5 block text-xs text-ink-secondary">
-													Teach me a lesson hoặc Prince / Princess treatment
-												</span>
-											</span>
-											<span aria-hidden="true" className="shrink-0 text-accent">
-												→
-											</span>
-										</button>
-									) : (
-										<div className="flex min-h-12 flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-sm">
-											<span className="text-ink-secondary">
-												Phong cách học:{' '}
-												<strong className="font-semibold text-ink">
+												<span className="teaching-public-row-sub">Phong cách học</span>
+												<span className="teaching-public-row-title">
 													{learningStyleName(learningChoice)}
-												</strong>
+												</span>
 											</span>
 											<button
 												type="button"
 												onClick={onOpenLearning}
-												className="inline-flex min-h-11 items-center px-1.5 text-xs font-semibold text-accent hover:underline"
+												className="teaching-public-link -my-2"
 											>
 												Đổi
 											</button>
 										</div>
-									)}
-
+									) : null}
 									{recallCount > 0 ? (
-										<button
-											type="button"
-											onClick={onOpenRecall}
-											className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-hover"
-										>
-											<span className="min-w-0 text-sm font-semibold text-ink">
-												Ôn tập · {recallCount} bộ thẻ
+										<button type="button" onClick={onOpenRecall} className="teaching-public-row">
+											<span className="min-w-0">
+												<span className="teaching-public-row-sub">Ôn tập</span>
+												<span className="teaching-public-row-title">
+													<span className="mc-num">{recallCount}</span> bộ thẻ và Test yourself
+												</span>
 											</span>
-											<span aria-hidden="true" className="shrink-0 text-accent">
-												→
+											<span aria-hidden="true" className="teaching-public-row-go">
+												›
 											</span>
 										</button>
 									) : null}
-								</div>
-							</section>
+								</section>
+							) : null}
 						</div>
 
-						<div className="space-y-4">
+						<div className="space-y-8">
 							{groupBoardEnabled ? (
 								<StudentGroupCard
 									slug={board.slug}
