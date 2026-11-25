@@ -70,7 +70,8 @@ export default function LearnCompleteButton({
 				<>
 					{nextHref ? (
 						<Link href={nextHref} className="ln-btn ln-btn--primary" data-ln-primary="">
-							Tiếp: {nextTitle ?? 'mục sau'} →
+							<span className="ln-btn__label">Tiếp: {nextTitle ?? 'mục sau'}</span>
+							<span aria-hidden="true">→</span>
 							<LearnLinkPending />
 						</Link>
 					) : overviewHref ? (

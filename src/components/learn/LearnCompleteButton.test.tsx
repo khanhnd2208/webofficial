@@ -58,7 +58,7 @@ describe('LearnCompleteButton', () => {
 			/>,
 		);
 
-		expect(screen.getByRole('link', { name: 'Tiếp: Mục sau →' })).toHaveAttribute(
+		expect(screen.getByRole('link', { name: 'Tiếp: Mục sau' })).toHaveAttribute(
 			'href',
 			'/my-space/courses/demo?s=s2',
 		);

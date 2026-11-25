@@ -3878,3 +3878,280 @@ button.ln-save.ln-btn--primary {
 	opacity: 0.5;
 	cursor: wait;
 }
+
+/* ─── Reader comfort: page colour, measure, rail, touch, narrow tables ─── */
+
+.ln-frame {
+	min-height: 100svh;
+	background: var(--canvas);
+	color: var(--ink);
+}
+/* Learn's derived tokens are resolved where they are declared (on .ln), so a theme set on the
+   frame has to declare them again to pick up its own canvas and ink. */
+.ln-frame.dark,
+.ln-frame.ln-sepia {
+	--ln-strong-rule: color-mix(in srgb, var(--ink) 26%, var(--canvas));
+	--ln-on-primary: var(--canvas);
+	--ln-k-definition: var(--bronze);
+	--ln-k-quote: var(--ink-secondary);
+	--ln-k-note: var(--ln-strong-rule);
+	--ln-k-important: var(--bronze);
+	--accent: var(--bronze);
+}
+/* Dark keeps the site's dark tokens; the bronze accent is lifted so links stay readable. */
+.ln-frame.dark {
+	--bronze: #d9a866;
+	--ln-shadow-color: 0 0 0;
+	color-scheme: dark;
+}
+.ln-sepia {
+	--canvas: #f5edda;
+	--paper: #ece2c8;
+	--surface: #ece2c8;
+	--surface-elevated: #f9f2e1;
+	--section-tint: #ebdfc2;
+	--ink: #33291d;
+	--ink-secondary: #665641;
+	--hairline: #d8c9a8;
+	--border: #d8c9a8;
+}
+
+.ln-reader,
+.ln-reader__empty {
+	max-width: 40rem;
+}
+.ln-prose :is(h2, h3, h4) {
+	scroll-margin-top: calc(var(--ln-bar) + 1rem);
+}
+.ln-prose h2 {
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-size: 1.6rem;
+	font-weight: 500;
+	letter-spacing: -0.02em;
+}
+.ln-prose h3 {
+	font-size: 1.2rem;
+	font-weight: 650;
+}
+@media (max-width: 39.99rem) {
+	.ln-prose h2 {
+		font-size: 1.4rem;
+	}
+	.ln-prose h3 {
+		font-size: 1.1rem;
+	}
+}
+
+.ln-rail {
+	display: none;
+}
+@media (min-width: 80rem) {
+	.ln-reader-layout[data-rail='true'] {
+		display: grid;
+		grid-template-columns: minmax(0, 40rem) 13rem;
+		gap: 3rem;
+		align-items: start;
+		justify-content: center;
+	}
+	.ln-reader-layout[data-rail='true'] .ln-reader {
+		margin: 0;
+	}
+	.ln-reader-layout[data-rail='true'] .ln-toc {
+		display: none;
+	}
+	.ln-rail {
+		position: sticky;
+		top: calc(var(--ln-bar) + 2.5rem);
+		display: block;
+		max-height: calc(100svh - var(--ln-bar) - 4rem);
+		overflow-y: auto;
+		font-size: 0.85rem;
+		line-height: 1.45;
+	}
+	.ln-rail__label {
+		margin-bottom: 0.6rem;
+		color: var(--ink-secondary);
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+	.ln-rail ol {
+		margin: 0;
+		padding: 0;
+		border-left: 1px solid var(--hairline);
+		list-style: none;
+	}
+	.ln-rail a {
+		display: block;
+		margin-left: -1px;
+		padding: 0.3rem 0 0.3rem 0.85rem;
+		border-left: 2px solid transparent;
+		color: var(--ink-secondary);
+	}
+	.ln-rail li[data-level='3'] a {
+		padding-left: 1.6rem;
+	}
+	.ln-rail li[data-level='4'] a {
+		padding-left: 2.3rem;
+	}
+	.ln-rail a:hover {
+		color: var(--ink);
+	}
+	.ln-rail a[aria-current='location'] {
+		border-left-color: var(--bronze);
+		color: var(--ink);
+		font-weight: 600;
+	}
+}
+
+.ln-topbar__short {
+	display: none;
+	color: var(--ink);
+	font-size: 0.9rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.ln-topbar__count {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+}
+@media (max-width: 39.99rem) {
+	.ln-topbar__title {
+		display: none;
+	}
+	.ln-topbar__short {
+		display: inline;
+	}
+}
+
+.ln-btn__label {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.ln-actionbar__primary .ln-btn {
+	max-width: 100%;
+}
+
+/* <dialog> keeps a UA max-width of 100% minus 2em; the phone sheet must reach both edges. */
+.ln-notes-dialog {
+	max-width: 100%;
+}
+
+.ln-font__popover {
+	position: fixed;
+	inset: auto;
+	top: 3.5rem;
+	right: 0.75rem;
+	min-width: 14rem;
+	margin: 0;
+	padding: 0.6rem;
+}
+.ln-font__popover:popover-open {
+	display: grid;
+	gap: 0.4rem;
+}
+.ln-font__label {
+	padding: 0 0.15rem;
+	color: var(--ink-secondary);
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+.ln-font__group {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 0.25rem;
+}
+.ln-font__option.ln-font__swatch {
+	border: 1px solid #d8d5ce;
+	font-size: 0.85rem;
+}
+.ln-font__swatch[data-theme-option='light'] {
+	background: #fffcf7;
+	color: #171717;
+}
+.ln-font__swatch[data-theme-option='sepia'] {
+	background: #f5edda;
+	color: #33291d;
+}
+.ln-font__swatch[data-theme-option='dark'] {
+	background: #1a1815;
+	color: #f2ece1;
+}
+.ln-font__option.ln-font__swatch[aria-pressed='true'] {
+	outline: 2px solid var(--bronze);
+	outline-offset: 1px;
+}
+.ln-font__swatch[data-theme-option='light'][aria-pressed='true'] {
+	background: #fffcf7;
+	color: #171717;
+}
+.ln-font__swatch[data-theme-option='sepia'][aria-pressed='true'] {
+	background: #f5edda;
+	color: #33291d;
+}
+.ln-font__swatch[data-theme-option='dark'][aria-pressed='true'] {
+	background: #1a1815;
+	color: #f2ece1;
+}
+
+/* Touch screens: every control at least 44px (Apple HIG; WCAG 2.5.8 asks 24px). */
+@media (pointer: coarse) {
+	.ln {
+		--ln-bar: 3.25rem;
+	}
+	.ln-topbar {
+		gap: 0.25rem;
+		padding: 0 0.4rem;
+	}
+	.ln-icon-btn,
+	.ln-font__trigger {
+		min-width: 2.75rem;
+		height: 2.75rem;
+	}
+	.ln-topbar__back,
+	.ln-btn,
+	.ln-font__option,
+	.ln-link-btn {
+		min-height: 2.75rem;
+	}
+}
+
+/* Phones: a table row becomes a small card, each value under its column name. */
+@media (max-width: 29.99rem) {
+	.ln-prose table:has(td[data-label]),
+	.ln-prose table:has(td[data-label]) :is(tbody, tr, td) {
+		display: block;
+	}
+	.ln-prose table:has(td[data-label]) thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+	.ln-prose table:has(td[data-label]) tr {
+		margin-top: 0.6rem;
+		padding: 0.45rem 0.85rem;
+		border: 1px solid var(--hairline);
+		border-radius: 10px;
+		background: var(--surface-elevated);
+	}
+	.ln-prose table:has(td[data-label]) td {
+		display: grid;
+		grid-template-columns: 6rem minmax(0, 1fr);
+		gap: 0.75rem;
+		padding: 0.25rem 0;
+		border: 0;
+		background: none;
+	}
+	.ln-prose table:has(td[data-label]) td::before {
+		content: attr(data-label);
+		color: var(--ink-secondary);
+		font-size: 0.8rem;
+		font-weight: 600;
+	}
+}

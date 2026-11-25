@@ -13,6 +13,7 @@ import LearnNotesDrawer from '@/components/learn/LearnNotesDrawer';
 import { LearnKeyboardNav } from '@/components/learn/LearnPlayerChrome';
 import LearnReaderFrame from '@/components/learn/LearnReaderFrame';
 import LearnReaderPrefs from '@/components/learn/LearnReaderPrefs';
+import LearnReadingToc from '@/components/learn/LearnReadingToc';
 import LearnStudyTracker from '@/components/learn/LearnStudyTracker';
 import { routes } from '@/config/routes';
 import { formatMinutes } from '@/features/learn/content';
@@ -139,11 +140,13 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 					{course.title}
 					{current ? <span className="ln-topbar__section"> / {current.title}</span> : null}
 				</span>
+				{current ? <span className="ln-topbar__short tabular-nums">Mục {position + 1}</span> : null}
 			</Link>
 			<span
 				className="ln-topbar__count tabular-nums"
 				aria-label={`Đã hoàn thành ${summary.completedCount} trên ${summary.totalCount} mục`}
 			>
+				<LearnIcon name="checkCircle" size={14} />
 				{summary.completedCount}/{summary.totalCount}
 			</span>
 			<LearnReaderPrefs />
@@ -181,97 +184,102 @@ export default async function LearnCoursePage({ params, searchParams }: Props) {
 					<p className="mt-4 text-ink-secondary">Khóa học này chưa có nội dung.</p>
 				</div>
 			) : (
-				<article className="ln-reader" key={section.id}>
-					<p className="ln-reader__eyebrow">
-						{titleHasLessonNumber(current.lessonTitle) ? null : (
-							<>
-								Bài {current.lessonIndex + 1}
-								<span aria-hidden="true"> · </span>
-							</>
-						)}
-						<Link href={overviewHref}>{current.lessonTitle}</Link>
-					</p>
-					<h1 className="ln-reader__title">{section.title}</h1>
-					<p className="ln-reader__meta">
-						{LEARN_SECTION_KIND_LABELS[section.type]}
-						<span aria-hidden="true"> · </span>
-						{formatMinutes(section.minutes)}
-						{state?.completed ? (
-							<>
-								<span aria-hidden="true"> · </span>
-								<span className="ln-reader__done">✓ Đã hoàn thành</span>
-							</>
-						) : null}
-					</p>
-					{section.summary ? <p className="ln-reader__lead">{section.summary}</p> : null}
-
-					{section.keyTakeaways.length ? (
-						<aside className="ln-takeaways" aria-label="Ý chính">
-							<p className="ln-takeaways__label">Bạn sẽ nắm được</p>
-							<ul>
-								{section.keyTakeaways.map((item) => (
-									<li key={item}>{item}</li>
-								))}
-							</ul>
-						</aside>
-					) : null}
-
-					{section.type === 'DISCUSSION' ? (
-						section.discussion ? (
-							<>
-								{section.markdown.trim() ? (
-									<LearnDiscussionIntro sectionId={section.id}>
-										<LearnMarkdown markdown={section.markdown} />
-									</LearnDiscussionIntro>
-								) : null}
-								<LearnDiscussionViewer
-									sectionId={section.id}
-									discussion={section.discussion}
-									completed={Boolean(state?.completed)}
-									nextHref={nextHref}
-									nextTitle={next?.title}
-									finishesCourse={finishesCourse}
-									overviewHref={overviewHref}
-								/>
-							</>
-						) : (
-							<p className="mt-8 text-ink-secondary">Mục này chưa có câu hỏi.</p>
-						)
-					) : (
-						<>
-							{section.markdown ? (
+				<div className="ln-reader-layout" data-rail={headings.length >= 3 ? 'true' : undefined}>
+					<article className="ln-reader" key={section.id}>
+						<p className="ln-reader__eyebrow">
+							{titleHasLessonNumber(current.lessonTitle) ? null : (
 								<>
-									{headings.length >= 3 ? (
-										<details className="ln-toc">
-											<summary>Trong mục này</summary>
-											<ol>
-												{headings.map((heading) => (
-													<li key={heading.id} data-level={heading.level}>
-														<a href={`#${heading.id}`}>{heading.text}</a>
-													</li>
-												))}
-											</ol>
-										</details>
+									Bài {current.lessonIndex + 1}
+									<span aria-hidden="true"> · </span>
+								</>
+							)}
+							<Link href={overviewHref}>{current.lessonTitle}</Link>
+						</p>
+						<h1 className="ln-reader__title">{section.title}</h1>
+						<p className="ln-reader__meta">
+							{LEARN_SECTION_KIND_LABELS[section.type]}
+							<span aria-hidden="true"> · </span>
+							{formatMinutes(section.minutes)}
+							{state?.completed ? (
+								<>
+									<span aria-hidden="true"> · </span>
+									<span className="ln-reader__done">✓ Đã hoàn thành</span>
+								</>
+							) : null}
+						</p>
+						{section.summary ? <p className="ln-reader__lead">{section.summary}</p> : null}
+
+						{section.keyTakeaways.length ? (
+							<aside className="ln-takeaways" aria-label="Ý chính">
+								<p className="ln-takeaways__label">Bạn sẽ nắm được</p>
+								<ul>
+									{section.keyTakeaways.map((item) => (
+										<li key={item}>{item}</li>
+									))}
+								</ul>
+							</aside>
+						) : null}
+
+						{section.type === 'DISCUSSION' ? (
+							section.discussion ? (
+								<>
+									{section.markdown.trim() ? (
+										<LearnDiscussionIntro sectionId={section.id}>
+											<LearnMarkdown markdown={section.markdown} />
+										</LearnDiscussionIntro>
 									) : null}
-									<LearnMarkdown markdown={section.markdown} />
+									<LearnDiscussionViewer
+										sectionId={section.id}
+										discussion={section.discussion}
+										completed={Boolean(state?.completed)}
+										nextHref={nextHref}
+										nextTitle={next?.title}
+										finishesCourse={finishesCourse}
+										overviewHref={overviewHref}
+									/>
 								</>
 							) : (
-								<p className="mt-8 text-ink-secondary">Mục này chưa có nội dung.</p>
-							)}
-						</>
-					)}
-
-					<footer className="ln-reader__footer">
-						{previous && previousHref ? (
-							<Link href={previousHref} className="ln-pager">
-								← {previous.title}
-							</Link>
+								<p className="mt-8 text-ink-secondary">Mục này chưa có câu hỏi.</p>
+							)
 						) : (
-							<span />
+							<>
+								{section.markdown ? (
+									<>
+										{headings.length >= 3 ? (
+											<details className="ln-toc">
+												<summary>Trong mục này</summary>
+												<ol>
+													{headings.map((heading) => (
+														<li key={heading.id} data-level={heading.level}>
+															<a href={`#${heading.id}`}>{heading.text}</a>
+														</li>
+													))}
+												</ol>
+											</details>
+										) : null}
+										<LearnMarkdown markdown={section.markdown} />
+									</>
+								) : (
+									<p className="mt-8 text-ink-secondary">Mục này chưa có nội dung.</p>
+								)}
+							</>
 						)}
-						<div className="ln-reader__action">{primaryAction()}</div>
-					</footer>
-				</article>
+
+						<footer className="ln-reader__footer">
+							{previous && previousHref ? (
+								<Link href={previousHref} className="ln-pager">
+									← {previous.title}
+								</Link>
+							) : (
+								<span />
+							)}
+							<div className="ln-reader__action">{primaryAction()}</div>
+						</footer>
+					</article>
+					{headings.length >= 3 ? (
+						<LearnReadingToc key={`toc-${section.id}`} headings={headings} />
+					) : null}
+				</div>
 			)}
 			{section && current ? (
 				<div className="ln-actionbar">
