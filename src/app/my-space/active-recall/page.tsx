@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 
-import { listPublishedRecallDecks } from '@/features/active-recall';
-import { Icon } from '@/components/ui/Icon';
+import RecallCourseIndex, {
+	type RecallIndexGroup,
+} from '@/components/active-recall/RecallCourseIndex';
 import { routes } from '@/config/routes';
+import { listPublishedRecallDecks } from '@/features/active-recall';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,61 +15,20 @@ export const metadata: Metadata = {
 
 export default async function ActiveRecallIndexPage() {
 	const decks = await listPublishedRecallDecks();
-	return (
-		<main className="min-h-svh bg-canvas px-6 pt-24 pb-24 sm:px-8 sm:pt-28">
-			<div className="shell max-w-5xl">
-				<header className="border-t border-hairline pt-5">
-					<h1 className="mt-1 font-display text-[clamp(2.1rem,5vw,4.5rem)] font-medium tracking-tight text-ink">
-						Active Recall
-					</h1>
-					<p className="mt-3 max-w-2xl text-base leading-relaxed text-ink-secondary">
-						Tự trả lời trước khi lật thẻ để đối chiếu. Mỗi bộ tập trung vào một bài học hoặc chủ đề.
-					</p>
-				</header>
-				<section className="mt-10 border-t border-hairline" aria-label="Các bộ thẻ công khai">
-					{decks.length ? (
-						decks.map((deck) => (
-							<div key={deck.id} className="recall-index-row">
-								<Link href={routes.activeRecallDeck(deck.slug)} className="recall-deck-row group">
-									<div className="recall-stack-mark" aria-hidden="true">
-										<i />
-										<i />
-										<i />
-									</div>
-									<div className="min-w-0 flex-1">
-										<p className="text-sm text-ink-secondary">
-											{[deck.subject, deck.lessonLabel].filter(Boolean).join(' · ') || 'Bộ thẻ'}
-										</p>
-										<h2
-											id={`deck-${deck.id}`}
-											className="mt-1 font-display text-2xl font-medium tracking-tight text-ink transition-colors group-hover:text-bronze"
-										>
-											{deck.title}
-										</h2>
-										{deck.description ? (
-											<p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-secondary">
-												{deck.description}
-											</p>
-										) : null}
-									</div>
-									<span className="shrink-0 text-sm tabular-nums text-ink-secondary">
-										{deck.cardCount} thẻ →
-									</span>
-								</Link>
-								<Link
-									href={routes.activeRecallDeckTest(deck.slug)}
-									aria-describedby={`deck-${deck.id}`}
-									className="recall-test-link"
-								>
-									<Icon name="quiz" size={16} aria-hidden="true" /> Làm Test
-								</Link>
-							</div>
-						))
-					) : (
-						<p className="py-12 text-sm text-ink-secondary">Chưa có bộ thẻ nào được xuất bản.</p>
-					)}
-				</section>
-			</div>
-		</main>
-	);
+	// One lesson list per course, in the order the decks are already sorted.
+	const groups = new Map<string, RecallIndexGroup>();
+	for (const deck of decks) {
+		const key = deck.courseId || deck.subject || 'other';
+		const group = groups.get(key) ?? { id: key, title: deck.courseName || 'Bộ thẻ', decks: [] };
+		group.decks.push({
+			id: deck.id,
+			href: routes.activeRecallDeck(deck.slug),
+			title: deck.title,
+			lessonLabel: deck.lessonLabel,
+			description: deck.description,
+			cardIds: deck.cardIds,
+		});
+		groups.set(key, group);
+	}
+	return <RecallCourseIndex kicker="Ôn tập" title="Active Recall" groups={[...groups.values()]} />;
 }

@@ -193,10 +193,12 @@ export async function listPublishedRecallDecks() {
 		include: {
 			course: { select: courseSelect },
 			_count: { select: { cards: true, classLinks: true } },
+			// Ids only, so this browser's progress can be matched to cards that still exist.
+			cards: { select: { id: true }, orderBy: { position: 'asc' } },
 		},
 	});
 	return rows
-		.map(mapList)
+		.map(({ cards, ...row }) => ({ ...mapList(row), cardIds: cards.map((card) => card.id) }))
 		.sort(
 			(left, right) =>
 				left.position - right.position || compareRecallDeckTitles(left.title, right.title),
