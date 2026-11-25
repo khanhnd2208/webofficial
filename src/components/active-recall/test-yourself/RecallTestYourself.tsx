@@ -7,7 +7,7 @@ import type { RecallTestDeck } from '@/features/active-recall/testYourself';
 
 import { Icon } from '@/components/ui/Icon';
 import { ArenaMonster, type MonsterMood } from '@/components/teaching/arena/ArenaFigures';
-import { ARENA_BOSSES, type ArenaBoss } from '@/components/teaching/arena/arenaBosses';
+import type { ArenaBoss } from '@/components/teaching/arena/arenaBosses';
 import arenaStyles from '@/components/teaching/arena/arena.module.css';
 import {
 	isArenaMuted,
@@ -19,6 +19,15 @@ import {
 import { markCardKnown } from '../deckProgress';
 
 import { splitAnswerExample } from './answerParts';
+import {
+	bossForRun,
+	RANDOM_BOSS,
+	readBossChoice,
+	subscribeBossChoice,
+	TEST_BOSSES,
+	writeBossChoice,
+} from './bossChoice';
+import BossSwitch from './BossSwitch';
 import stage from './battleScene.module.css';
 import {
 	bossHp,
@@ -36,16 +45,9 @@ import styles from './testYourself.module.css';
 type Phase = 'setup' | 'battle' | 'paused' | 'summary';
 type TestCard = RecallTestDeck['cards'][number] & { deckId: string; deckTitle: string };
 
-/** Generic villains only: the illustrated sheets are portraits of real people. */
-const TEST_BOSSES = ARENA_BOSSES.filter((boss) => boss.art.kind !== 'sheet');
 const MOOD_MS: Partial<Record<MonsterMood, number>> = { roar: 900, hurt: 750, laugh: 1200 };
 const VICTORY_MS = 1300;
 const CHEER_MS = 1400;
-
-function pickBoss(previousId?: string): ArenaBoss {
-	const pool = TEST_BOSSES.filter((boss) => boss.id !== previousId);
-	return pool[Math.floor(Math.random() * pool.length)] ?? TEST_BOSSES[0]!;
-}
 
 function LanguageSwitch({ vi, onChange }: { vi: boolean; onChange: (vi: boolean) => void }) {
 	return (
@@ -98,6 +100,7 @@ export default function RecallTestYourself({
 	const victoryTimer = useRef(0);
 	const cheerTimer = useRef(0);
 	const muted = useSyncExternalStore(subscribeArenaMuted, isArenaMuted, () => false);
+	const bossChoice = useSyncExternalStore(subscribeBossChoice, readBossChoice, () => RANDOM_BOSS);
 
 	const cards = useMemo(() => {
 		const map = new Map<string, TestCard>();
@@ -146,7 +149,7 @@ export default function RecallTestYourself({
 			window.clearTimeout(cheerTimer.current);
 			setCheer(0);
 			setSession(createTestSession(ids));
-			setBoss(pickBoss(previousBossId));
+			setBoss(bossForRun(readBossChoice(), previousBossId));
 			setRevealed(false);
 			setEntry((value) => value + 1);
 			setPhase('battle');
@@ -155,6 +158,20 @@ export default function RecallTestYourself({
 			window.scrollTo?.({ top: 0 });
 		},
 		[decks, selected, showMood],
+	);
+
+	/** Mid-run swap: same cards, same HP, a new face (and the next runs keep it). */
+	const switchBoss = useCallback(
+		(bossId: string) => {
+			const next = TEST_BOSSES.find((candidate) => candidate.id === bossId);
+			if (!next) return;
+			writeBossChoice(next.id);
+			setBoss(next);
+			setEntry((value) => value + 1);
+			showMood('roar');
+			playArenaSound('boss');
+		},
+		[showMood],
 	);
 
 	const reveal = useCallback(() => {
@@ -218,7 +235,7 @@ export default function RecallTestYourself({
 			const target = event.target;
 			if (
 				target instanceof Element &&
-				target.closest('a, button, input, textarea, select, [contenteditable="true"]')
+				target.closest('a, button, input, textarea, select, dialog, [contenteditable="true"]')
 			)
 				return;
 			if (event.key === ' ' || event.key === 'Enter') {
@@ -270,6 +287,8 @@ export default function RecallTestYourself({
 					onToggle={toggleDeck}
 					onSelectAll={selectAll}
 					initialDeckSlug={initialDeckSlug}
+					bossChoice={bossChoice}
+					onBossChange={writeBossChoice}
 					onStart={() => start()}
 					backHref={backHref}
 					backLabel={backLabel}
@@ -285,6 +304,7 @@ export default function RecallTestYourself({
 					boss={boss}
 					session={session}
 					paused={phase === 'paused'}
+					sameBoss={bossChoice !== RANDOM_BOSS}
 					questionOf={questionOf}
 					onResume={() => setPhase('battle')}
 					onEnd={() => setPhase('summary')}
@@ -320,6 +340,7 @@ export default function RecallTestYourself({
 						Dừng trận
 					</button>
 					<div className={styles.topTools}>
+						<BossSwitch bossId={boss.id} onPick={switchBoss} disabled={!card} crowded={hasVi} />
 						{hasVi ? <LanguageSwitch vi={viMode} onChange={setViMode} /> : null}
 						<button
 							type="button"
@@ -342,7 +363,9 @@ export default function RecallTestYourself({
 							</div>
 						) : null}
 						<div className={styles.hudText}>
-							<p className={styles.bossName}>{boss.name}</p>
+							<p className={styles.bossName} aria-live="polite">
+								{boss.name}
+							</p>
 							<div
 								className={styles.hpBar}
 								role="meter"

@@ -19,6 +19,7 @@ export default function TestYourselfSummary({
 	boss,
 	session,
 	paused,
+	sameBoss = false,
 	questionOf,
 	onResume,
 	onEnd,
@@ -29,6 +30,8 @@ export default function TestYourselfSummary({
 	boss: ArenaBoss;
 	session: TestSession;
 	paused: boolean;
+	/** The learner picked this boss, so a replay faces it again. */
+	sameBoss?: boolean;
 	questionOf: (cardId: string) => string;
 	onResume: () => void;
 	onEnd: () => void;
@@ -117,10 +120,10 @@ export default function TestYourselfSummary({
 			{paused ? null : (
 				<div className={styles.summaryActions}>
 					<button type="button" className={styles.startButton} onClick={onReplay}>
-						Đấu lại với boss mới
+						{sameBoss ? `Đấu lại với ${boss.name}` : 'Đấu lại với boss mới'}
 					</button>
 					<button type="button" className={styles.ghostButton} onClick={onChooseDecks}>
-						Chọn bộ câu hỏi khác
+						Đổi bộ câu hỏi hoặc boss
 					</button>
 				</div>
 			)}
