@@ -4,6 +4,7 @@ import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 
 import { normalizeTypedBullets } from '@/features/learn/bullets';
+import rehypeTableLabels from '@/features/learn/rehypeTableLabels';
 import remarkLearnCallouts from '@/features/learn/remarkCallouts';
 import remarkLearnFootnotes from '@/features/learn/remarkFootnotes';
 import { headingId } from '@/features/learn/outline';
@@ -84,6 +85,7 @@ export default function LearnMarkdown({
 		<div className="ln-prose">
 			<ReactMarkdown
 				remarkPlugins={[remarkGfm, remarkBreaks, remarkLearnCallouts, remarkLearnFootnotes]}
+				rehypePlugins={[rehypeTableLabels]}
 				components={renderComponents}
 			>
 				{normalizeTypedBullets(markdown)}
