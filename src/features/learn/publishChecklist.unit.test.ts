@@ -56,4 +56,15 @@ describe('publishChecklist', () => {
 		expect(result.blockers).toEqual([]);
 		expect(result.warnings.some((item) => item.message.includes('Thiếu đáp án mẫu'))).toBe(true);
 	});
+
+	it('warns when a heading is really a paragraph with a stray #', () => {
+		const long = `## ${'Một câu rất dài '.repeat(10)}`;
+		const result = publishChecklist({
+			description: 'Có',
+			lessons: [lesson([reading({ markdown: `${long}\n\n## Tiêu đề ngắn\n\nNội dung` })])],
+		});
+		expect(result.warnings.map((item) => item.id)).toContain('long-heading-s1');
+		const clean = publishChecklist({ description: 'Có', lessons: [lesson([reading()])] });
+		expect(clean.warnings.map((item) => item.id)).not.toContain('long-heading-s1');
+	});
 });
