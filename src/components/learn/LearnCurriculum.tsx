@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 import { routes } from '@/config/routes';
-import { formatMinutes } from '@/features/learn/format';
+import { formatMinutes, titleHasLessonNumber } from '@/features/learn/format';
 import type { LearnCurriculumLesson } from '@/features/learn/progress';
 
 import { LEARN_SECTION_KIND_SHORT, type LearnSectionKind } from '@/features/learn/types';
@@ -97,7 +97,9 @@ export default function LearnCurriculum({
 								<LearnIcon name="chevronDown" size={16} />
 							</span>
 							<span className="min-w-0 flex-1">
-								<span className="ln-lesson__label">Bài {lesson.index + 1}</span>
+								{titleHasLessonNumber(lesson.title) ? null : (
+									<span className="ln-lesson__label">Bài {lesson.index + 1}</span>
+								)}
 								<span className="ln-lesson__title">{lesson.title}</span>
 							</span>
 							<span className="ln-lesson__meta tabular-nums" data-done={done ? 'true' : undefined}>

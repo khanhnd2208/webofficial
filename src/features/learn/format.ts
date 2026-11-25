@@ -8,3 +8,8 @@ export function formatMinutes(minutes: number): string {
 	const rest = minutes % 60;
 	return rest ? `${hours} giờ ${rest} phút` : `${hours} giờ`;
 }
+
+/** True when a lesson title already starts with its number ("Bài 4 — …"), so a "Bài N" label would repeat it. */
+export function titleHasLessonNumber(title: string): boolean {
+	return /^bài\s*\d/i.test(title.trim());
+}
