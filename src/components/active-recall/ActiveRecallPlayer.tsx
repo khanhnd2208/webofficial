@@ -17,8 +17,8 @@ import { useRecallStudy } from './useRecallStudy';
 import type { ActiveRecallStudyDeck } from '@/features/active-recall';
 import {
 	recallHasContent,
+	recallPreviewText,
 	recallToStoredHtml,
-	recallVisibleText,
 } from '@/features/active-recall/richText';
 import { Icon } from '@/components/ui/Icon';
 
@@ -473,7 +473,7 @@ export default function ActiveRecallPlayer({
 	const flipLabel = revealed ? 'Xem câu hỏi' : 'Hiện đáp án';
 	const questionText = viMode && card.questionVi ? card.questionVi : card.question;
 	const answerText = viMode && card.answerVi ? card.answerVi : card.answer;
-	const recapText = recallVisibleText(splitView ? card.question : questionText);
+	const recapText = recallPreviewText(splitView ? card.question : questionText);
 	const progress = finished ? 1 : (currentIndex + 1) / ids.length;
 
 	return (

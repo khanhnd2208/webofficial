@@ -169,6 +169,14 @@ export function recallVisibleText(html: string | null | undefined) {
 		.trim();
 }
 
+/**
+ * Plain text for a one-line preview of any stored card field. Unlike
+ * recallVisibleText it renders legacy markdown first, so "**HRM**" reads "HRM".
+ */
+export function recallPreviewText(value: string | null | undefined) {
+	return recallVisibleText(recallToStoredHtml(value ?? ''));
+}
+
 export function recallHasContent(html: string | null | undefined) {
 	return recallVisibleText(html).length > 0;
 }

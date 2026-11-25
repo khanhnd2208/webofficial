@@ -6,11 +6,18 @@ import {
 	recallImportToStoredHtml,
 	recallMarkdownToHtml,
 	recallToStoredHtml,
+	recallPreviewText,
 	recallVisibleText,
 	sanitizeRecallHtml,
 } from './richText';
 
 describe('Active Recall rich text', () => {
+	it('previews legacy markdown and stored HTML as plain text', () => {
+		expect(recallPreviewText('**What is HRM?**')).toBe('What is HRM?');
+		expect(recallPreviewText('<p><strong>What</strong> is HRM?</p>')).toBe('What is HRM?');
+		expect(recallPreviewText(null)).toBe('');
+	});
+
 	it('converts common markdown and inline HTML to safe stored HTML', () => {
 		const html = recallMarkdownToHtml(
 			'What is **HRM**?\nA *system*\n<u>underlined</u>\n<span style="color: #dc2626">red</span>',
