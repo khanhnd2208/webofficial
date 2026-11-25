@@ -7,6 +7,7 @@ import type { LearnDiscussion } from '@/features/learn/types';
 import { adminFetch } from '@/lib/admin/client';
 
 import DiscussionQuestionCard from './DiscussionQuestionCard';
+import DiscussionSelfCheck, { DiscussionReview, type SelfRating } from './DiscussionSelfCheck';
 import LearnStepperFinish from './LearnStepperFinish';
 import { useStepperScroll } from './useStepperScroll';
 
@@ -16,6 +17,9 @@ function storageKey(sectionId: string) {
 
 interface Saved {
 	opened: string[];
+	/** The learner's own answers and self-ratings, by question id (this device only). */
+	answers: Record<string, string>;
+	ratings: Record<string, SelfRating>;
 	/** Auto-completed once on this device, so un-marking by hand is not undone on the next visit. */
 	completed: boolean;
 }
@@ -30,10 +34,25 @@ function readSaved(sectionId: string): Saved {
 				? row.opened.filter((item) => typeof item === 'string')
 				: [],
 			completed: Boolean(row.completed),
+			answers: stringRecord(row.answers),
+			ratings: Object.fromEntries(
+				Object.entries(stringRecord(row.ratings)).filter(([, value]) =>
+					['yes', 'partly', 'no'].includes(value),
+				),
+			) as Record<string, SelfRating>,
 		};
 	} catch {
-		return { opened: [], completed: false };
+		return { opened: [], completed: false, answers: {}, ratings: {} };
 	}
+}
+
+function stringRecord(value: unknown): Record<string, string> {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+	return Object.fromEntries(
+		Object.entries(value).filter(
+			(entry): entry is [string, string] => typeof entry[1] === 'string',
+		),
+	);
 }
 
 function formatPart(part: string) {
@@ -62,6 +81,8 @@ export default function LearnDiscussionViewer({
 	const [index, setIndex] = useState(0);
 	const [opened, setOpened] = useState<string[]>([]);
 	const [marked, setMarked] = useState(completed);
+	const [answers, setAnswers] = useState<Record<string, string>>({});
+	const [ratings, setRatings] = useState<Record<string, SelfRating>>({});
 	const rootRef = useRef<HTMLDivElement>(null);
 	const touched = useRef(false);
 	const popoverId = `ln-q-${sectionId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
@@ -79,6 +100,8 @@ export default function LearnDiscussionViewer({
 			if (touched.current) return;
 			setIndex(Math.min(Math.max(fromHash, 0), Math.max(questions.length - 1, 0)));
 			setOpened(saved.opened);
+			setAnswers(saved.answers);
+			setRatings(saved.ratings);
 		});
 		return () => {
 			cancel = true;
@@ -97,12 +120,12 @@ export default function LearnDiscussionViewer({
 		try {
 			window.localStorage.setItem(
 				storageKey(sectionId),
-				JSON.stringify({ opened, completed: marked }),
+				JSON.stringify({ opened, completed: marked, answers, ratings }),
 			);
 		} catch {
 			/* storage unavailable */
 		}
-	}, [ready, sectionId, opened, marked]);
+	}, [ready, sectionId, opened, marked, answers, ratings]);
 
 	useEffect(() => {
 		if (!ready || marked || !questions.length || opened.length < questions.length) return;
@@ -239,7 +262,11 @@ export default function LearnDiscussionViewer({
 											<span className="ln-stepper__menu-title">
 												{itemView?.title ?? `Câu ${itemIndex + 1}`}
 											</span>
-											{opened.includes(item.id) ? <span aria-label="đã xem">✓</span> : null}
+											{ratings[item.id] === 'no' || ratings[item.id] === 'partly' ? (
+												<span className="ln-stepper__menu-flag">Xem lại</span>
+											) : opened.includes(item.id) ? (
+												<span aria-label="đã xem">✓</span>
+											) : null}
 										</button>
 									);
 								})}
@@ -265,15 +292,35 @@ export default function LearnDiscussionViewer({
 			)}
 
 			{question ? (
+				<DiscussionSelfCheck
+					key={question.id}
+					open={isOpen}
+					answer={answers[question.id] ?? ''}
+					onAnswer={(value) => {
+						touched.current = true;
+						setAnswers((current) => ({ ...current, [question.id]: value }));
+					}}
+					rating={ratings[question.id] ?? null}
+					onRate={(value) =>
+						setRatings((current) => {
+							const nextRatings = { ...current };
+							if (value) nextRatings[question.id] = value;
+							else delete nextRatings[question.id];
+							return nextRatings;
+						})
+					}
+				/>
+			) : null}
+
+			{question && last && isOpen ? (
+				<DiscussionReview ratings={questions.map((item) => ratings[item.id] ?? null)} onJump={go} />
+			) : null}
+
+			{question ? (
 				<div className="ln-stepper__dock">
 					<div className="ln-stepper__nav">
-						{questions.length > 1 ? (
-							<button
-								type="button"
-								className="ln-btn"
-								onClick={() => go(index - 1)}
-								disabled={index === 0}
-							>
+						{questions.length > 1 && index > 0 ? (
+							<button type="button" className="ln-btn" onClick={() => go(index - 1)}>
 								← Câu trước
 							</button>
 						) : (

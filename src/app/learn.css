@@ -4253,3 +4253,97 @@ button.ln-save.ln-btn--primary {
 details[open] > .ln-syllabus-toggle .ln-syllabus-toggle__icon {
 	transform: rotate(180deg);
 }
+
+/* ─── Critical questions: write, compare, rate ────────────────────────── */
+
+.ln-selfcheck {
+	display: grid;
+	gap: 0.75rem;
+	margin-top: 1rem;
+}
+.ln-selfcheck__label {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.25rem 0.75rem;
+	color: var(--ink);
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+.ln-selfcheck__label span {
+	color: var(--ink-secondary);
+	font-size: 0.78rem;
+	font-weight: 400;
+}
+.ln-selfcheck__input {
+	width: 100%;
+	min-height: 7rem;
+	padding: 0.75rem 0.9rem;
+	border: 1px solid var(--hairline);
+	border-radius: var(--ln-radius);
+	background: var(--surface-elevated);
+	color: var(--ink);
+	font: inherit;
+	font-size: 1rem;
+	line-height: 1.6;
+	resize: vertical;
+}
+.ln-selfcheck__input:focus-visible {
+	border-color: var(--bronze);
+	outline: 2px solid color-mix(in srgb, var(--bronze) 35%, transparent);
+	outline-offset: 1px;
+}
+.ln-selfcheck__mine {
+	display: grid;
+	gap: 0.35rem;
+	padding: 0.85rem 1rem;
+	border-left: 3px solid var(--ln-strong-rule);
+	border-radius: 0 var(--ln-radius) var(--ln-radius) 0;
+	background: var(--paper);
+	line-height: 1.6;
+	white-space: pre-wrap;
+}
+.ln-selfcheck__rate {
+	display: grid;
+	gap: 0.5rem;
+}
+.ln-selfcheck__options {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.5rem;
+}
+.ln-selfcheck__option[aria-pressed='true'] {
+	border-color: var(--ink);
+	background: var(--ink);
+	color: var(--ln-on-primary);
+}
+.ln-selfcheck__option[data-rating='yes'][aria-pressed='true'] {
+	border-color: var(--success);
+	background: var(--success);
+}
+.ln-review {
+	display: grid;
+	gap: 0.6rem;
+	margin-top: 1rem;
+	padding: 0.9rem 1rem;
+	border: 1px solid var(--hairline);
+	border-radius: var(--ln-radius);
+	font-size: 0.92rem;
+}
+.ln-review__revisit {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.4rem;
+	color: var(--ink-secondary);
+}
+.ln-stepper__menu-flag {
+	padding: 0.05rem 0.4rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--warning) 18%, transparent);
+	color: var(--ink);
+	font-size: 0.7rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
