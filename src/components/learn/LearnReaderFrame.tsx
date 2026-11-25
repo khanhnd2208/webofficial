@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } fro
 
 import { LearnIcon } from './LearnIcon';
 import { LearnScrollProgress } from './LearnPlayerChrome';
-import { useLearnFontSize } from './LearnReaderPrefs';
+import { useLearnFontSize, useLearnTheme } from './LearnReaderPrefs';
 
 const COLLAPSED_KEY = 'ln:outline-collapsed';
 const COLLAPSED_EVENT = 'ln:outline-collapsed';
@@ -43,6 +43,7 @@ export default function LearnReaderFrame({
 }) {
 	const collapsed = useSyncExternalStore(subscribeCollapsed, readCollapsed, () => false);
 	const fontSize = useLearnFontSize();
+	const theme = useLearnTheme();
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const [desktop, setDesktop] = useState(false);
 	const toggleRef = useRef<HTMLButtonElement>(null);
@@ -83,7 +84,13 @@ export default function LearnReaderFrame({
 	const drawer = !desktop && drawerOpen;
 
 	return (
-		<div className="ln-frame" data-collapsed={collapsed ? 'true' : undefined} data-size={fontSize}>
+		<div
+			// `.dark` swaps the site's colour tokens for this subtree only; `.ln-sepia` does the same in warm paper.
+			className={`ln-frame${theme === 'dark' ? ' dark' : theme === 'sepia' ? ' ln-sepia' : ''}`}
+			data-collapsed={collapsed ? 'true' : undefined}
+			data-size={fontSize}
+			data-theme-choice={theme}
+		>
 			<header className="ln-topbar">
 				<button
 					ref={toggleRef}

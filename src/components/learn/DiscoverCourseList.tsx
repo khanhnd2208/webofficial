@@ -26,14 +26,18 @@ export function courseBlurb(course: { subtitle: string; description: string }) {
 
 /** Level · category · lesson count · length, skipping whatever is missing. */
 export function courseFacts(course: {
+	title?: string;
 	level: LearnLevel;
 	category: string;
 	lessonCount: number;
 	totalMinutes: number;
 }) {
+	const category = course.category.trim();
+	// "HRM — Quản trị nhân lực" already says HRM; repeating it in the facts is noise.
+	const named = category && course.title?.toLowerCase().includes(category.toLowerCase());
 	return [
 		LEARN_LEVEL_LABELS[course.level],
-		course.category.trim(),
+		named ? '' : category,
 		`${course.lessonCount} bài`,
 		course.totalMinutes > 0 ? `khoảng ${formatMinutes(course.totalMinutes)}` : '',
 	].filter(Boolean);

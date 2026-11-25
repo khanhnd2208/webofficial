@@ -44,7 +44,7 @@ describe('DiscoverCourseList', () => {
 		expect(link).toHaveTextContent(course.title);
 		expect(link).toHaveTextContent('Một câu dẫn ngắn cho người mới.');
 		expect(link).not.toHaveTextContent('Mô tả dài không được hiện khi đã có câu dẫn.');
-		expect(link).toHaveTextContent('Cơ bản · Quản trị · 8 bài · khoảng 1 giờ 30 phút');
+		expect(link).toHaveTextContent('Cơ bản · 8 bài · khoảng 1 giờ 30 phút');
 		expect(link.querySelector('img')?.getAttribute('src')).toContain('/uploads/cover.webp');
 		link.focus();
 		expect(link).toHaveFocus();

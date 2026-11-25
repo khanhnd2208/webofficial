@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { routes } from '@/config/routes';
 
 import LearnCourseThumb from './LearnCourseThumb';
+import { LearnIcon } from './LearnIcon';
 
 export interface CourseCardProgress {
 	percent: number;
@@ -78,7 +79,10 @@ export default function CourseCard({
 			{lessonTitles.length ? (
 				<div className="border-t border-hairline px-3 sm:px-4">
 					<details className="text-subhead">
-						<summary className="min-h-11 w-full cursor-pointer rounded-md py-3 font-medium text-ink underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+						<summary className="ln-syllabus-toggle flex min-h-11 w-full cursor-pointer list-none items-center gap-2 rounded-md py-3 font-medium text-ink underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
+							<span className="ln-syllabus-toggle__icon" aria-hidden="true">
+								<LearnIcon name="chevronDown" size={16} />
+							</span>
 							Xem chương trình
 						</summary>
 						<ol className="mt-1 space-y-1.5 pb-3 pl-5 leading-relaxed text-ink-secondary">

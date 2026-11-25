@@ -8,14 +8,19 @@ import { cleanupTeachingClass } from './helpers/teachingCleanup';
  * (`/lop/<slug>`) and both spellings of a course (`/my-space/courses/<slug>` and `/khoa-hoc/<slug>`).
  */
 test.describe('Links shared with students keep working', () => {
-	test('both course spellings send a signed-out student to sign in and back to the same URL', async ({
+	test('both course spellings send a signed-out student to sign in and back to the same section', async ({
 		page,
 	}) => {
-		for (const path of ['/my-space/courses/itm?s=bai-1', '/khoa-hoc/hrm']) {
+		for (const path of ['/my-space/courses/itm?s=bai-1', '/khoa-hoc/hrm?s=bai-1']) {
 			await page.goto(path);
 			await expect(page).toHaveURL(/\/dang-nhap\?/);
 			expect(new URL(page.url()).searchParams.get('from')).toBe(path);
 		}
+	});
+
+	test('a signed-out visitor can open a course home without signing in', async ({ page }) => {
+		await page.goto('/khoa-hoc/hrm');
+		await expect(page).toHaveURL(/\/khoa-hoc\/hrm$/);
 	});
 
 	test('old board-game links go to fun.toiladuykhanh.com', async ({ request }) => {

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import SiteHeader from '@/components/site/SiteHeader';
 import SpotIllustration from '@/components/site/SpotIllustration';
 import { routes } from '@/config/routes';
-import { formatMinutes } from '@/features/learn/format';
+import { formatMinutes, titleHasLessonNumber } from '@/features/learn/format';
 import { toCurriculumLessons, type LearnCourseSummary } from '@/features/learn/progress';
 import { LEARN_LEVEL_LABELS, type LearnCourseOutline } from '@/features/learn/types';
 
@@ -18,23 +18,43 @@ export default function LearnCourseOverview({
 	course,
 	summary,
 	isAdmin,
+	signedIn = true,
 }: {
 	course: LearnCourseOutline;
 	summary: LearnCourseSummary;
 	isAdmin: boolean;
+	/** Guests see the course home with a sign-in call to action and no progress. */
+	signedIn?: boolean;
 }) {
 	const first = summary.sections[0] ?? null;
 	const next = summary.nextSection;
 	const resume = next ?? first;
-	const cta =
-		summary.status === 'completed'
-			? { label: 'Ôn lại', href: first ? routes.learnCourse(course.slug, first.id) : null }
+	const started = signedIn && summary.status !== 'not-started';
+	const firstHref = first ? routes.learnCourse(course.slug, first.id) : null;
+	const cta: { label: string; detail: string | null; href: string | null } = !signedIn
+		? {
+				label: 'Đăng nhập để bắt đầu',
+				detail: 'Tiến độ và ghi chú được lưu theo tài khoản',
+				href: `${routes.login}?from=${encodeURIComponent(firstHref ?? routes.learnCourse(course.slug))}`,
+			}
+		: summary.status === 'completed'
+			? { label: 'Ôn lại từ đầu', detail: null, href: firstHref }
 			: summary.status === 'in-progress'
 				? {
-						label: `Học tiếp: ${next?.title ?? ''}`,
+						label: 'Học tiếp',
+						detail: next?.title ?? null,
 						href: next ? routes.learnCourse(course.slug, next.id) : null,
 					}
-				: { label: 'Bắt đầu học', href: first ? routes.learnCourse(course.slug, first.id) : null };
+				: { label: 'Bắt đầu học', detail: first?.title ?? null, href: firstHref };
+	const readings = summary.sections.filter((section) => section.type === 'READING');
+	const discussions = summary.sections.filter((section) => section.type === 'DISCUSSION');
+	const readingMinutes = readings.reduce((total, section) => total + section.minutes, 0);
+	// Lesson titles are the closest thing to outcomes the course stores; drop their "Bài N —".
+	const outcomes = summary.lessons.map((lesson) =>
+		titleHasLessonNumber(lesson.title)
+			? lesson.title.replace(/^bài\s*\d+\s*[—–:.-]?\s*/i, '')
+			: lesson.title,
+	);
 	const notes = summary.sections.filter((section) => section.note.trim());
 	const eyebrow = [course.category, LEARN_LEVEL_LABELS[course.level]].filter(Boolean).join(' · ');
 	const aboutLong = course.description.length > ABOUT_FOLD;
@@ -55,14 +75,16 @@ export default function LearnCourseOverview({
 							{summary.lessons.length} bài · {summary.totalCount} mục ·{' '}
 							{formatMinutes(summary.totalMinutes)}
 						</p>
-						<div className="ln-overview__progress">
-							<p className="tabular-nums">
-								{summary.completedCount}/{summary.totalCount} · {summary.percent}%
-							</p>
-							<div className="ln-bar ln-bar--thin" aria-hidden="true">
-								<span style={{ width: `${summary.percent}%` }} />
+						{started ? (
+							<div className="ln-overview__progress">
+								<p className="tabular-nums">
+									{summary.completedCount}/{summary.totalCount} · {summary.percent}%
+								</p>
+								<div className="ln-bar ln-bar--thin" aria-hidden="true">
+									<span style={{ width: `${summary.percent}%` }} />
+								</div>
 							</div>
-						</div>
+						) : null}
 						{summary.status === 'completed' ? (
 							<div className="mt-5 flex items-center gap-4">
 								<SpotIllustration variant="complete" size={72} />
@@ -72,10 +94,11 @@ export default function LearnCourseOverview({
 							</div>
 						) : null}
 						{cta.href || isAdmin ? (
-							<div className="flex flex-wrap items-center gap-2">
+							<div className="ln-overview__actions">
 								{cta.href ? (
-									<Link href={cta.href} className="ln-btn ln-btn--primary">
-										{cta.label}
+									<Link href={cta.href} className="ln-btn ln-btn--primary ln-cta">
+										<span className="ln-cta__label">{cta.label}</span>
+										{cta.detail ? <span className="ln-cta__detail">{cta.detail}</span> : null}
 										<LearnLinkPending />
 									</Link>
 								) : null}
@@ -105,6 +128,51 @@ export default function LearnCourseOverview({
 							) : (
 								<p className="ln-overview__description">{course.description}</p>
 							)}
+						</section>
+					) : null}
+
+					{outcomes.length >= 2 ? (
+						<section className="ln-block" aria-labelledby="ln-outcomes">
+							<h2 id="ln-outcomes">Bạn sẽ học</h2>
+							<ul className="ln-outcomes">
+								{outcomes.map((outcome, index) => (
+									<li key={`${index}-${outcome}`}>
+										<LearnIcon name="check" size={16} />
+										<span>{outcome}</span>
+									</li>
+								))}
+							</ul>
+						</section>
+					) : null}
+
+					{readings.length ? (
+						<section className="ln-block" aria-labelledby="ln-how">
+							<h2 id="ln-how">Cách học</h2>
+							<ul className="ln-how">
+								<li>
+									<LearnIcon name="reading" size={18} />
+									<span>
+										<b>{readings.length} mục bài giảng</b>
+										Đọc theo thứ tự, khoảng {formatMinutes(readingMinutes)}
+									</span>
+								</li>
+								{discussions.length ? (
+									<li>
+										<LearnIcon name="discussion" size={18} />
+										<span>
+											<b>{discussions.length} bộ câu hỏi phản biện</b>
+											Tự trả lời trước, rồi so với đáp án mẫu
+										</span>
+									</li>
+								) : null}
+								<li>
+									<LearnIcon name="note" size={18} />
+									<span>
+										<b>Lưu theo tài khoản</b>
+										Tiến độ và ghi chú, học tiếp trên mọi thiết bị
+									</span>
+								</li>
+							</ul>
 						</section>
 					) : null}
 
