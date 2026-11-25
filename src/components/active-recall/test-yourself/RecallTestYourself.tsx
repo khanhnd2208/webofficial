@@ -16,6 +16,8 @@ import {
 	subscribeArenaMuted,
 } from '@/components/teaching/arena/arenaSound';
 
+import { markCardKnown } from '../deckProgress';
+
 import { splitAnswerExample } from './answerParts';
 import stage from './battleScene.module.css';
 import {
@@ -32,7 +34,7 @@ import TestYourselfSummary from './TestYourselfSummary';
 import styles from './testYourself.module.css';
 
 type Phase = 'setup' | 'battle' | 'paused' | 'summary';
-type TestCard = RecallTestDeck['cards'][number] & { deckTitle: string };
+type TestCard = RecallTestDeck['cards'][number] & { deckId: string; deckTitle: string };
 
 /** Generic villains only: the illustrated sheets are portraits of real people. */
 const TEST_BOSSES = ARENA_BOSSES.filter((boss) => boss.art.kind !== 'sheet');
@@ -100,7 +102,9 @@ export default function RecallTestYourself({
 	const cards = useMemo(() => {
 		const map = new Map<string, TestCard>();
 		for (const deck of decks) {
-			for (const card of deck.cards) map.set(card.id, { ...card, deckTitle: deck.title });
+			for (const card of deck.cards) {
+				map.set(card.id, { ...card, deckId: deck.id, deckTitle: deck.title });
+			}
 		}
 		return map;
 	}, [decks]);
@@ -172,6 +176,9 @@ export default function RecallTestYourself({
 						: skipCard(session);
 			setSession(next);
 			setRevealed(false);
+			// A test answer counts toward the deck's progress, like grading in study.
+			const graded = head ? cards.get(head) : undefined;
+			if (graded && kind !== 'skip') markCardKnown(graded.deckId, graded.id, kind === 'known');
 			if (recalled) {
 				// Remembering a card that once slipped is the win active recall is
 				// for: it gets its own label, even on the finishing blow.
@@ -201,7 +208,7 @@ export default function RecallTestYourself({
 				showMood('idle');
 			}
 		},
-		[phase, session, showMood],
+		[cards, phase, session, showMood],
 	);
 
 	useEffect(() => {

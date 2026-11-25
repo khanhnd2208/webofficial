@@ -48,7 +48,7 @@ test.describe('Active Recall', () => {
 		await expect(testLink).toBeVisible();
 		await testLink.click();
 		await expect(page.getByRole('heading', { name: 'Test yourself' })).toBeVisible();
-		await page.getByRole('button', { name: /Bắt đầu HRM/ }).click();
+		await page.getByRole('button', { name: /^Bắt đầu · \d+ câu$/ }).click();
 		await expect(page.getByRole('button', { name: 'Xem đáp án' })).toBeVisible();
 	});
 

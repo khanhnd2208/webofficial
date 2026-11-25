@@ -34,15 +34,26 @@ export default function TestYourselfSetup({
 	const allSelected = selected.size === decks.length;
 	const linked = decks.find((deck) => deck.slug === initialDeckSlug);
 	const onlyLinked = linked && selected.size === 1 && selected.has(linked.id);
+	const selectedTitles = decks.filter((deck) => selected.has(deck.id)).map((deck) => deck.title);
 	const startLabel =
 		cardCount === 0
 			? 'Chọn ít nhất một bộ'
 			: onlyLinked
-				? `Bắt đầu ${linked.title} · ${cardCount} câu`
+				? `Bắt đầu · ${cardCount} câu`
 				: `Gặp boss · ${cardCount} câu`;
 
 	const startRow = (
 		<div className={styles.startRow} data-linked={linked ? true : undefined}>
+			{linked ? (
+				<p className={styles.selectedDecks}>
+					<span className={styles.kicker}>
+						{selectedTitles.length > 1 ? `${selectedTitles.length} bộ đã chọn` : 'Bộ đã chọn'}
+					</span>
+					<span className={styles.selectedNames}>
+						{selectedTitles.length ? selectedTitles.join(' · ') : 'Chưa chọn bộ nào'}
+					</span>
+				</p>
+			) : null}
 			<button
 				type="button"
 				className={styles.startButton}
