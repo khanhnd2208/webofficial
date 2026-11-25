@@ -31,7 +31,7 @@ const deck: ActiveRecallDeckDTO = {
 	updatedAt: '',
 	publishedAt: null,
 	cards: [
-		{ ...card, id: 'a', position: 0 },
+		{ ...card, id: 'a', position: 0, questionVi: 'Câu hỏi A', answerVi: 'Đáp án A' },
 		{ ...card, id: 'b', position: 1, question: 'Question B', answer: 'Answer B' },
 	],
 };
@@ -65,7 +65,7 @@ describe('semantic Recall tracking actions', () => {
 		render(<ActiveRecallPlayer deck={deck} showViToggle />);
 		await waitFor(() => expect(screen.getByText('Question B')).toBeVisible());
 		expect(study).not.toHaveBeenCalled();
-		fireEvent.click(screen.getByRole('button', { name: '← Trước' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Thẻ trước' }));
 		expect(study).toHaveBeenCalledWith(false);
 	});
 });

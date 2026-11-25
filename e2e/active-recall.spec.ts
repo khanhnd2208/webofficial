@@ -40,7 +40,7 @@ test.describe('Active Recall', () => {
 		expect(answer).toBeTruthy();
 		expect(answer).not.toBe(question);
 
-		await page.getByRole('button', { name: 'Tiếp →' }).click();
+		await page.getByRole('button', { name: 'Chưa nhớ' }).click();
 		await expect(card).toHaveAttribute('data-side', 'question');
 		await expect(card.locator('.recall-text')).not.toHaveText(question!);
 		await expect(page.getByRole('button', { name: 'Hiện đáp án', exact: true })).toBeVisible();
@@ -82,7 +82,7 @@ test.describe('Active Recall', () => {
 		expect(answer).toBeTruthy();
 		expect(answer).not.toBe(question);
 
-		await page.getByRole('button', { name: 'Tiếp →' }).click();
+		await page.getByRole('button', { name: 'Chưa nhớ' }).click();
 		await expect(card).toHaveAttribute('data-side', 'question');
 		await expect(card.locator('.recall-text')).not.toHaveText(question!);
 		await expect(page.getByRole('button', { name: 'Hiện đáp án', exact: true })).toBeVisible();

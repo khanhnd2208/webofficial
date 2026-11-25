@@ -1,0 +1,1005 @@
+/*
+ * Active Recall study player.
+ *
+ * One layout for every screen: the player is exactly one viewport tall, the
+ * toolbar and the answer buttons stay put, and the card takes the room in
+ * between (scrolling inside itself when an answer is long). Presentation mode
+ * hides the chrome and scales the text for a projector.
+ */
+
+.recall-player {
+	--recall-size: 1;
+	--rc-primary: var(--ink);
+	--rc-on-primary: var(--paper);
+	--rc-accent: var(--bronze, #765625);
+	--rc-known: color-mix(in srgb, #15803d 82%, var(--ink));
+	--rc-again: color-mix(in srgb, #b45309 85%, var(--ink));
+	--rc-radius: 14px;
+	--rc-control-h: 3.25rem;
+	--recall-question-size: calc(clamp(1.375rem, 1.05rem + 1.25vw, 2rem) * var(--recall-size));
+	--recall-answer-size: calc(clamp(1.0625rem, 0.98rem + 0.35vw, 1.1875rem) * var(--recall-size));
+	min-height: 100svh;
+	background: var(--canvas);
+	overflow-x: clip;
+}
+
+.recall-player[data-reading-size='small'] {
+	--recall-size: 0.88;
+}
+
+[data-surface='teaching'].recall-player {
+	--rc-primary: var(--accent, var(--ink));
+}
+
+.recall-player-inner {
+	display: grid;
+	grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+	grid-template-columns: minmax(0, 1fr);
+	width: 100%;
+	max-width: 56rem;
+	height: 100svh;
+	margin-inline: auto;
+	padding: max(0.5rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) 0
+		max(0.75rem, env(safe-area-inset-left));
+}
+
+/* ── Toolbar ─────────────────────────────────────────────────────────────── */
+
+.recall-bar {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-height: 3rem;
+}
+
+.recall-back {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	gap: 0.4rem;
+	min-width: 2.75rem;
+	min-height: 2.75rem;
+	margin-left: -0.5rem;
+	padding: 0 0.5rem;
+	border-radius: 999px;
+	color: var(--ink);
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.recall-back-label {
+	display: none;
+}
+
+.recall-player-titles {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.recall-player-meta {
+	display: none;
+	overflow: hidden;
+	font-size: 0.75rem;
+	line-height: 1.3;
+	color: var(--ink-secondary);
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.recall-player-title {
+	display: -webkit-box;
+	overflow: hidden;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	font-family: var(--font-serif-display), Georgia, serif;
+	font-size: 1rem;
+	font-weight: 500;
+	letter-spacing: -0.015em;
+	line-height: 1.25;
+	overflow-wrap: anywhere;
+}
+
+.recall-bar-actions {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 0.375rem;
+}
+
+.recall-test-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	min-height: 2.75rem;
+	padding: 0 0.875rem;
+	border: 1px solid var(--ink);
+	border-radius: 999px;
+	background: var(--paper);
+	color: var(--ink);
+	font-size: 0.875rem;
+	font-weight: 650;
+	white-space: nowrap;
+	text-decoration: none;
+}
+
+.recall-options-wrap {
+	position: relative;
+}
+
+.recall-options-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border: 1px solid var(--hairline);
+	border-radius: 999px;
+	background: var(--paper);
+	color: var(--ink);
+	touch-action: manipulation;
+}
+
+.recall-options-toggle[aria-expanded='true'] {
+	border-color: var(--ink);
+}
+
+.recall-options {
+	position: absolute;
+	top: calc(100% + 0.4rem);
+	right: 0;
+	z-index: 30;
+	display: flex;
+	width: min(20rem, calc(100vw - 1.5rem));
+	flex-direction: column;
+	padding: 0.375rem;
+	border: 1px solid var(--hairline);
+	border-radius: var(--rc-radius);
+	background: var(--paper);
+	box-shadow: 0 16px 40px rgb(23 23 23 / 0.16);
+}
+
+.recall-options[hidden] {
+	display: none;
+}
+
+.recall-option-row {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+	width: 100%;
+	min-height: 2.875rem;
+	padding: 0.4rem 0.6rem;
+	border: 0;
+	border-radius: 10px;
+	background: transparent;
+	color: var(--ink);
+	font-size: 0.875rem;
+	font-weight: 550;
+	text-align: left;
+}
+
+.recall-option-row.is-danger {
+	color: var(--rc-again);
+}
+
+.recall-option-label {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.recall-option-glyph {
+	width: 18px;
+	font-size: 0.8125rem;
+	font-weight: 750;
+	text-align: center;
+}
+
+.recall-option-key,
+.recall-options-keys kbd {
+	padding: 0.05rem 0.35rem;
+	border: 1px solid var(--hairline);
+	border-radius: 5px;
+	font-family: inherit;
+	font-size: 0.6875rem;
+	font-weight: 650;
+	color: var(--ink-secondary);
+}
+
+.recall-option-switch {
+	position: relative;
+	width: 2.25rem;
+	height: 1.35rem;
+	flex: 0 0 auto;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--ink) 18%, transparent);
+	transition: background-color var(--ui-duration-hover) var(--ui-ease);
+}
+
+.recall-option-switch::after {
+	content: '';
+	position: absolute;
+	top: 0.175rem;
+	left: 0.175rem;
+	width: 1rem;
+	height: 1rem;
+	border-radius: 999px;
+	background: var(--paper);
+	box-shadow: 0 1px 2px rgb(23 23 23 / 0.25);
+	transition: transform var(--ui-duration-hover) var(--ui-ease);
+}
+
+[aria-checked='true'] > .recall-option-switch {
+	background: var(--rc-primary);
+}
+
+[aria-checked='true'] > .recall-option-switch::after {
+	transform: translateX(0.9rem);
+}
+
+.recall-size-group {
+	display: inline-flex;
+	padding: 0.15rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+.recall-size-option {
+	min-width: 2.75rem;
+	min-height: 2rem;
+	padding: 0 0.6rem;
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	color: var(--ink-secondary);
+	font-size: 0.8125rem;
+	font-weight: 650;
+}
+
+.recall-size-option[aria-checked='true'] {
+	background: var(--paper);
+	color: var(--ink);
+	box-shadow: 0 1px 2px rgb(23 23 23 / 0.15);
+}
+
+.recall-options-foot {
+	margin-top: 0.25rem;
+	padding: 0.6rem 0.6rem 0.4rem;
+	border-top: 1px solid var(--hairline);
+	font-size: 0.75rem;
+	line-height: 1.55;
+	color: var(--ink-secondary);
+}
+
+.recall-options-foot p + p {
+	margin-top: 0.35rem;
+}
+
+/* ── Status row: language, position, known ───────────────────────────────── */
+
+.recall-status {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 0.75rem;
+	padding: 0.25rem 0 0.5rem;
+}
+
+.recall-status-text {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin-left: auto;
+	font-size: 0.8125rem;
+	color: var(--ink-secondary);
+}
+
+.recall-count {
+	font-weight: 700;
+	color: var(--ink);
+}
+
+.recall-status-known {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.2rem;
+	color: var(--rc-known);
+	font-weight: 600;
+}
+
+.recall-scope-chip {
+	order: 3;
+	flex: 1 0 100%;
+	min-height: 2.25rem;
+	padding: 0 0.75rem;
+	border: 1px dashed color-mix(in srgb, var(--rc-again) 55%, var(--hairline));
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--rc-again) 7%, var(--paper));
+	color: var(--ink);
+	font-size: 0.8125rem;
+	font-weight: 550;
+}
+
+.recall-scope-chip span {
+	font-weight: 700;
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+}
+
+.recall-lang-switch {
+	display: inline-flex;
+	flex: 0 0 auto;
+	padding: 0.15rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+.recall-lang-option {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.25rem;
+	min-width: 2.75rem;
+	padding: 0 0.7rem;
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	color: var(--ink-secondary);
+	font-size: 0.8125rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	touch-action: manipulation;
+	transition:
+		background-color var(--ui-duration-hover) var(--ui-ease),
+		color var(--ui-duration-hover) var(--ui-ease);
+}
+
+.recall-lang-option[aria-checked='true'] {
+	background: var(--paper);
+	color: var(--ink);
+	box-shadow: 0 1px 2px rgb(23 23 23 / 0.15);
+}
+
+/* Three short pulses point at the Vietnamese version, then the control stays still. */
+.recall-lang-option.is-nudge {
+	animation: recall-lang-nudge 1.1s ease-in-out 0.6s 3;
+}
+
+@keyframes recall-lang-nudge {
+	0%,
+	100% {
+		box-shadow: inset 0 0 0 0 var(--rc-accent);
+	}
+	50% {
+		box-shadow: inset 0 0 0 2px var(--rc-accent);
+	}
+}
+
+.recall-progress {
+	height: 3px;
+	overflow: hidden;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+.recall-progress span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--rc-accent);
+	transition: width var(--ui-duration-control) var(--ui-ease);
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
+
+.recall-card-shell {
+	display: flex;
+	min-height: 0;
+	padding: 0.75rem 0;
+}
+
+.recall-card,
+.recall-finish {
+	display: flex;
+	width: 100%;
+	max-height: 44rem;
+	min-height: 0;
+	margin-block: auto;
+	flex-direction: column;
+	border: 1px solid var(--hairline);
+	border-radius: var(--rc-radius);
+	background: var(--paper);
+	box-shadow:
+		0 1px 2px rgb(23 23 23 / 0.04),
+		0 8px 24px -12px rgb(23 23 23 / 0.12);
+}
+
+.recall-card {
+	height: 100%;
+	padding: 1rem 1.125rem;
+	cursor: pointer;
+	text-align: left;
+	user-select: text;
+	-webkit-user-select: text;
+	transition: border-color var(--ui-duration-control) var(--ui-ease);
+}
+
+/* Vertical scroll and pinch zoom stay with the browser; sideways swipes reach the card.
+   The scrolling parts need it too, because the browser stops looking at the nearest scroller. */
+.recall-card,
+.recall-card-body,
+.recall-split-pane {
+	touch-action: pan-y pinch-zoom;
+}
+
+.recall-card.is-revealed {
+	border-color: color-mix(in srgb, var(--rc-accent) 45%, var(--hairline));
+}
+
+.recall-card:focus-visible {
+	outline: 3px solid var(--rc-accent);
+	outline-offset: 3px;
+}
+
+.recall-card-head {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.recall-card-kicker {
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--ink-secondary);
+}
+
+.recall-card-known {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.2rem;
+	padding: 0.15rem 0.5rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--rc-known) 12%, transparent);
+	color: var(--rc-known);
+	font-size: 0.6875rem;
+	font-weight: 700;
+}
+
+/* The question stays in view above a long answer, so learners can check against it. */
+.recall-card-recap {
+	flex: 0 0 auto;
+	margin-bottom: 0.75rem;
+	padding-bottom: 0.6rem;
+	border-bottom: 1px solid var(--hairline);
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.45;
+	color: var(--ink-secondary);
+}
+
+.recall-card-recap-text {
+	display: -webkit-box;
+	overflow: hidden;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+}
+
+.recall-card-body {
+	display: flex;
+	flex: 1 1 auto;
+	min-height: 0;
+	flex-direction: column;
+	overflow: auto;
+	overscroll-behavior: contain;
+	-webkit-overflow-scrolling: touch;
+}
+
+/* A short question sits in the middle of the card; a long one scrolls from the top. */
+.recall-card-content {
+	width: 100%;
+	max-width: 40rem;
+	margin: auto;
+}
+
+.recall-card.is-revealed .recall-card-content {
+	max-width: 44rem;
+	margin: 0;
+}
+
+.recall-card .recall-text {
+	max-width: none;
+}
+
+.recall-card.is-revealed .recall-text {
+	font-size: var(--recall-answer-size);
+	font-weight: 450;
+	line-height: 1.65;
+	letter-spacing: -0.005em;
+}
+
+.recall-card-cue {
+	flex: 0 0 auto;
+	margin-top: 0.5rem;
+	text-align: center;
+	font-size: 0.75rem;
+	color: var(--ink-secondary);
+}
+
+.recall-split {
+	display: grid;
+	gap: 0.85rem;
+}
+
+.recall-split-pane {
+	min-width: 0;
+}
+
+.recall-split-pane + .recall-split-pane {
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--hairline);
+}
+
+.recall-split-label {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	margin: 0 0 0.4rem;
+	padding: 0.05rem 0 0.3rem;
+	background: var(--paper);
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	line-height: 1;
+	text-transform: uppercase;
+	color: var(--ink-secondary);
+}
+
+.recall-split-empty {
+	color: var(--ink-secondary);
+	font-size: 0.95em;
+	font-style: italic;
+}
+
+.recall-split .recall-text {
+	font-size: calc(var(--recall-question-size) * 0.82);
+}
+
+.recall-card.is-split .recall-card-content {
+	max-width: none;
+}
+
+/* ── Controls ────────────────────────────────────────────────────────────── */
+
+.recall-controls {
+	display: flex;
+	gap: 0.5rem;
+	padding: 0.25rem 0 max(0.75rem, env(safe-area-inset-bottom));
+}
+
+.recall-reveal-button,
+.recall-nav-button,
+.recall-grade-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.45rem;
+	min-height: var(--rc-control-h);
+	padding: 0 1rem;
+	border: 1px solid var(--hairline);
+	border-radius: 999px;
+	font-size: 0.9375rem;
+	font-weight: 650;
+	line-height: 1.2;
+	text-decoration: none;
+	touch-action: manipulation;
+	transition:
+		background-color var(--ui-duration-hover) var(--ui-ease),
+		border-color var(--ui-duration-hover) var(--ui-ease),
+		transform 120ms var(--ui-ease);
+}
+
+.recall-controls > * {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+.recall-controls > .recall-nav-step {
+	flex: 0 0 var(--rc-control-h);
+	padding: 0;
+}
+
+.recall-controls:has(> :only-child) {
+	justify-content: flex-start;
+}
+
+.recall-controls > .recall-nav-button-exit {
+	flex: 0 0 auto;
+}
+
+.recall-reveal-button,
+.recall-grade-button.is-known {
+	border-color: var(--rc-primary);
+	background: var(--rc-primary);
+	color: var(--rc-on-primary);
+}
+
+.recall-nav-button,
+.recall-grade-button.is-again {
+	background: var(--paper);
+	color: var(--ink);
+}
+
+.recall-grade-button.is-again svg {
+	color: var(--rc-again);
+}
+
+.recall-nav-button:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+}
+
+.recall-controls kbd {
+	display: none;
+	padding: 0.05rem 0.35rem;
+	border: 1px solid currentColor;
+	border-radius: 5px;
+	font-family: inherit;
+	font-size: 0.6875rem;
+	font-weight: 650;
+	opacity: 0.55;
+}
+
+.recall-reveal-button:active,
+.recall-nav-button:active:not(:disabled),
+.recall-grade-button:active {
+	transform: scale(0.98);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.recall-reveal-button:hover,
+	.recall-grade-button.is-known:hover {
+		background: color-mix(in srgb, var(--rc-primary) 86%, var(--rc-accent));
+	}
+	.recall-nav-button:hover:not(:disabled),
+	.recall-grade-button.is-again:hover,
+	.recall-options-toggle:hover,
+	.recall-option-row:not(.is-static):hover {
+		background: color-mix(in srgb, var(--ink) 6%, var(--paper));
+	}
+	.recall-back:hover {
+		background: color-mix(in srgb, var(--ink) 6%, transparent);
+	}
+	.recall-test-link:hover {
+		background: color-mix(in srgb, var(--ink) 6%, var(--paper));
+	}
+	.recall-controls kbd {
+		display: inline-block;
+	}
+}
+
+:is(
+	.recall-reveal-button,
+	.recall-nav-button,
+	.recall-grade-button,
+	.recall-back,
+	.recall-test-link,
+	.recall-options-toggle,
+	.recall-option-row,
+	.recall-size-option,
+	.recall-lang-option,
+	.recall-scope-chip,
+	.recall-finish-link
+):focus-visible {
+	outline: 3px solid var(--rc-accent);
+	outline-offset: 2px;
+}
+
+/* ── Finish ──────────────────────────────────────────────────────────────── */
+
+.recall-finish {
+	justify-content: center;
+	overflow: auto;
+	padding: 1.5rem 1.25rem;
+}
+
+.recall-finish-title {
+	margin-top: 0.35rem;
+	font-family: var(--font-serif-display), Georgia, serif;
+	font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+	font-weight: 500;
+	letter-spacing: -0.02em;
+	line-height: 1.15;
+}
+
+.recall-finish-meter {
+	height: 0.5rem;
+	margin-top: 1rem;
+	overflow: hidden;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--ink) 10%, transparent);
+}
+
+.recall-finish-meter span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--rc-known);
+}
+
+.recall-finish-copy {
+	max-width: 46ch;
+	margin-top: 0.875rem;
+	font-size: 0.9375rem;
+	line-height: 1.55;
+	color: var(--ink-secondary);
+}
+
+.recall-finish-actions {
+	display: grid;
+	gap: 0.5rem;
+	margin-top: 1.25rem;
+}
+
+.recall-finish-link {
+	align-self: flex-start;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	min-height: 2.75rem;
+	margin-top: 0.5rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--ink-secondary);
+	text-decoration: none;
+}
+
+.recall-finish-link:hover {
+	color: var(--ink);
+}
+
+/* ── Wider screens ───────────────────────────────────────────────────────── */
+
+@media (min-width: 640px) {
+	.recall-player-inner {
+		padding-inline: 1.5rem;
+		padding-top: max(1rem, env(safe-area-inset-top));
+	}
+	.recall-back-label {
+		display: inline;
+	}
+	.recall-player-meta {
+		display: block;
+	}
+	.recall-player-title {
+		-webkit-line-clamp: 1;
+		line-clamp: 1;
+	}
+	.recall-back {
+		padding-right: 0.875rem;
+	}
+	.recall-player-title {
+		font-size: 1.25rem;
+	}
+	.recall-card {
+		padding: 1.5rem 2rem;
+	}
+	.recall-card-shell {
+		padding: 1rem 0;
+	}
+	.recall-finish {
+		padding: 2.25rem 2.5rem;
+	}
+	.recall-finish-actions {
+		display: flex;
+		flex-wrap: wrap;
+	}
+	.recall-controls {
+		max-width: 36rem;
+		width: 100%;
+		margin-inline: auto;
+		padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+	}
+	.recall-controls[data-grading] {
+		max-width: 40rem;
+	}
+	.recall-scope-chip {
+		order: 0;
+		flex: 0 0 auto;
+	}
+}
+
+@media (min-width: 720px) {
+	.recall-split {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: 0;
+		align-items: start;
+	}
+	.recall-split-pane + .recall-split-pane {
+		margin-left: 1.25rem;
+		padding-top: 0;
+		padding-left: 1.25rem;
+		border-top: 0;
+		border-left: 1px solid var(--hairline);
+	}
+}
+
+@media (min-width: 1024px) {
+	.recall-player-inner {
+		padding-top: 1.5rem;
+	}
+	.recall-card {
+		padding: 2rem 2.75rem;
+	}
+}
+
+/* Phones on their side: every line counts. */
+@media (max-height: 500px) {
+	.recall-player-meta,
+	.recall-card-cue {
+		display: none;
+	}
+	.recall-bar {
+		min-height: 2.75rem;
+	}
+	.recall-status {
+		padding: 0 0 0.25rem;
+	}
+	.recall-card-shell {
+		padding: 0.4rem 0;
+	}
+	.recall-card {
+		padding-block: 0.6rem;
+	}
+	.recall-card-recap-text {
+		-webkit-line-clamp: 1;
+		line-clamp: 1;
+	}
+	.recall-controls {
+		--rc-control-h: 2.75rem;
+		padding-bottom: max(0.4rem, env(safe-area-inset-bottom));
+	}
+}
+
+/* ── Presentation ────────────────────────────────────────────────────────── */
+
+.recall-player-presentation,
+.recall-player:fullscreen {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	overflow: hidden;
+	background: var(--canvas);
+}
+
+.recall-player-presentation .recall-player-inner,
+.recall-player:fullscreen .recall-player-inner {
+	max-width: none;
+	height: 100dvh;
+	padding: 0.75rem clamp(0.75rem, 2vw, 2rem) 0;
+}
+
+.recall-player-presentation .recall-player-chrome,
+.recall-player:fullscreen .recall-player-chrome {
+	display: none;
+}
+
+.recall-player-presentation .recall-card,
+.recall-player:fullscreen .recall-card,
+.recall-player-presentation .recall-finish,
+.recall-player:fullscreen .recall-finish {
+	max-height: none;
+	width: min(100%, 96rem);
+	margin-inline: auto;
+	padding: clamp(1.25rem, 4vw, 3.5rem);
+}
+
+.recall-player-presentation .recall-card-content,
+.recall-player:fullscreen .recall-card-content {
+	max-width: none;
+}
+
+.recall-player-presentation .recall-card-kicker,
+.recall-player:fullscreen .recall-card-kicker {
+	font-size: clamp(1.125rem, 1.8vw, 1.75rem);
+}
+
+.recall-player-presentation .recall-card-recap,
+.recall-player:fullscreen .recall-card-recap {
+	font-size: clamp(1rem, 1.6vw, 1.5rem);
+}
+
+.recall-player-presentation .recall-text,
+.recall-player:fullscreen .recall-text {
+	font-size: clamp(3rem, 6.5vw, 5.5rem);
+	line-height: 1.35;
+}
+
+.recall-player-presentation .recall-card.is-revealed .recall-text,
+.recall-player:fullscreen .recall-card.is-revealed .recall-text {
+	font-size: clamp(2.5rem, 5.5vw, 4.75rem);
+	line-height: 1.35;
+}
+
+.recall-player-presentation .recall-card.is-split .recall-text,
+.recall-player:fullscreen .recall-card.is-split .recall-text {
+	font-size: clamp(2rem, 4.4vw, 3.75rem);
+}
+
+.recall-player-presentation .recall-card.is-split.is-revealed .recall-text,
+.recall-player:fullscreen .recall-card.is-split.is-revealed .recall-text {
+	font-size: clamp(1.75rem, 3.8vw, 3.25rem);
+}
+
+.recall-player-presentation .recall-text :is(p, ul, ol),
+.recall-player:fullscreen .recall-text :is(p, ul, ol) {
+	margin-bottom: 1.2em;
+}
+
+.recall-player-presentation .recall-text :is(p, ul, ol):last-child,
+.recall-player:fullscreen .recall-text :is(p, ul, ol):last-child {
+	margin-bottom: 0;
+}
+
+.recall-player-presentation .recall-controls,
+.recall-player:fullscreen .recall-controls {
+	--rc-control-h: 4rem;
+	max-width: none;
+	padding: 0.75rem 0 calc(0.75rem + env(safe-area-inset-bottom));
+}
+
+.recall-player-presentation :is(.recall-reveal-button, .recall-nav-button),
+.recall-player:fullscreen :is(.recall-reveal-button, .recall-nav-button) {
+	font-size: clamp(1.25rem, 2vw, 1.625rem);
+}
+
+.recall-player-presentation .recall-controls > .recall-nav-step,
+.recall-player:fullscreen .recall-controls > .recall-nav-step {
+	flex-basis: 6rem;
+}
+
+@media (max-width: 719px) {
+	.recall-player-presentation .recall-card.is-split .recall-card-body,
+	.recall-player:fullscreen .recall-card.is-split .recall-card-body {
+		overflow: hidden;
+	}
+	.recall-player-presentation .recall-split,
+	.recall-player:fullscreen .recall-split {
+		height: 100%;
+		grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+	}
+	.recall-player-presentation .recall-split-pane,
+	.recall-player:fullscreen .recall-split-pane {
+		min-height: 0;
+		overflow: auto;
+		overscroll-behavior: contain;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.recall-card,
+	.recall-progress span,
+	.recall-reveal-button,
+	.recall-nav-button,
+	.recall-grade-button,
+	.recall-lang-option,
+	.recall-option-switch,
+	.recall-option-switch::after {
+		transition: none;
+	}
+	.recall-lang-option.is-nudge {
+		animation: none;
+	}
+	.recall-reveal-button:active,
+	.recall-nav-button:active,
+	.recall-grade-button:active {
+		transform: none;
+	}
+}
