@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 import LearnCompleteButton from '@/components/learn/LearnCompleteButton';
 import LearnDiscussionIntro from '@/components/learn/LearnDiscussionIntro';
@@ -27,6 +27,7 @@ import {
 } from '@/features/learn/service';
 import { LEARN_SECTION_KIND_LABELS } from '@/features/learn/types';
 import { auth } from '@/lib/auth';
+import { incomingLearnPath } from '@/lib/auth/incomingPath';
 
 import { learnViewerFrom } from '../viewer';
 
@@ -45,23 +46,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function LearnCoursePage({ params, searchParams }: Props) {
-	const [{ slug }, query] = await Promise.all([params, searchParams]);
-	const viewer = learnViewerFrom(await auth());
+	const [{ slug }, query, session] = await Promise.all([params, searchParams, auth()]);
+	const viewer = learnViewerFrom(session);
+	const signedIn = Boolean(session?.user);
+	const requested = typeof query.s === 'string' ? query.s : undefined;
+	// A section needs an account; send the guest to sign in and back to this exact URL.
+	if (requested && !signedIn) {
+		redirect(`${routes.login}?from=${encodeURIComponent(await incomingLearnPath())}`);
+	}
+
 	const course = await getLearnCourseOutline(slug, viewer);
 	if (!course) notFound();
 
-	const requested = typeof query.s === 'string' ? query.s : undefined;
-
 	// Without a section the course opens on its overview, like any LMS course home.
 	if (!requested) {
-		const progress = await getLearnProgress(viewer.userId, course.id);
+		const progress = signedIn ? await getLearnProgress(viewer.userId, course.id) : {};
 		const summary = summarizeCourse(course, progress);
 		return (
 			<>
-				{!viewer.isAdmin ? (
+				{signedIn && !viewer.isAdmin ? (
 					<LearnStudyTracker userId={viewer.userId} courseSlug={course.slug} sectionId={null} />
 				) : null}
-				<LearnCourseOverview course={course} summary={summary} isAdmin={viewer.isAdmin} />
+				<LearnCourseOverview
+					course={course}
+					summary={summary}
+					isAdmin={viewer.isAdmin}
+					signedIn={signedIn}
+				/>
 			</>
 		);
 	}
