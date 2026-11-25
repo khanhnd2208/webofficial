@@ -4,6 +4,9 @@ import Link from 'next/link';
 
 import type { RecallTestDeck } from '@/features/active-recall/testYourself';
 
+import BossPicker from './BossPicker';
+import { TEST_BOSSES } from './bossChoice';
+import bossStyles from './bossPicker.module.css';
 import styles from './testYourself.module.css';
 
 export default function TestYourselfSetup({
@@ -13,6 +16,8 @@ export default function TestYourselfSetup({
 	onToggle,
 	onSelectAll,
 	initialDeckSlug,
+	bossChoice,
+	onBossChange,
 	onStart,
 	backHref,
 	backLabel,
@@ -24,6 +29,9 @@ export default function TestYourselfSetup({
 	onSelectAll: (all: boolean) => void;
 	/** The deck the link pointed to: start it first, other decks stay folded. */
 	initialDeckSlug?: string;
+	/** A boss id, or `RANDOM_BOSS` for a different one each run. */
+	bossChoice: string;
+	onBossChange: (choice: string) => void;
 	onStart: () => void;
 	backHref: string;
 	backLabel: string;
@@ -41,6 +49,21 @@ export default function TestYourselfSetup({
 			: onlyLinked
 				? `Bắt đầu · ${cardCount} câu`
 				: `Gặp boss · ${cardCount} câu`;
+
+	const chosenBoss = TEST_BOSSES.find((boss) => boss.id === bossChoice);
+	const bossSection = (
+		<section className={bossStyles.section} aria-labelledby="test-boss-title">
+			<div className={bossStyles.sectionHead}>
+				<h2 id="test-boss-title" className={bossStyles.sectionTitle}>
+					Boss
+				</h2>
+				<p className={bossStyles.sectionHint}>
+					{chosenBoss ? chosenBoss.name : 'Mỗi trận một boss khác'} · đổi được giữa trận
+				</p>
+			</div>
+			<BossPicker value={bossChoice} onChange={onBossChange} label="Chọn boss" withRandom />
+		</section>
+	);
 
 	const startRow = (
 		<div className={styles.startRow} data-linked={linked ? true : undefined}>
@@ -116,6 +139,7 @@ export default function TestYourselfSetup({
 			{linked ? (
 				<>
 					{startRow}
+					{bossSection}
 					{decks.length > 1 ? (
 						<details className={styles.moreDecks}>
 							<summary>Đổi hoặc chọn thêm bộ</summary>
@@ -126,6 +150,7 @@ export default function TestYourselfSetup({
 			) : (
 				<>
 					{picker}
+					{bossSection}
 					{startRow}
 				</>
 			)}

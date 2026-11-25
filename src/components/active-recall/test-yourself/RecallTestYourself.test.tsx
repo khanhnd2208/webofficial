@@ -55,6 +55,7 @@ function bubble() {
 
 describe('RecallTestYourself', () => {
 	beforeEach(() => {
+		localStorage.clear();
 		vi.useFakeTimers();
 		vi.spyOn(Math, 'random').mockReturnValue(0);
 	});
@@ -135,7 +136,7 @@ describe('RecallTestYourself', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'Dừng trận' }));
 		fireEvent.click(screen.getByRole('button', { name: 'Kết thúc phiên' }));
 		expect(screen.getByRole('heading', { name: 'Kết thúc phiên' })).toBeInTheDocument();
-		fireEvent.click(screen.getByRole('button', { name: 'Chọn bộ câu hỏi khác' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Đổi bộ câu hỏi hoặc boss' }));
 		expect(screen.getByRole('heading', { name: 'Test yourself' })).toBeInTheDocument();
 	});
 
@@ -178,5 +179,50 @@ describe('RecallTestYourself', () => {
 		const progress = JSON.parse(localStorage.getItem('active-recall:d1') ?? '{}');
 		expect(progress.known).toHaveLength(1);
 		expect(progress.studiedAt).toEqual(expect.any(Number));
+	});
+
+	it('fights the boss picked in setup and remembers the pick', () => {
+		renderTest();
+		const picker = screen.getByRole('radiogroup', { name: 'Chọn boss' });
+		expect(within(picker).getByRole('radio', { name: 'Ngẫu nhiên' })).toBeChecked();
+		fireEvent.click(within(picker).getByRole('radio', { name: 'Ma Vương Deadline' }));
+		expect(localStorage.getItem('active-recall:test-boss')).toBe('deadline');
+		fireEvent.click(screen.getByRole('button', { name: 'Gặp boss · 3 câu' }));
+		expect(screen.getByText('Ma Vương Deadline', { selector: 'p' })).toBeInTheDocument();
+	});
+
+	it('switches boss mid-run without losing the cards already known', () => {
+		renderTest();
+		fireEvent.click(screen.getByRole('button', { name: 'Gặp boss · 3 câu' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Xem đáp án' }));
+		fireEvent.click(screen.getByRole('button', { name: /Nhớ được/ }));
+		const meter = screen.getByRole('meter', { name: 'Máu của boss' });
+		expect(meter).toHaveAttribute('aria-valuenow', '2');
+
+		fireEvent.click(screen.getByRole('button', { name: 'Đổi boss' }));
+		const dialog = screen.getByRole('dialog', { name: 'Đổi boss' });
+		const confirm = within(dialog).getByRole('button', { name: 'Chọn một boss khác' });
+		expect(confirm).toBeDisabled();
+		fireEvent.click(within(dialog).getByRole('radio', { name: 'Cú Đêm Cày Phim' }));
+		fireEvent.click(within(dialog).getByRole('button', { name: 'Đấu với Cú Đêm Cày Phim' }));
+
+		expect(screen.getByText('Cú Đêm Cày Phim', { selector: 'p' })).toBeInTheDocument();
+		expect(screen.getByRole('meter', { name: 'Máu của boss' })).toHaveAttribute(
+			'aria-valuenow',
+			'2',
+		);
+		expect(screen.getByText(/Đã nhớ 1\/3 câu/)).toBeInTheDocument();
+		expect(localStorage.getItem('active-recall:test-boss')).toBe('cu-dem');
+	});
+
+	it('keeps the picked boss for a rematch', () => {
+		localStorage.setItem('active-recall:test-boss', 'ngu-gat');
+		renderTest('bai-2');
+		fireEvent.click(screen.getByRole('button', { name: 'Bắt đầu · 1 câu' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Xem đáp án' }));
+		fireEvent.click(screen.getByRole('button', { name: /Nhớ được/ }));
+		act(() => vi.advanceTimersByTime(2000));
+		fireEvent.click(screen.getByRole('button', { name: 'Đấu lại với Rồng Ngủ Gật' }));
+		expect(screen.getByText('Rồng Ngủ Gật', { selector: 'p' })).toBeInTheDocument();
 	});
 });
