@@ -23,33 +23,52 @@ class ResizeObserverStub {
 }
 
 describe('IntroLanding', () => {
+	let desktopMatch = true;
+
 	beforeEach(() => {
+		desktopMatch = true;
 		vi.stubGlobal('ResizeObserver', ResizeObserverStub);
 		vi.stubGlobal(
 			'matchMedia',
 			vi.fn().mockImplementation((query: string) => ({
-				matches: query.includes('1024px'),
+				matches: query.includes('1024px') ? desktopMatch : false,
 				media: query,
 				addEventListener: vi.fn(),
 				removeEventListener: vi.fn(),
 			})),
 		);
+		delete document.documentElement.dataset.coverAtmosphere;
 		window.sessionStorage.clear();
 		window.history.replaceState({}, '', '/?mode=dawn');
 	});
 
 	afterEach(() => {
+		delete document.documentElement.dataset.coverAtmosphere;
 		vi.unstubAllGlobals();
 	});
 
-	it('renders the canonical book-cover copy, primary TOC link, and atmosphere toggle', () => {
+	it('renders the canonical book-cover copy, colophon, TOC link, and atmosphere toggle', () => {
 		render(<IntroLanding />);
 
 		expect(screen.getByText('Nguyễn Duy Khánh')).toBeInTheDocument();
+		expect(screen.getByText('Hà Nội · 2026')).toBeInTheDocument();
 		expect(screen.getByRole('heading', { level: 1, name: 'Trở thành' })).toBeInTheDocument();
 		expect(screen.getByTestId('intro-open-toc')).toHaveAttribute('href', '/muc-luc');
 		expect(screen.getByTestId('intro-home')).toHaveAttribute('data-atmosphere', 'dawn');
 		expect(screen.getByTestId('cover-atmosphere-toggle')).toHaveTextContent('Chạm để gọi đêm sao');
+	});
+
+	it('honors pre-paint html[data-cover-atmosphere] without flash and cleans up on unmount', () => {
+		document.documentElement.dataset.coverAtmosphere = 'night';
+		const { unmount } = render(<IntroLanding />);
+
+		expect(screen.getByTestId('intro-home')).toHaveAttribute('data-atmosphere', 'night');
+		expect(screen.getByTestId('cover-atmosphere-toggle')).toHaveTextContent(
+			'Chạm để gọi bình minh',
+		);
+
+		unmount();
+		expect(document.documentElement.dataset.coverAtmosphere).toBeUndefined();
 	});
 
 	it('toggles between Dawn and Night and remembers the visitor choice in sessionStorage', () => {
@@ -67,7 +86,7 @@ describe('IntroLanding', () => {
 		expect(window.sessionStorage.getItem(COVER_ATMOSPHERE_STORAGE_KEY)).toBe('dawn');
 	});
 
-	it('unfolds sincere author marginalia whispers on demand and closes them on Escape', () => {
+	it('unfolds sincere author marginalia whispers from [động từ] and closes via Escape or close button', () => {
 		render(<IntroLanding />);
 
 		expect(screen.queryByTestId('cover-author-whisper')).not.toBeInTheDocument();
@@ -75,25 +94,30 @@ describe('IntroLanding', () => {
 		const posTrigger = screen.getByRole('button', { name: '[động từ]' });
 		fireEvent.click(posTrigger);
 
+		expect(screen.getByTestId('intro-home')).toHaveAttribute('data-whisper-open', 'true');
 		const whisper = screen.getByTestId('cover-author-whisper');
 		expect(whisper).toHaveTextContent('Tôi vẫn đang học cách trở thành một người thầy tốt hơn.');
 
 		fireEvent.keyDown(document, { key: 'Escape' });
 		expect(screen.queryByTestId('cover-author-whisper')).not.toBeInTheDocument();
+		expect(screen.getByTestId('intro-home')).not.toHaveAttribute('data-whisper-open');
 	});
 
-	it('exposes both bookplate marginalia links and closes an open note on Escape', () => {
+	it('docks marginalia notes cleanly beneath the artwork on mobile viewports', () => {
+		desktopMatch = false;
 		render(<IntroLanding />);
 
-		const personSummary = screen.getByLabelText('Ghi chú về người trong tranh');
-		const details = personSummary.closest('details') as HTMLDetailsElement;
+		const journeySummary = screen.getByLabelText('Ghi chú về con đường phía trước');
+		const details = journeySummary.closest('details') as HTMLDetailsElement;
 		details.open = true;
 		fireEvent(details, new Event('toggle'));
 
-		expect(screen.getByRole('link', { name: /Về tôi/ })).toHaveAttribute('href', '/lien-he');
-		expect(screen.getByRole('link', { name: /Học tập/ })).toHaveAttribute('href', '/khoa-hoc');
+		const docked = screen.getByTestId('cover-docked-note');
+		expect(docked).toHaveTextContent('Những khóa học và lớp học đang mở.');
+		expect(docked.querySelector('a')).toHaveAttribute('href', '/khoa-hoc');
 
-		fireEvent.keyDown(document, { key: 'Escape' });
+		fireEvent.click(screen.getByRole('button', { name: 'Đóng ghi chú' }));
+		expect(screen.queryByTestId('cover-docked-note')).not.toBeInTheDocument();
 		expect(details.open).toBe(false);
 	});
 });
