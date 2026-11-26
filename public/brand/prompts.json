@@ -33,6 +33,20 @@
 			"reference": "public/brand/portrait-journey.png",
 			"prompt": "Edit only the sun in this vertical mobile website illustration: fill the existing outlined sun disk with muted warm ochre watercolor texture, matching the desktop illustration. Preserve the person, line work and composition. No text or new objects."
 		},
+		"learning-as-becoming-desktop-night.webp": {
+			"frame": "scene",
+			"createdAt": "2026-11-27",
+			"generator": "Pixel-aligned nocturnal indigo ink-wash plate derived from learning-as-becoming-desktop.jpg",
+			"reference": "public/brand/learning-as-becoming-desktop.jpg",
+			"processing": "1440×900 WebP; deep Prussian-indigo paper, moonlit parchment linework, antique-gold moon/leaves, velvety charcoal fills preserved without X-ray inversion"
+		},
+		"learning-as-becoming-mobile-night.webp": {
+			"frame": "scene",
+			"createdAt": "2026-11-27",
+			"generator": "Pixel-aligned nocturnal indigo ink-wash plate derived from learning-as-becoming-mobile-ochre.webp",
+			"reference": "public/brand/learning-as-becoming-mobile-ochre.webp",
+			"processing": "819×1023 WebP; deep Prussian-indigo paper, moonlit parchment linework, antique-gold moon/leaves, velvety charcoal fills preserved without X-ray inversion"
+		},
 		"myspace/teaching-v3.webp": {
 			"frame": "spot",
 			"createdAt": "2026-10-05",

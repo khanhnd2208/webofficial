@@ -21,6 +21,7 @@ const ROOTS = [
 	'src/app/not-found.tsx',
 	'src/app/my-space/page.tsx',
 	'src/components/site/IntroLanding.tsx',
+	'src/components/site/cover',
 	'src/components/site/NotFoundPanel.tsx',
 	'src/components/site/RecentClasses.tsx',
 	'src/components/site/SiteAuthChip.tsx',

@@ -83,4 +83,10 @@ export const GRAPHIC_COLORS = {
 	e8b98f: '#e8b98f',
 	d19a6a: '#d19a6a',
 	a8714a: '#a8714a',
+	// Living book-cover nocturnal indigo & antique gold pigments.
+	'0d1722': '#0d1722',
+	'152536': '#152536',
+	e8d5b0: '#e8d5b0',
+	c89d4b: '#c89d4b',
+	'765625': '#765625',
 } as const;

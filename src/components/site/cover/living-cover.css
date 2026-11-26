@@ -1,0 +1,860 @@
+/* Living book-cover atmosphere, organic paper-bleed reveal, diorama parallax, and marginalia.
+ * Scoped strictly to `.book-cover` so internal workspaces and other routes never shift.
+ * Every font-size stays >= 12px and respects `prefers-reduced-motion`. */
+
+.book-cover {
+	position: relative;
+	overflow: clip;
+	transition:
+		background-color 1050ms cubic-bezier(0.32, 0.72, 0, 1),
+		color 850ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.book-cover[data-atmosphere='night'] {
+	--canvas: #0d1622;
+	--paper: #0e1825;
+	--surface: #132030;
+	--surface-elevated: #162638;
+	--surface-hover: #1b2d42;
+	--ink: #f2eadc;
+	--ink-secondary: #a6b2be;
+	--foreground: #f2eadc;
+	--muted: #a6b2be;
+	--hairline: rgba(216, 200, 172, 0.16);
+	--border: rgba(216, 200, 172, 0.16);
+	--bronze: #d6ad63;
+	--accent: #d6ad63;
+	--sunlight: #e2be78;
+	background: radial-gradient(circle at 72% 38%, #152538 0%, #0e1825 56%, #0b131e 100%);
+	color: var(--ink);
+}
+
+/* Gentle book-opening illumination when leaving Night cover toward /muc-luc */
+.book-cover[data-atmosphere='night'][data-opening='true'] {
+	filter: brightness(1.12);
+	transition:
+		filter var(--ui-duration-page) var(--ui-ease),
+		background-color var(--ui-duration-page) var(--ui-ease);
+}
+
+.book-cover .cover-meta {
+	border-bottom-color: var(--hairline);
+	transition:
+		border-color 850ms var(--ui-ease),
+		color 850ms var(--ui-ease);
+}
+
+.book-cover[data-atmosphere='night'] .cover-meta .cover-brand,
+.book-cover[data-atmosphere='night'] .cover-meta :is(a, button) {
+	color: var(--ink-secondary);
+}
+
+.book-cover[data-atmosphere='night'] .cover-meta .cover-brand {
+	color: var(--ink);
+}
+
+.book-cover[data-atmosphere='night'] .cover-meta :is(a, button):hover,
+.book-cover[data-atmosphere='night'] .cover-meta :is(a, button):focus-visible {
+	color: var(--ink);
+}
+
+/* Interactive "[động từ]" and "Chưa xong.|" author marginalia whispers */
+.cover-pos-trigger,
+.cover-cursor-trigger {
+	appearance: none;
+	border: 0;
+	padding: 0;
+	margin: 0;
+	background: transparent;
+	font: inherit;
+	color: inherit;
+	letter-spacing: inherit;
+	line-height: inherit;
+	text-align: inherit;
+	cursor: pointer;
+	display: inline;
+	transition: color var(--ui-duration-hover) var(--ui-ease);
+}
+
+.cover-pos-trigger {
+	border-bottom: 1px dashed transparent;
+	padding-bottom: 2px;
+	transition:
+		border-color var(--ui-duration-control) var(--ui-ease),
+		color var(--ui-duration-hover) var(--ui-ease);
+}
+
+.cover-pos-trigger:hover,
+.cover-pos-trigger:focus-visible,
+.cover-pos-trigger[aria-expanded='true'] {
+	border-bottom-color: currentColor;
+}
+
+.cover-cursor-trigger:hover .intro-ink-cursor {
+	opacity: 1;
+}
+
+.cover-whisper {
+	margin-top: 18px;
+	padding-left: 14px;
+	border-left: 1px solid var(--bronze);
+	max-width: 34ch;
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	animation: cover-whisper-in var(--ui-duration-page) var(--ui-ease) both;
+}
+
+.cover-whisper-text {
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-style: italic;
+	font-size: 0.9375rem;
+	line-height: 1.6;
+	color: var(--ink-secondary);
+}
+
+.cover-whisper-index {
+	font-size: 0.75rem;
+	letter-spacing: 0.06em;
+	color: var(--bronze);
+	flex-shrink: 0;
+}
+
+@keyframes cover-whisper-in {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* ── Living Bookplate Figure & Frame ─────────────────────────────────────── */
+.book-cover .cover-composition {
+	width: min(1220px, 100%);
+	grid-template-columns: minmax(290px, 40%) minmax(0, 60%);
+	gap: 32px;
+	padding: 28px 40px 44px;
+}
+
+.book-cover .cover-plate-figure {
+	position: relative;
+	z-index: 1;
+	margin: 0;
+	height: auto;
+	min-height: 0;
+	box-shadow: none;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	justify-self: end;
+	width: 100%;
+	max-width: 760px;
+	animation: cover-art-enter 1250ms cubic-bezier(0.22, 1, 0.36, 1) 100ms both;
+}
+
+.cover-plate-frame {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 6 / 5;
+	max-height: min(68svh, 620px);
+	max-width: calc(min(68svh, 620px) * 1.2);
+	overflow: hidden;
+	background: var(--canvas);
+	border: 1px solid var(--hairline);
+	box-shadow: var(--shadow-lg);
+	transition:
+		border-color 900ms var(--ui-ease),
+		box-shadow 900ms var(--ui-ease),
+		background-color 900ms var(--ui-ease);
+}
+
+.cover-plate-frame::after {
+	content: '';
+	position: absolute;
+	inset: 9px;
+	border: 1px solid rgba(118, 86, 37, 0.16);
+	pointer-events: none;
+	z-index: 12;
+	transition: border-color 900ms var(--ui-ease);
+}
+
+.book-cover[data-atmosphere='night'] .cover-plate-frame {
+	border-color: rgba(214, 173, 99, 0.22);
+	box-shadow: 0 22px 54px -24px rgba(3, 8, 16, 0.72);
+}
+
+.book-cover[data-atmosphere='night'] .cover-plate-frame::after {
+	border-color: rgba(214, 173, 99, 0.22);
+}
+
+.cover-mask-defs {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	overflow: visible;
+}
+
+.cover-layer-dawn,
+.cover-layer-night {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+}
+
+.cover-layer-night {
+	z-index: 4;
+	pointer-events: none;
+	background: #0e1825;
+	transition: opacity 420ms var(--ui-ease);
+}
+
+.cover-plate-frame[data-transitioning='true'] .cover-layer-night {
+	transition: none;
+}
+
+/* 3-layer paper diorama parallax speeds */
+.cover-parallax-far,
+.cover-parallax-mid,
+.cover-parallax-near {
+	position: absolute;
+	inset: 0;
+	transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+	will-change: transform;
+}
+
+.cover-parallax-far {
+	transform: scale(1.02)
+		translate3d(calc(var(--gaze-x, 0) * -2.5px), calc(var(--gaze-y, 0) * -2px), 0);
+}
+
+.cover-parallax-mid {
+	transform: scale(1.035)
+		translate3d(calc(var(--gaze-x, 0) * -5.5px), calc(var(--gaze-y, 0) * -4px), 0);
+}
+
+.cover-parallax-near {
+	transform: translate3d(calc(var(--gaze-x, 0) * 7px), calc(var(--gaze-y, 0) * 5px), 0);
+}
+
+.cover-plate-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: left center;
+	display: block;
+}
+
+/* Quiet living dawn sky, sun aura, birds, golden path & wind-reactive leaves */
+.cover-dawn-sky,
+.cover-journey-overlay,
+.cover-foreground-leaves,
+.cover-night-sky {
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+.cover-dawn-sky {
+	z-index: 2;
+}
+
+.cover-sun-aura {
+	fill: rgba(200, 157, 75, 0.11);
+	transform-box: fill-box;
+	transform-origin: center;
+	animation: cover-sun-breathe 7.5s ease-in-out infinite;
+}
+
+@keyframes cover-sun-breathe {
+	0%,
+	100% {
+		opacity: 0.45;
+		transform: scale(0.96);
+	}
+	50% {
+		opacity: 0.85;
+		transform: scale(1.04);
+	}
+}
+
+.cover-ink-bird {
+	fill: none;
+	stroke: rgba(23, 23, 23, 0.48);
+	stroke-width: 1.9;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.cover-ink-bird-a {
+	animation: cover-bird-glide 22s ease-in-out infinite;
+}
+
+.cover-ink-bird-b {
+	animation: cover-bird-glide 26s ease-in-out 4.5s infinite;
+}
+
+@keyframes cover-bird-glide {
+	0% {
+		opacity: 0;
+		transform: translate(-36px, 14px);
+	}
+	14% {
+		opacity: 0.72;
+	}
+	82% {
+		opacity: 0.58;
+	}
+	100% {
+		opacity: 0;
+		transform: translate(62px, -18px);
+	}
+}
+
+.cover-journey-overlay {
+	z-index: 2;
+}
+
+.cover-journey-stroke {
+	fill: none;
+	stroke: rgba(200, 157, 75, 0.48);
+	stroke-width: 2.4;
+	stroke-linecap: round;
+	stroke-dasharray: 640;
+	stroke-dashoffset: 640;
+	animation: cover-journey-draw 1100ms cubic-bezier(0.22, 1, 0.36, 1) 420ms forwards;
+	transition:
+		stroke var(--ui-duration-page) var(--ui-ease),
+		opacity var(--ui-duration-page) var(--ui-ease);
+}
+
+.cover-journey-overlay.is-warmed .cover-journey-stroke {
+	stroke: rgba(214, 165, 74, 0.78);
+	animation: cover-journey-draw 1200ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+}
+
+@keyframes cover-journey-draw {
+	from {
+		stroke-dashoffset: 640;
+		opacity: 0.1;
+	}
+	to {
+		stroke-dashoffset: 0;
+		opacity: 0.85;
+	}
+}
+
+.cover-foreground-leaves {
+	z-index: 3;
+}
+
+.cover-leaf path {
+	fill: rgba(200, 157, 75, 0.62);
+	stroke: rgba(23, 23, 23, 0.55);
+	stroke-width: 1.25;
+	stroke-linejoin: round;
+}
+
+.cover-leaf-1 path {
+	animation: cover-leaf-drift 9.5s ease-in-out infinite;
+}
+
+.cover-leaf-2 path {
+	animation: cover-leaf-drift 11.5s ease-in-out 2.4s infinite;
+}
+
+.cover-leaf-3 path {
+	animation: cover-leaf-drift 13s ease-in-out 5.1s infinite;
+}
+
+@keyframes cover-leaf-drift {
+	0%,
+	100% {
+		transform: translate(0, 0) rotate(0deg);
+	}
+	50% {
+		transform: translate(9px, -7px) rotate(11deg);
+	}
+}
+
+/* Nocturnal celestial sky SVG overlay */
+.cover-night-sky {
+	z-index: 5;
+	mix-blend-mode: screen;
+}
+
+.cover-celestial-arc {
+	fill: none;
+	stroke: rgba(226, 198, 146, 0.18);
+	stroke-width: 1.1;
+}
+
+.cover-constellation-line {
+	fill: none;
+	stroke: rgba(218, 182, 114, 0.34);
+	stroke-width: 1.1;
+	stroke-dasharray: 4 6;
+}
+
+.cover-star {
+	fill: #efe4cc;
+	animation: cover-star-twinkle 5.8s ease-in-out infinite;
+}
+
+.cover-star-key {
+	fill: #f0cf88;
+	animation: cover-star-twinkle 4.4s ease-in-out infinite;
+}
+
+@keyframes cover-star-twinkle {
+	0%,
+	100% {
+		opacity: 0.42;
+	}
+	50% {
+		opacity: 0.96;
+	}
+}
+
+.cover-atmosphere-canvas {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 11;
+	pointer-events: none;
+}
+
+/* Interactive full-plate toggle button (natural pointer, never crosshair) */
+.cover-plate-surface-btn {
+	position: absolute;
+	inset: 0;
+	z-index: 13;
+	border: 0;
+	background: transparent;
+	padding: 0;
+	cursor: pointer;
+}
+
+.cover-plate-surface-btn:focus-visible {
+	outline: 2px solid var(--bronze);
+	outline-offset: -4px;
+}
+
+/* Sun / Moon natural focal button */
+.cover-celestial-trigger {
+	position: absolute;
+	left: var(--sun-x, 43.7%);
+	top: var(--sun-y, 30.8%);
+	transform: translate(-50%, -50%);
+	width: 68px;
+	height: 68px;
+	border-radius: 9999px;
+	border: 0;
+	padding: 0;
+	background: transparent;
+	cursor: pointer;
+	z-index: 14;
+	display: grid;
+	place-items: center;
+}
+
+.cover-celestial-ring {
+	width: 100%;
+	height: 100%;
+	border-radius: 9999px;
+	border: 1px dashed rgba(200, 157, 75, 0);
+	transition:
+		border-color var(--ui-duration-control) var(--ui-ease),
+		transform var(--ui-duration-control) var(--ui-ease),
+		background-color var(--ui-duration-control) var(--ui-ease);
+}
+
+.cover-celestial-trigger:hover .cover-celestial-ring,
+.cover-celestial-trigger:focus-visible .cover-celestial-ring {
+	border-color: rgba(214, 173, 99, 0.72);
+	background-color: rgba(214, 173, 99, 0.08);
+	transform: scale(1.08);
+}
+
+/* ── Quiet Marginalia Hotspots (Both Dawn & Night, Native <details>) ────── */
+.cover-marginalia {
+	position: absolute;
+	z-index: 15;
+	transition:
+		left 500ms var(--ui-ease),
+		top 500ms var(--ui-ease);
+}
+
+/* Dawn: rests gently beside the explorer on the cliff; Night: sits on the guiding star */
+.cover-marginalia-person {
+	left: 29.5%;
+	top: 63.5%;
+	transform: translate(-50%, -50%);
+}
+
+.book-cover[data-atmosphere='night'] .cover-marginalia-person {
+	left: 80.6%;
+	top: 20.4%;
+}
+
+.cover-marginalia-journey {
+	left: 50.2%;
+	top: 64.8%;
+	transform: translate(-50%, -50%);
+}
+
+.cover-marginalia-dot {
+	list-style: none;
+	width: 44px;
+	height: 44px;
+	border-radius: 9999px;
+	display: grid;
+	place-items: center;
+	cursor: pointer;
+	position: relative;
+}
+
+.cover-marginalia-dot::-webkit-details-marker {
+	display: none;
+}
+
+.cover-marginalia-glyph {
+	width: 7px;
+	height: 7px;
+	border-radius: 9999px;
+	border: 1px solid var(--bronze);
+	background: rgba(200, 157, 75, 0.34);
+	box-shadow: 0 0 0 5px rgba(118, 86, 37, 0.09);
+	transition:
+		transform var(--ui-duration-hover) var(--ui-ease),
+		background-color var(--ui-duration-hover) var(--ui-ease),
+		box-shadow var(--ui-duration-control) var(--ui-ease);
+}
+
+.book-cover[data-atmosphere='night'] .cover-marginalia-glyph {
+	border-color: rgba(236, 204, 134, 0.88);
+	background: rgba(240, 212, 146, 0.45);
+	box-shadow: 0 0 0 6px rgba(230, 196, 124, 0.14);
+}
+
+.cover-marginalia-dot:hover .cover-marginalia-glyph,
+.cover-marginalia[open] .cover-marginalia-glyph {
+	transform: scale(1.3);
+	background: var(--bronze);
+	box-shadow: 0 0 0 8px rgba(200, 157, 75, 0.22);
+}
+
+.cover-marginalia-slip {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	min-width: 224px;
+	max-width: 268px;
+	padding: 12px 15px;
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--hairline);
+	background: rgba(255, 252, 247, 0.96);
+	color: var(--ink);
+	box-shadow: var(--shadow-md);
+	backdrop-filter: blur(8px);
+	animation: cover-whisper-in var(--ui-duration-control) var(--ui-ease) both;
+}
+
+.cover-marginalia-person .cover-marginalia-slip {
+	top: auto;
+	bottom: calc(100% + 4px);
+	left: 0;
+}
+
+.book-cover[data-atmosphere='night'] .cover-marginalia-person .cover-marginalia-slip {
+	top: calc(100% + 4px);
+	bottom: auto;
+	left: auto;
+	right: 0;
+}
+
+.cover-marginalia-journey .cover-marginalia-slip {
+	right: auto;
+	left: 50%;
+	top: auto;
+	bottom: calc(100% + 4px);
+	transform: translateX(-50%);
+}
+
+.book-cover[data-atmosphere='night'] .cover-marginalia-slip {
+	background: rgba(16, 29, 44, 0.96);
+	border-color: rgba(214, 173, 99, 0.36);
+	box-shadow: 0 14px 32px -12px rgba(3, 8, 16, 0.72);
+}
+
+.cover-marginalia-slip p {
+	margin: 0 0 8px;
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--ink);
+}
+
+.cover-marginalia-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: var(--bronze);
+	text-decoration: none;
+	white-space: nowrap;
+	min-height: 32px;
+	border-bottom: 1px solid transparent;
+	transition: border-color var(--ui-duration-hover) var(--ui-ease);
+}
+
+.cover-marginalia-link:hover,
+.cover-marginalia-link:focus-visible {
+	border-bottom-color: currentColor;
+}
+
+.cover-marginalia-link span {
+	transition: transform var(--ui-duration-hover) var(--ui-ease);
+}
+
+.cover-marginalia-link:hover span {
+	transform: translateX(3px);
+}
+
+/* ── Archival Bookplate Caption Bar (Below the frame — never overlaps art) ─ */
+.cover-plate-bar {
+	width: 100%;
+	max-width: calc(min(68svh, 620px) * 1.2);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding-top: 10px;
+	font-size: 0.8125rem;
+	color: var(--ink-secondary);
+}
+
+.cover-plate-status {
+	letter-spacing: 0.03em;
+	white-space: nowrap;
+}
+
+.cover-atmosphere-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+	padding: 0 4px;
+	border: 0;
+	background: transparent;
+	color: var(--ink);
+	font-size: 0.8125rem;
+	letter-spacing: 0.02em;
+	white-space: nowrap;
+	cursor: pointer;
+	border-bottom: 1px solid transparent;
+	transition:
+		color var(--ui-duration-hover) var(--ui-ease),
+		border-color var(--ui-duration-hover) var(--ui-ease);
+}
+
+.cover-atmosphere-toggle:hover,
+.cover-atmosphere-toggle:focus-visible {
+	color: var(--bronze);
+	border-bottom-color: var(--bronze);
+}
+
+.cover-atmosphere-icon {
+	color: var(--bronze);
+	font-size: 0.9375rem;
+	line-height: 1;
+}
+
+/* ── Responsive Adjustments (Desktop Short, Tablet, Mobile) ──────────────── */
+@media (min-width: 1024px) and (max-height: 620px) {
+	.book-cover .cover-meta {
+		min-height: 48px;
+	}
+	.book-cover .cover-composition {
+		padding: 10px 32px 14px;
+	}
+	.cover-plate-frame {
+		max-height: min(62svh, 332px);
+		max-width: calc(min(62svh, 332px) * 1.2);
+	}
+	.cover-plate-bar {
+		max-width: calc(min(62svh, 332px) * 1.2);
+		padding-top: 6px;
+	}
+	.book-cover .cover-author {
+		margin-bottom: 8px;
+	}
+	.book-cover .cover-title {
+		font-size: clamp(2.85rem, 5.4vw, 4.4rem);
+		line-height: 1.04;
+	}
+	.book-cover .cover-pos {
+		margin-top: 6px;
+		font-size: 1.2rem;
+	}
+	.book-cover .cover-narrative {
+		margin-top: 12px;
+		font-size: 1.0625rem;
+		line-height: 1.5;
+	}
+	.book-cover .cover-cta {
+		margin-top: 10px;
+	}
+}
+
+@media (max-width: 1023px) {
+	.book-cover .cover-composition {
+		grid-template-columns: 1fr;
+		justify-items: center;
+		padding: 12px 20px 24px;
+		gap: 14px;
+	}
+
+	.book-cover .cover-plate-figure {
+		grid-row: 1;
+		align-items: center;
+		justify-self: center;
+		width: auto;
+		max-width: 100%;
+	}
+
+	/* Strict 4:5 aspect ratio matching 819x1023 portrait artwork -> zero cropped legs/cliff! */
+	.cover-plate-frame {
+		aspect-ratio: 4 / 5;
+		width: min(74vw, 312px, calc((100svh - 420px) * 0.8));
+		min-width: 168px;
+		max-height: none;
+		max-width: 320px;
+	}
+
+	.cover-plate-img {
+		object-position: center center;
+	}
+
+	.cover-plate-bar {
+		width: min(74vw, 312px, calc((100svh - 420px) * 0.8));
+		min-width: 240px;
+		max-width: 320px;
+		justify-content: center;
+		padding-top: 4px;
+	}
+
+	.cover-plate-status {
+		display: none;
+	}
+
+	.book-cover .cover-author {
+		margin-bottom: 6px;
+	}
+
+	.book-cover .cover-narrative {
+		margin-top: 14px;
+	}
+
+	.book-cover .cover-cta {
+		margin-top: 14px;
+	}
+
+	.cover-marginalia-person {
+		left: 44%;
+		top: 69%;
+	}
+
+	.book-cover[data-atmosphere='night'] .cover-marginalia-person {
+		left: 76.2%;
+		top: 11.2%;
+	}
+
+	.cover-marginalia-journey {
+		left: 74%;
+		top: 69%;
+	}
+
+	.cover-marginalia-slip {
+		min-width: 196px;
+		max-width: 236px;
+	}
+
+	.cover-marginalia-journey .cover-marginalia-slip {
+		left: auto;
+		right: 0;
+		transform: none;
+	}
+
+	.cover-whisper {
+		margin-inline: auto;
+		text-align: left;
+	}
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+	.cover-plate-frame {
+		width: min(44vw, 290px, calc((100svh - 446px) * 0.8));
+		min-width: 184px;
+	}
+	.cover-plate-bar {
+		width: auto;
+		min-width: 0;
+		max-width: 100%;
+		justify-content: center;
+		gap: 20px;
+	}
+	.cover-plate-status {
+		display: inline;
+	}
+}
+
+@media (max-width: 359px) {
+	.cover-plate-frame {
+		width: min(76vw, 224px);
+		min-width: 152px;
+	}
+	.cover-plate-bar {
+		width: 100%;
+		min-width: 0;
+	}
+}
+
+/* Reduced motion & touch-lite safety */
+@media (prefers-reduced-motion: reduce) {
+	.book-cover,
+	.cover-plate-frame,
+	.cover-layer-night,
+	.cover-parallax-far,
+	.cover-parallax-mid,
+	.cover-parallax-near,
+	.cover-sun-aura,
+	.cover-ink-bird,
+	.cover-journey-stroke,
+	.cover-leaf path,
+	.cover-star,
+	.cover-whisper,
+	.cover-marginalia-slip {
+		animation: none !important;
+		transition: none !important;
+	}
+	.cover-parallax-far,
+	.cover-parallax-mid,
+	.cover-parallax-near {
+		transform: none !important;
+	}
+	.cover-journey-stroke {
+		stroke-dashoffset: 0;
+		opacity: 0.65;
+	}
+	.cover-bird-flock {
+		display: none;
+	}
+}

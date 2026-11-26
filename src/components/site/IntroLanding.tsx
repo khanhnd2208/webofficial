@@ -1,13 +1,69 @@
-import BrandWordmark from './BrandWordmark';
-import Link from 'next/link';
-import IntroParallaxImage from './IntroParallaxImage';
-import SiteAuthChip from './SiteAuthChip';
-import { routes } from '@/config/routes';
-import { introPage } from '@/content/publicMarketing';
+'use client';
 
+import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
+
+import { routes } from '@/config/routes';
+
+import BrandWordmark from './BrandWordmark';
+import SiteAuthChip from './SiteAuthChip';
+import {
+	parseAtmosphereParam,
+	readStoredAtmosphere,
+	resolveTimeAtmosphere,
+	writeStoredAtmosphere,
+	type CoverAtmosphere,
+} from './cover/coverAtmosphere';
+import CoverEditorialCopy from './cover/CoverEditorialCopy';
+import CoverLivingPlate from './cover/CoverLivingPlate';
+import './cover/living-cover.css';
+
+/**
+ * Living book cover at `/`:
+ * - Server-renders in warm Dawn paper (matches Brand Brief & works cleanly without JS).
+ * - On mount, respects `?mode=dawn|night`, session preference, or local time of day
+ *   (06:00–17:59 Dawn paper; 18:00–05:59 Night indigo ink-wash).
+ * - Visitors can always call Dawn or Night freely from the sun/moon, plate, or caption bar.
+ */
 export default function IntroLanding() {
+	const [atmosphere, setAtmosphere] = useState<CoverAtmosphere>('dawn');
+	const [opening, setOpening] = useState(false);
+
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search);
+		const forced = parseAtmosphereParam(params.get('mode'));
+		const stored = readStoredAtmosphere();
+		const target = forced ?? stored ?? resolveTimeAtmosphere();
+
+		if (target === 'dawn') return;
+
+		// Brief pause when auto-settling into evening dusk so the transition feels calm and deliberate
+		const delay = forced || stored ? 0 : 280;
+		const timer = window.setTimeout(() => {
+			setAtmosphere('night');
+		}, delay);
+		return () => window.clearTimeout(timer);
+	}, []);
+
+	const handleToggleAtmosphere = useCallback(() => {
+		setAtmosphere((current) => {
+			const next: CoverAtmosphere = current === 'night' ? 'dawn' : 'night';
+			writeStoredAtmosphere(next);
+			return next;
+		});
+	}, []);
+
+	const handleOpenToc = useCallback(() => {
+		if (atmosphere === 'night') setOpening(true);
+	}, [atmosphere]);
+
 	return (
-		<div className="personal-book book-cover" data-testid="intro-home">
+		<div
+			className="personal-book book-cover"
+			data-testid="intro-home"
+			data-atmosphere={atmosphere}
+			data-opening={opening ? 'true' : undefined}
+		>
 			<header className="cover-meta">
 				<Link href={routes.home} className="cover-brand">
 					<BrandWordmark />
@@ -16,42 +72,8 @@ export default function IntroLanding() {
 				<SiteAuthChip variant="chrome" />
 			</header>
 			<main className="cover-composition">
-				<div className="cover-copy">
-					<p className="book-caption cover-author">Nguyễn Duy Khánh</p>
-					<h1 className="cover-title">{introPage.headline}</h1>
-					<p className="cover-pos">{introPage.partOfSpeech}</p>
-					<div className="cover-narrative">
-						{introPage.lines.map((line, index) => (
-							<p key={line}>
-								{index === 0 ? (
-									<span className="cover-cursor-line">
-										{line}
-										<span className="intro-ink-cursor" aria-hidden="true" />
-									</span>
-								) : (
-									line
-								)}
-							</p>
-						))}
-					</div>
-					<Link className="book-link cover-cta" href={routes.toc} data-testid="intro-open-toc">
-						{introPage.cta}
-						<span aria-hidden="true">→</span>
-					</Link>
-				</div>
-				<Link
-					className="cover-art"
-					href={routes.toc}
-					aria-label={introPage.cta}
-					data-testid="intro-image-toc"
-				>
-					<IntroParallaxImage
-						src={introPage.desktopImage.src}
-						mobileSrc={introPage.mobileImage.src}
-						alt=""
-						sizes="(min-width: 1024px) 60vw, 280px"
-					/>
-				</Link>
+				<CoverEditorialCopy onOpenToc={handleOpenToc} />
+				<CoverLivingPlate atmosphere={atmosphere} onToggleAtmosphere={handleToggleAtmosphere} />
 			</main>
 		</div>
 	);
