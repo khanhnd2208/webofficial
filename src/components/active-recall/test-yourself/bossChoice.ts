@@ -1,7 +1,7 @@
 import { ARENA_BOSSES, type ArenaBoss } from '@/components/teaching/arena/arenaBosses';
 
-/** Generic villains only: the illustrated sheets are portraits of real people. */
-export const TEST_BOSSES = ARENA_BOSSES.filter((boss) => boss.art.kind !== 'sheet');
+/** The custom-designed bosses only (the illustrated sheets), not the generic defaults. */
+export const TEST_BOSSES = ARENA_BOSSES.filter((boss) => boss.art.kind === 'sheet');
 
 /** "A different boss each run" — the default until the learner picks one. */
 export const RANDOM_BOSS = 'random';
