@@ -30,7 +30,7 @@ function student(id: string, givenName: string, riskLevel = 'OK'): BoardGridStud
 		studentCode: '********45',
 		familyName: 'Nguyễn',
 		givenName,
-		marks: { s1: { status: 'PRESENT', note: '' }, s2: { status: 'LATE', note: 'Kẹt xe' } },
+		marks: { s1: { status: 'PRESENT' }, s2: { status: 'LATE' } },
 		participation: {},
 		cp: {
 			unexcusedAbsences: 1,
@@ -56,7 +56,7 @@ describe('ClassRoster', () => {
 
 		expect(screen.getByText('Bạn')).toBeInTheDocument();
 		expect(screen.getByText('Có nguy cơ')).toBeInTheDocument();
-		expect(screen.getAllByLabelText('Tuần 2: Muộn · Kẹt xe')).toHaveLength(2);
+		expect(screen.getAllByLabelText('Tuần 2: Muộn')).toHaveLength(2);
 
 		const toggle = screen.getByRole('button', { name: 'Nguyễn An' });
 		expect(toggle).toHaveAttribute('aria-expanded', 'false');
@@ -64,7 +64,7 @@ describe('ClassRoster', () => {
 		expect(toggle).toHaveAttribute('aria-expanded', 'true');
 		const detail = document.getElementById('roster-detail-e1')!;
 		expect(detail).toHaveTextContent('Tuần 1');
-		expect(detail).toHaveTextContent('Muộn · Kẹt xe');
+		expect(detail).toHaveTextContent('Muộn');
 		expect(detail).not.toHaveTextContent('Tuần 3');
 	});
 });

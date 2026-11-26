@@ -45,9 +45,9 @@ describe('rosterCells', () => {
 		expect(kinds).toEqual(['not-enrolled', 'none', 'status', 'cancelled', 'pending', 'none']);
 	});
 
-	it('carries the teacher note into the label and marks finalised weeks', () => {
+	it('labels the week without any note and marks finalised weeks', () => {
 		const cell = rosterCells(student, weeks, 'attendance')[2]!;
-		expect(cell.label).toBe('Tuần 3: Vắng · Ốm');
+		expect(cell.label).toBe('Tuần 3: Vắng');
 		expect(cell.final).toBe(true);
 	});
 

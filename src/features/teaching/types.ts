@@ -337,8 +337,9 @@ export interface PublicAttendanceBoardStudent {
 	/** Capability flag only; the birth date value is never exposed publicly. */
 	hasDateOfBirth?: boolean;
 	enrolledFromWeek: number;
-	marks: Record<string, { status: AttendanceStatus; note?: string }>;
-	participation: Record<string, TeachingParticipationMark>;
+	/** Lecturer notes stay in Studio: the public board carries status and points only. */
+	marks: Record<string, { status: AttendanceStatus }>;
+	participation: Record<string, { points: number }>;
 	cp: CpResult;
 	learningExperience?: LearningExperienceChoice | null;
 }

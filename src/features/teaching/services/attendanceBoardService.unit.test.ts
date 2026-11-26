@@ -189,14 +189,11 @@ describe('getPublicClassBoard', () => {
 		});
 		expect(result?.students[0]?.cp.unexcusedAbsences).toBe(0);
 		expect(result?.students[0]?.marks['session-1']).toBeUndefined();
-		expect(result?.students[0]?.marks['session-2']).toEqual({
-			status: 'PRESENT',
-			note: 'spoke up',
-		});
-		expect(result?.students[0]?.participation['session-2']).toEqual({
-			points: 1,
-			note: 'Trình bày rõ ràng',
-		});
+		expect(result?.students[0]?.marks['session-2']).toEqual({ status: 'PRESENT' });
+		expect(result?.students[0]?.participation['session-2']).toEqual({ points: 1 });
+		// Attendance and CP notes are lecturer-only; they must never reach the public board.
+		expect(JSON.stringify(result)).not.toContain('spoke up');
+		expect(JSON.stringify(result)).not.toContain('Trình bày rõ ràng');
 		expect(JSON.stringify(result)).not.toContain('2406090045');
 		expect(JSON.stringify(result)).not.toContain('hidden@example.com');
 		expect(JSON.stringify(result)).not.toContain('2006-05-29');

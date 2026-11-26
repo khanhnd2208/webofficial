@@ -22,7 +22,7 @@ export interface BoardGridStudent {
 	email?: string | null;
 	note?: string;
 	marks: Record<string, TeachingAttendanceMark | { status: AttendanceStatus; note?: string }>;
-	participation: Record<string, TeachingParticipationMark>;
+	participation: Record<string, TeachingParticipationMark | { points: number; note?: string }>;
 	cp: CpResult;
 	learningExperience?: LearningExperienceChoice | null;
 }

@@ -19,7 +19,6 @@ export interface RosterCell {
 	kind: 'status' | 'points' | 'pending' | 'cancelled' | 'none' | 'not-enrolled';
 	status?: AttendanceStatus;
 	points?: number;
-	note: string;
 	/** Plain-language description for screen readers and the detail list. */
 	label: string;
 	/** True once the teacher has finalised the week, so the value will not change. */
@@ -50,7 +49,7 @@ export function rosterCells(
 ): RosterCell[] {
 	return weeks.map(({ weekNumber, session }) => {
 		const date = session ? sessionDateLabel(session.heldOn, '') : '';
-		const base = { weekNumber, date, note: '', final: false };
+		const base = { weekNumber, date, final: false };
 		if (!session) return { ...base, kind: 'none', label: `Tuần ${weekNumber}: Chưa có buổi` };
 		if (session.isCancelled)
 			return { ...base, kind: 'cancelled', final: true, label: `Tuần ${weekNumber}: Nghỉ` };
@@ -64,16 +63,14 @@ export function rosterCells(
 
 		if (view === 'attendance') {
 			const mark = student.marks[session.id];
-			const note = mark?.note?.trim() ?? '';
 			if (!mark?.status)
 				return { ...base, kind: 'pending', label: `Tuần ${weekNumber}: Chưa điểm danh` };
 			return {
 				...base,
 				kind: 'status',
 				status: mark.status,
-				note,
 				final: isAttendanceCounted(session),
-				label: `Tuần ${weekNumber}: ${ATTENDANCE_STATUS_TEXT[mark.status]}${note ? ` · ${note}` : ''}`,
+				label: `Tuần ${weekNumber}: ${ATTENDANCE_STATUS_TEXT[mark.status]}`,
 			};
 		}
 
@@ -81,14 +78,12 @@ export function rosterCells(
 		if (!started) return { ...base, kind: 'pending', label: `Tuần ${weekNumber}: Chưa chấm CP` };
 		const mark = student.participation[session.id];
 		const points = mark?.points ?? 0;
-		const note = mark?.note?.trim() ?? '';
 		return {
 			...base,
 			kind: 'points',
 			points,
-			note,
 			final: isParticipationCounted(session),
-			label: `Tuần ${weekNumber}: ${formatTeachingScore(points)} điểm CP${note ? ` · ${note}` : ''}`,
+			label: `Tuần ${weekNumber}: ${formatTeachingScore(points)} điểm CP`,
 		};
 	});
 }

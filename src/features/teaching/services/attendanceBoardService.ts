@@ -113,16 +113,10 @@ export async function getPublicClassBoard(slug: string): Promise<PublicClassBoar
 			const mark = attendanceBySession.get(session.id);
 			const participationMark = participationBySession.get(session.id);
 			if (mark && isAttendanceCounted(session)) {
-				marks[session.id] = {
-					status: mark.status,
-					note: mark.note,
-				};
+				marks[session.id] = { status: mark.status };
 			}
 			if (participationMark && isParticipationCounted(session)) {
-				participation[session.id] = {
-					points: toNumber(participationMark.points),
-					note: participationMark.note,
-				};
+				participation[session.id] = { points: toNumber(participationMark.points) };
 			}
 			return {
 				isCancelled: session.isCancelled,
