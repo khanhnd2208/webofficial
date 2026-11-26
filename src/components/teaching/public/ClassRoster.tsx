@@ -54,7 +54,6 @@ function StripCell({ cell }: { cell: RosterCell }) {
 			className="roster-cell"
 			data-kind={cell.kind}
 			data-points={cell.kind === 'points' ? cell.points : undefined}
-			data-note={cell.note ? 'true' : undefined}
 		>
 			{cell.kind === 'status' && cell.status ? <AttendanceGlyph status={cell.status} /> : null}
 			{cell.kind === 'points' ? pointsGlyph(cell.points ?? 0) : null}
@@ -81,7 +80,7 @@ function Score({ value, max }: { value: number; max: number }) {
  * The public class list. One row per student: name, a strip with one mark per week,
  * and the running score. The strip keeps a fixed width however many weeks the course
  * has, so a 15-week term reads as easily as week 2. Tapping a row lists every week
- * with its date and the teacher's note.
+ * with its date. Lecturer notes are never sent to this page.
  */
 export function ClassRoster({
 	students,

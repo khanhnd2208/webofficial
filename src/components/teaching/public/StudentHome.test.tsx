@@ -79,7 +79,7 @@ function sampleBoard(): PublicClassBoard {
 				hasDateOfBirth: true,
 				enrolledFromWeek: 1,
 				marks: { s1: { status: 'PRESENT' } },
-				participation: { s1: { points: 1, note: '' } },
+				participation: { s1: { points: 1 } },
 				learningExperience: null,
 				cp: {
 					takenSessions: 1,

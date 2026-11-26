@@ -66,8 +66,8 @@ function board(): PublicClassBoard {
 				givenName: 'An',
 				hasDateOfBirth: true,
 				enrolledFromWeek: 1,
-				marks: { 'session-1': { status: 'PRESENT', note: 'Chủ động hỗ trợ nhóm' } },
-				participation: { 'session-1': { points: 1, note: 'Trình bày tốt' } },
+				marks: { 'session-1': { status: 'PRESENT' } },
+				participation: { 'session-1': { points: 1 } },
 				cp: { ...cp, giftDeduction: 0 },
 			},
 			{
@@ -80,7 +80,7 @@ function board(): PublicClassBoard {
 				hasDateOfBirth: false,
 				enrolledFromWeek: 1,
 				marks: { 'session-1': { status: 'LATE' } },
-				participation: { 'session-1': { points: 0.5, note: '' } },
+				participation: { 'session-1': { points: 0.5 } },
 				cp: { ...cp, giftDeduction: 0, cp: 0.5 },
 			},
 		],
@@ -192,7 +192,7 @@ describe('StudentClassBoard', () => {
 			tutorialClassId: 'tutorial-2',
 			studentCode: '********77',
 			marks: { 'session-2': { status: 'PRESENT' } },
-			participation: { 'session-2': { points: 1, note: '' } },
+			participation: { 'session-2': { points: 1 } },
 		});
 		render(<StudentClassBoard board={contentBoard} initialTab="attendance" />);
 		const grid = screen.getByTestId('attendance-grid');
@@ -381,7 +381,7 @@ describe('StudentClassBoard', () => {
 			familyName: 'Lê',
 			givenName: 'Chi',
 			marks: { 'session-2': { status: 'PRESENT' } },
-			participation: { 'session-2': { points: 1, note: '' } },
+			participation: { 'session-2': { points: 1 } },
 		});
 
 		render(<StudentClassBoard board={contentBoard} />);
@@ -397,15 +397,14 @@ describe('StudentClassBoard', () => {
 		lockedBoard.sessions[0] = { ...lockedBoard.sessions[0]!, attendanceOpen: false };
 		render(<StudentClassBoard board={lockedBoard} initialTab="attendance" />);
 
-		const cell = screen.getByLabelText('Tuần 1: Có mặt · Chủ động hỗ trợ nhóm');
+		const cell = screen.getByLabelText('Tuần 1: Có mặt');
 		expect(cell).toHaveAttribute('data-kind', 'status');
-		expect(cell).toHaveAttribute('data-note', 'true');
-		expect(cell).toHaveAttribute('title', 'Tuần 1: Có mặt · Chủ động hỗ trợ nhóm');
+		expect(cell).toHaveAttribute('title', 'Tuần 1: Có mặt');
 	});
 
-	it('shows the weekly CP note in the student tooltip', () => {
+	it('shows weekly CP points in the student tooltip without any lecturer note', () => {
 		render(<StudentClassBoard board={board()} initialTab="cp" />);
-		const cell = screen.getByLabelText('Tuần 1: 1,0 điểm CP · Trình bày tốt');
+		const cell = screen.getByLabelText('Tuần 1: 1,0 điểm CP');
 		expect(cell).toHaveAttribute('data-points', '1');
 		expect(cell).toHaveTextContent('1');
 	});
