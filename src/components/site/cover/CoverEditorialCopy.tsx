@@ -8,14 +8,19 @@ import { introPage } from '@/content/publicMarketing';
 
 interface CoverEditorialCopyProps {
 	onOpenToc: () => void;
+	onWhisperChange?: (open: boolean) => void;
 }
 
 /**
  * Editorial book-cover typography column.
- * Keeps the cover quiet on initial load; tapping "[động từ]" or "Chưa xong."
- * gently unfolds sincere marginalia whispers from the author's real notes.
+ * - `[động từ]` carries a subtle dictionary-note underline and unfolds the author's
+ *   three authentic marginalia notes on click (closed by default to preserve silence).
+ * - `Chưa xong.` stays pure editorial serif prose with a finite 3-breath ink bar.
  */
-export default function CoverEditorialCopy({ onOpenToc }: CoverEditorialCopyProps) {
+export default function CoverEditorialCopy({
+	onOpenToc,
+	onWhisperChange,
+}: CoverEditorialCopyProps) {
 	const [whisperIndex, setWhisperIndex] = useState<number>(-1);
 	const totalWhispers = introPage.whispers.length;
 
@@ -23,10 +28,20 @@ export default function CoverEditorialCopy({ onOpenToc }: CoverEditorialCopyProp
 		setWhisperIndex((current) => (current + 1 >= totalWhispers ? -1 : current + 1));
 	};
 
+	const closeWhisper = () => {
+		setWhisperIndex(-1);
+	};
+
+	useEffect(() => {
+		onWhisperChange?.(whisperIndex >= 0);
+	}, [onWhisperChange, whisperIndex]);
+
 	useEffect(() => {
 		if (whisperIndex < 0) return;
 		const onKeyDown = (event: KeyboardEvent) => {
-			if (event.key === 'Escape') setWhisperIndex(-1);
+			if (event.key === 'Escape') {
+				setWhisperIndex(-1);
+			}
 		};
 		document.addEventListener('keydown', onKeyDown);
 		return () => document.removeEventListener('keydown', onKeyDown);
@@ -37,7 +52,9 @@ export default function CoverEditorialCopy({ onOpenToc }: CoverEditorialCopyProp
 	return (
 		<div className="cover-copy">
 			<p className="book-caption cover-author">Nguyễn Duy Khánh</p>
-			<h1 className="cover-title">{introPage.headline}</h1>
+			<h1 className="cover-title">
+				<span className="cover-title-reveal">{introPage.headline}</span>
+			</h1>
 			<p className="cover-pos">
 				<button
 					type="button"
@@ -45,7 +62,7 @@ export default function CoverEditorialCopy({ onOpenToc }: CoverEditorialCopyProp
 					onClick={cycleWhisper}
 					aria-expanded={whisperIndex >= 0}
 					aria-controls="cover-author-whisper"
-					title="Chạm để đọc một ghi chú nhỏ bên lề"
+					title="Chạm để đọc ghi chú nhỏ bên lề"
 				>
 					{introPage.partOfSpeech}
 				</button>
@@ -54,18 +71,10 @@ export default function CoverEditorialCopy({ onOpenToc }: CoverEditorialCopyProp
 				{introPage.lines.map((line, index) => (
 					<p key={line}>
 						{index === 0 ? (
-							<button
-								type="button"
-								className="cover-cursor-trigger"
-								onClick={cycleWhisper}
-								aria-expanded={whisperIndex >= 0}
-								aria-controls="cover-author-whisper"
-							>
-								<span className="cover-cursor-line">
-									{line}
-									<span className="intro-ink-cursor" aria-hidden="true" />
-								</span>
-							</button>
+							<span className="cover-cursor-line">
+								{line}
+								<span className="intro-ink-cursor cover-settled-cursor" aria-hidden="true" />
+							</span>
 						) : (
 							line
 						)}
@@ -80,9 +89,24 @@ export default function CoverEditorialCopy({ onOpenToc }: CoverEditorialCopyProp
 					data-testid="cover-author-whisper"
 				>
 					<p className="cover-whisper-text">{activeWhisper}</p>
-					<span className="cover-whisper-index" aria-hidden="true">
-						{whisperIndex + 1}/{totalWhispers}
-					</span>
+					<div className="cover-whisper-actions">
+						<button
+							type="button"
+							className="cover-whisper-step"
+							onClick={cycleWhisper}
+							aria-label={`Đọc ghi chú tiếp theo (${whisperIndex + 1}/${totalWhispers})`}
+						>
+							{whisperIndex + 1}/{totalWhispers}
+						</button>
+						<button
+							type="button"
+							className="cover-whisper-close"
+							onClick={closeWhisper}
+							aria-label="Đóng ghi chú"
+						>
+							×
+						</button>
+					</div>
 				</aside>
 			) : null}
 			<Link

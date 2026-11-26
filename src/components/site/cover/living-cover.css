@@ -1,32 +1,89 @@
-/* Living book-cover atmosphere, organic paper-bleed reveal, diorama parallax, and marginalia.
- * Scoped strictly to `.book-cover` so internal workspaces and other routes never shift.
+/* Living book-cover atmosphere, full-viewport synchronized watercolor bloom,
+ * letterpress plate-mark framing, diorama parallax, editorial marginalia, and zero-flash night boot.
+ * Scoped strictly to `.book-cover` (and `html.cover-blooming` only during the active toggle).
  * Every font-size stays >= 12px and respects `prefers-reduced-motion`. */
 
-.book-cover {
-	position: relative;
-	overflow: clip;
-	transition:
-		background-color 1050ms cubic-bezier(0.32, 0.72, 0, 1),
-		color 850ms cubic-bezier(0.32, 0.72, 0, 1);
+@property --cover-bloom-r {
+	syntax: '<length>';
+	inherits: true;
+	initial-value: 0px;
 }
 
-.book-cover[data-atmosphere='night'] {
+@keyframes cover-viewport-bloom {
+	from {
+		--cover-bloom-r: 0px;
+	}
+	to {
+		--cover-bloom-r: var(--cover-bloom-max, 1800px);
+	}
+}
+
+html.cover-blooming::view-transition-group(root) {
+	animation: none;
+}
+
+html.cover-blooming::view-transition-old(root) {
+	animation: none;
+	z-index: 1;
+}
+
+html.cover-blooming::view-transition-new(root) {
+	z-index: 2;
+	animation: cover-viewport-bloom 1160ms cubic-bezier(0.32, 0.08, 0.18, 1) both;
+	-webkit-mask-image: radial-gradient(
+		circle at var(--cover-bloom-x, 65vw) var(--cover-bloom-y, 38vh),
+		#000 max(0px, calc(var(--cover-bloom-r) - 130px)),
+		rgba(0, 0, 0, 0.72) max(0px, calc(var(--cover-bloom-r) - 56px)),
+		transparent var(--cover-bloom-r)
+	);
+	mask-image: radial-gradient(
+		circle at var(--cover-bloom-x, 65vw) var(--cover-bloom-y, 38vh),
+		#000 max(0px, calc(var(--cover-bloom-r) - 130px)),
+		rgba(0, 0, 0, 0.72) max(0px, calc(var(--cover-bloom-r) - 56px)),
+		transparent var(--cover-bloom-r)
+	);
+}
+
+/* Zero-flash pre-paint background match when evening visitors arrive directly into Night */
+html[data-cover-atmosphere='night']:has(.book-cover) {
+	background-color: #0d1622;
+}
+
+/* Seamless cotton-paper foundation matching the Dawn ink-wash artwork (#F8F7F4) */
+.personal-book.book-cover {
+	position: relative;
+	overflow: clip;
+	background: var(--canvas);
+	transition:
+		background-color 900ms cubic-bezier(0.32, 0.72, 0, 1),
+		color 750ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.book-cover[data-atmosphere='night'],
+html[data-cover-atmosphere='night'] .book-cover:not([data-atmosphere-ready='true']) {
 	--canvas: #0d1622;
 	--paper: #0e1825;
 	--surface: #132030;
 	--surface-elevated: #162638;
 	--surface-hover: #1b2d42;
 	--ink: #f2eadc;
-	--ink-secondary: #a6b2be;
+	--ink-secondary: #adb8c4;
 	--foreground: #f2eadc;
-	--muted: #a6b2be;
+	--muted: #adb8c4;
 	--hairline: rgba(216, 200, 172, 0.16);
 	--border: rgba(216, 200, 172, 0.16);
-	--bronze: #d6ad63;
-	--accent: #d6ad63;
+	--bronze: #d9b269;
+	--accent: #d9b269;
 	--sunlight: #e2be78;
-	background: radial-gradient(circle at 72% 38%, #152538 0%, #0e1825 56%, #0b131e 100%);
+	background: radial-gradient(circle at 68% 36%, #142336 0%, #0e1724 58%, #0b131e 100%);
 	color: var(--ink);
+}
+
+/* Instant pre-hydration Night plate visibility (zero Dawn flash at 0ms) */
+html[data-cover-atmosphere='night']
+	.book-cover:not([data-atmosphere-ready='true'])
+	.cover-layer-night {
+	opacity: 1;
 }
 
 /* Gentle book-opening illumination when leaving Night cover toward /muc-luc */
@@ -37,20 +94,88 @@
 		background-color var(--ui-duration-page) var(--ui-ease);
 }
 
+/* ── Authored Opening Choreography (crisp & grounded — zero blank ghost screen) ─ */
+@keyframes cover-soft-settle {
+	from {
+		opacity: 0.25;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes cover-title-clip {
+	from {
+		clip-path: inset(0 0 100% 0);
+		transform: translateY(10px);
+	}
+	to {
+		clip-path: inset(0 0 -10% 0);
+		transform: none;
+	}
+}
+
+.book-cover
+	:where(.cover-meta, .cover-author, .cover-title, .cover-pos, .cover-narrative p, .cover-cta) {
+	animation: cover-soft-settle 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .book-cover .cover-meta {
+	animation-duration: 420ms;
 	border-bottom-color: var(--hairline);
 	transition:
-		border-color 850ms var(--ui-ease),
-		color 850ms var(--ui-ease);
+		border-color 750ms var(--ui-ease),
+		color 750ms var(--ui-ease);
+}
+
+.book-cover .cover-author {
+	animation-delay: 40ms;
+}
+
+.book-cover .cover-title {
+	animation: none;
+}
+
+.cover-title-reveal {
+	display: inline-block;
+	animation: cover-title-clip 680ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both;
+}
+
+.book-cover .cover-pos {
+	animation-delay: 180ms;
+}
+
+.book-cover .cover-narrative p {
+	animation-delay: 260ms;
+}
+
+.book-cover .cover-narrative p + p {
+	animation-delay: 340ms;
+}
+
+.book-cover .cover-cta {
+	animation-delay: 440ms;
+	transition:
+		color var(--ui-duration-control) var(--ui-ease),
+		border-color var(--ui-duration-control) var(--ui-ease);
 }
 
 .book-cover[data-atmosphere='night'] .cover-meta .cover-brand,
-.book-cover[data-atmosphere='night'] .cover-meta :is(a, button) {
-	color: var(--ink-secondary);
+html[data-cover-atmosphere='night']
+	.book-cover:not([data-atmosphere-ready='true'])
+	.cover-meta
+	.cover-brand {
+	color: var(--ink);
 }
 
-.book-cover[data-atmosphere='night'] .cover-meta .cover-brand {
-	color: var(--ink);
+.book-cover[data-atmosphere='night'] .cover-meta :is(a:not(.cover-brand), button, .cover-colophon),
+html[data-cover-atmosphere='night']
+	.book-cover:not([data-atmosphere-ready='true'])
+	.cover-meta
+	:is(a:not(.cover-brand), button, .cover-colophon) {
+	color: var(--ink-secondary);
 }
 
 .book-cover[data-atmosphere='night'] .cover-meta :is(a, button):hover,
@@ -58,27 +183,48 @@
 	color: var(--ink);
 }
 
-/* Interactive "[động từ]" and "Chưa xong.|" author marginalia whispers */
-.cover-pos-trigger,
-.cover-cursor-trigger {
+.cover-colophon {
+	letter-spacing: 0.06em;
+	font-size: 0.8125rem;
+	color: var(--ink-secondary);
+}
+
+/* Finite 3-breath ink bar after "Chưa xong." — settles calmly instead of blinking forever */
+@keyframes cover-ink-settle {
+	0%,
+	20%,
+	46%,
+	72% {
+		opacity: 0.9;
+	}
+	32%,
+	58% {
+		opacity: 0.14;
+	}
+	100% {
+		opacity: 0.42;
+	}
+}
+
+.book-cover .cover-settled-cursor {
+	opacity: 0.42;
+	animation: cover-ink-settle 3.4s ease-in-out 0.7s both;
+}
+
+/* Unmistakable literary dictionary annotation trigger on "[động từ]" */
+.cover-pos-trigger {
 	appearance: none;
 	border: 0;
-	padding: 0;
+	border-bottom: 1px dotted color-mix(in srgb, currentColor 48%, transparent);
+	padding: 0 0 2px;
 	margin: 0;
 	background: transparent;
 	font: inherit;
 	color: inherit;
 	letter-spacing: inherit;
 	line-height: inherit;
-	text-align: inherit;
 	cursor: pointer;
 	display: inline;
-	transition: color var(--ui-duration-hover) var(--ui-ease);
-}
-
-.cover-pos-trigger {
-	border-bottom: 1px dashed transparent;
-	padding-bottom: 2px;
 	transition:
 		border-color var(--ui-duration-control) var(--ui-ease),
 		color var(--ui-duration-hover) var(--ui-ease);
@@ -87,18 +233,15 @@
 .cover-pos-trigger:hover,
 .cover-pos-trigger:focus-visible,
 .cover-pos-trigger[aria-expanded='true'] {
+	border-bottom-style: solid;
 	border-bottom-color: currentColor;
 }
 
-.cover-cursor-trigger:hover .intro-ink-cursor {
-	opacity: 1;
-}
-
 .cover-whisper {
-	margin-top: 18px;
+	margin-top: 16px;
 	padding-left: 14px;
 	border-left: 1px solid var(--bronze);
-	max-width: 34ch;
+	max-width: 36ch;
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
@@ -110,15 +253,38 @@
 	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
 	font-style: italic;
 	font-size: 0.9375rem;
-	line-height: 1.6;
+	line-height: 1.55;
 	color: var(--ink-secondary);
 }
 
-.cover-whisper-index {
-	font-size: 0.75rem;
-	letter-spacing: 0.06em;
-	color: var(--bronze);
+.cover-whisper-actions {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
 	flex-shrink: 0;
+}
+
+.cover-whisper-step,
+.cover-whisper-close {
+	appearance: none;
+	border: 0;
+	background: transparent;
+	padding: 2px 4px;
+	cursor: pointer;
+	font-size: 0.75rem;
+	letter-spacing: 0.05em;
+	color: var(--bronze);
+	transition: opacity var(--ui-duration-hover) var(--ui-ease);
+}
+
+.cover-whisper-close {
+	font-size: 0.9375rem;
+	color: var(--ink-secondary);
+}
+
+.cover-whisper-step:hover,
+.cover-whisper-close:hover {
+	opacity: 0.72;
 }
 
 @keyframes cover-whisper-in {
@@ -132,7 +298,7 @@
 	}
 }
 
-/* ── Living Bookplate Figure & Frame ─────────────────────────────────────── */
+/* ── Living Archival Bookplate Figure & Letterpress Plate-Mark Frame ─────── */
 .book-cover .cover-composition {
 	width: min(1220px, 100%);
 	grid-template-columns: minmax(290px, 40%) minmax(0, 60%);
@@ -153,9 +319,10 @@
 	justify-self: end;
 	width: 100%;
 	max-width: 760px;
-	animation: cover-art-enter 1250ms cubic-bezier(0.22, 1, 0.36, 1) 100ms both;
+	animation: cover-soft-settle 780ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
 }
 
+/* Letterpress plate-mark framing: feels printed directly onto rag paper, never a floating white box */
 .cover-plate-frame {
 	position: relative;
 	width: 100%;
@@ -164,31 +331,37 @@
 	max-width: calc(min(68svh, 620px) * 1.2);
 	overflow: hidden;
 	background: var(--canvas);
-	border: 1px solid var(--hairline);
-	box-shadow: var(--shadow-lg);
+	border: 1px solid rgba(118, 86, 37, 0.14);
+	box-shadow: inset 0 1px 0 rgba(255, 252, 247, 0.65);
 	transition:
-		border-color 900ms var(--ui-ease),
-		box-shadow 900ms var(--ui-ease),
-		background-color 900ms var(--ui-ease);
+		border-color 850ms var(--ui-ease),
+		box-shadow 850ms var(--ui-ease),
+		background-color 850ms var(--ui-ease);
 }
 
 .cover-plate-frame::after {
 	content: '';
 	position: absolute;
-	inset: 9px;
-	border: 1px solid rgba(118, 86, 37, 0.16);
+	inset: 8px;
+	border: 1px solid rgba(118, 86, 37, 0.11);
 	pointer-events: none;
 	z-index: 12;
-	transition: border-color 900ms var(--ui-ease);
+	transition: border-color 850ms var(--ui-ease);
 }
 
-.book-cover[data-atmosphere='night'] .cover-plate-frame {
+.book-cover[data-atmosphere='night'] .cover-plate-frame,
+html[data-cover-atmosphere='night']
+	.book-cover:not([data-atmosphere-ready='true'])
+	.cover-plate-frame {
 	border-color: rgba(214, 173, 99, 0.22);
-	box-shadow: 0 22px 54px -24px rgba(3, 8, 16, 0.72);
+	box-shadow: 0 22px 54px -28px rgba(2, 6, 14, 0.72);
 }
 
-.book-cover[data-atmosphere='night'] .cover-plate-frame::after {
-	border-color: rgba(214, 173, 99, 0.22);
+.book-cover[data-atmosphere='night'] .cover-plate-frame::after,
+html[data-cover-atmosphere='night']
+	.book-cover:not([data-atmosphere-ready='true'])
+	.cover-plate-frame::after {
+	border-color: rgba(214, 173, 99, 0.18);
 }
 
 .cover-mask-defs {
@@ -211,7 +384,12 @@
 	z-index: 4;
 	pointer-events: none;
 	background: #0e1825;
-	transition: opacity 420ms var(--ui-ease);
+	opacity: 0;
+	transition: opacity 360ms var(--ui-ease);
+}
+
+.cover-layer-night[data-visible='true'] {
+	opacity: 1;
 }
 
 .cover-plate-frame[data-transitioning='true'] .cover-layer-night {
@@ -220,8 +398,7 @@
 
 /* 3-layer paper diorama parallax speeds */
 .cover-parallax-far,
-.cover-parallax-mid,
-.cover-parallax-near {
+.cover-parallax-mid {
 	position: absolute;
 	inset: 0;
 	transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -238,10 +415,6 @@
 		translate3d(calc(var(--gaze-x, 0) * -5.5px), calc(var(--gaze-y, 0) * -4px), 0);
 }
 
-.cover-parallax-near {
-	transform: translate3d(calc(var(--gaze-x, 0) * 7px), calc(var(--gaze-y, 0) * 5px), 0);
-}
-
 .cover-plate-img {
 	width: 100%;
 	height: 100%;
@@ -250,10 +423,14 @@
 	display: block;
 }
 
-/* Quiet living dawn sky, sun aura, birds, golden path & wind-reactive leaves */
+/* Melt the Dawn raster's ivory background seamlessly into #F8F7F4 book paper */
+.cover-plate-img-dawn {
+	mix-blend-mode: multiply;
+}
+
+/* Quiet living dawn sky, sun aura, birds & golden path */
 .cover-dawn-sky,
 .cover-journey-overlay,
-.cover-foreground-leaves,
 .cover-night-sky {
 	width: 100%;
 	height: 100%;
@@ -322,63 +499,30 @@
 
 .cover-journey-stroke {
 	fill: none;
-	stroke: rgba(200, 157, 75, 0.48);
-	stroke-width: 2.4;
+	stroke: rgba(200, 157, 75, 0.52);
+	stroke-width: 2.3;
 	stroke-linecap: round;
 	stroke-dasharray: 640;
 	stroke-dashoffset: 640;
-	animation: cover-journey-draw 1100ms cubic-bezier(0.22, 1, 0.36, 1) 420ms forwards;
+	animation: cover-journey-draw 1000ms cubic-bezier(0.22, 1, 0.36, 1) 280ms forwards;
 	transition:
 		stroke var(--ui-duration-page) var(--ui-ease),
 		opacity var(--ui-duration-page) var(--ui-ease);
 }
 
 .cover-journey-overlay.is-warmed .cover-journey-stroke {
-	stroke: rgba(214, 165, 74, 0.78);
-	animation: cover-journey-draw 1200ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+	stroke: rgba(214, 165, 74, 0.8);
+	animation: cover-journey-draw 1100ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
 }
 
 @keyframes cover-journey-draw {
 	from {
 		stroke-dashoffset: 640;
-		opacity: 0.1;
+		opacity: 0.15;
 	}
 	to {
 		stroke-dashoffset: 0;
 		opacity: 0.85;
-	}
-}
-
-.cover-foreground-leaves {
-	z-index: 3;
-}
-
-.cover-leaf path {
-	fill: rgba(200, 157, 75, 0.62);
-	stroke: rgba(23, 23, 23, 0.55);
-	stroke-width: 1.25;
-	stroke-linejoin: round;
-}
-
-.cover-leaf-1 path {
-	animation: cover-leaf-drift 9.5s ease-in-out infinite;
-}
-
-.cover-leaf-2 path {
-	animation: cover-leaf-drift 11.5s ease-in-out 2.4s infinite;
-}
-
-.cover-leaf-3 path {
-	animation: cover-leaf-drift 13s ease-in-out 5.1s infinite;
-}
-
-@keyframes cover-leaf-drift {
-	0%,
-	100% {
-		transform: translate(0, 0) rotate(0deg);
-	}
-	50% {
-		transform: translate(9px, -7px) rotate(11deg);
 	}
 }
 
@@ -430,7 +574,7 @@
 	pointer-events: none;
 }
 
-/* Interactive full-plate toggle button (natural pointer, never crosshair) */
+/* Full-plate click surface */
 .cover-plate-surface-btn {
 	position: absolute;
 	inset: 0;
@@ -446,14 +590,14 @@
 	outline-offset: -4px;
 }
 
-/* Sun / Moon natural focal button */
+/* Sun / Moon focal trigger — soft luminous halo (no mechanical dashed box on click) */
 .cover-celestial-trigger {
 	position: absolute;
 	left: var(--sun-x, 43.7%);
 	top: var(--sun-y, 30.8%);
 	transform: translate(-50%, -50%);
-	width: 68px;
-	height: 68px;
+	width: 78px;
+	height: 78px;
 	border-radius: 9999px;
 	border: 0;
 	padding: 0;
@@ -464,25 +608,30 @@
 	place-items: center;
 }
 
-.cover-celestial-ring {
+.cover-celestial-trigger:focus-visible {
+	outline: 2px solid var(--bronze);
+	outline-offset: 4px;
+}
+
+.cover-celestial-halo {
 	width: 100%;
 	height: 100%;
 	border-radius: 9999px;
-	border: 1px dashed rgba(200, 157, 75, 0);
+	border: 1px solid rgba(200, 157, 75, 0);
+	box-shadow: 0 0 0 0 rgba(200, 157, 75, 0);
 	transition:
 		border-color var(--ui-duration-control) var(--ui-ease),
-		transform var(--ui-duration-control) var(--ui-ease),
-		background-color var(--ui-duration-control) var(--ui-ease);
+		box-shadow var(--ui-duration-page) var(--ui-ease),
+		transform var(--ui-duration-control) var(--ui-ease);
 }
 
-.cover-celestial-trigger:hover .cover-celestial-ring,
-.cover-celestial-trigger:focus-visible .cover-celestial-ring {
-	border-color: rgba(214, 173, 99, 0.72);
-	background-color: rgba(214, 173, 99, 0.08);
-	transform: scale(1.08);
+.cover-celestial-trigger:hover .cover-celestial-halo {
+	border-color: rgba(208, 162, 82, 0.42);
+	box-shadow: 0 0 24px 2px rgba(214, 173, 99, 0.22);
+	transform: scale(1.06);
 }
 
-/* ── Quiet Marginalia Hotspots (Both Dawn & Night, Native <details>) ────── */
+/* ── Editorial Asterisk Marginalia Markers (✦) — Readable in BOTH Modes ──── */
 .cover-marginalia {
 	position: absolute;
 	z-index: 15;
@@ -491,14 +640,17 @@
 		top 500ms var(--ui-ease);
 }
 
-/* Dawn: rests gently beside the explorer on the cliff; Night: sits on the guiding star */
+/* Dawn: sits gracefully beside the explorer on the cliff; Night: sits on the guiding star */
 .cover-marginalia-person {
 	left: 29.5%;
 	top: 63.5%;
 	transform: translate(-50%, -50%);
 }
 
-.book-cover[data-atmosphere='night'] .cover-marginalia-person {
+.book-cover[data-atmosphere='night'] .cover-marginalia-person,
+html[data-cover-atmosphere='night']
+	.book-cover:not([data-atmosphere-ready='true'])
+	.cover-marginalia-person {
 	left: 80.6%;
 	top: 20.4%;
 }
@@ -524,42 +676,57 @@
 	display: none;
 }
 
-.cover-marginalia-glyph {
-	width: 7px;
-	height: 7px;
+.cover-marginalia-seal {
+	width: 22px;
+	height: 22px;
 	border-radius: 9999px;
-	border: 1px solid var(--bronze);
-	background: rgba(200, 157, 75, 0.34);
-	box-shadow: 0 0 0 5px rgba(118, 86, 37, 0.09);
+	display: grid;
+	place-items: center;
+	font-size: 0.75rem;
+	line-height: 1;
+	color: var(--bronze);
+	background: rgba(248, 247, 244, 0.9);
+	border: 1px solid rgba(118, 86, 37, 0.44);
+	box-shadow: 0 0 0 4px rgba(118, 86, 37, 0.08);
 	transition:
 		transform var(--ui-duration-hover) var(--ui-ease),
 		background-color var(--ui-duration-hover) var(--ui-ease),
+		color var(--ui-duration-hover) var(--ui-ease),
 		box-shadow var(--ui-duration-control) var(--ui-ease);
 }
 
-.book-cover[data-atmosphere='night'] .cover-marginalia-glyph {
-	border-color: rgba(236, 204, 134, 0.88);
-	background: rgba(240, 212, 146, 0.45);
-	box-shadow: 0 0 0 6px rgba(230, 196, 124, 0.14);
+.book-cover[data-atmosphere='night'] .cover-marginalia-seal,
+html[data-cover-atmosphere='night']
+	.book-cover:not([data-atmosphere-ready='true'])
+	.cover-marginalia-seal {
+	color: #f0cf88;
+	background: rgba(14, 24, 37, 0.88);
+	border-color: rgba(232, 198, 130, 0.56);
+	box-shadow: 0 0 0 4px rgba(232, 198, 130, 0.14);
 }
 
-.cover-marginalia-dot:hover .cover-marginalia-glyph,
-.cover-marginalia[open] .cover-marginalia-glyph {
-	transform: scale(1.3);
+.cover-marginalia-dot:hover .cover-marginalia-seal,
+.cover-marginalia[open] .cover-marginalia-seal {
+	transform: scale(1.14);
 	background: var(--bronze);
-	box-shadow: 0 0 0 8px rgba(200, 157, 75, 0.22);
+	color: #fffcf7;
+	border-color: var(--bronze);
+	box-shadow: 0 0 0 7px rgba(200, 157, 75, 0.22);
+}
+
+.book-cover[data-atmosphere='night'] .cover-marginalia-dot:hover .cover-marginalia-seal,
+.book-cover[data-atmosphere='night'] .cover-marginalia[open] .cover-marginalia-seal {
+	color: #0d1622;
 }
 
 .cover-marginalia-slip {
 	position: absolute;
-	top: calc(100% + 4px);
-	left: 0;
 	min-width: 224px;
 	max-width: 268px;
 	padding: 12px 15px;
 	border-radius: var(--radius-sm);
 	border: 1px solid var(--hairline);
-	background: rgba(255, 252, 247, 0.96);
+	background: rgba(255, 252, 247, 0.97);
 	color: var(--ink);
 	box-shadow: var(--shadow-md);
 	backdrop-filter: blur(8px);
@@ -604,7 +771,7 @@
 .cover-marginalia-link {
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
+	gap: 6px;
 	font-size: 0.8125rem;
 	font-weight: 500;
 	color: var(--bronze);
@@ -628,15 +795,16 @@
 	transform: translateX(3px);
 }
 
-/* ── Archival Bookplate Caption Bar (Below the frame — never overlaps art) ─ */
+/* ── Archival Bookplate Caption Bar & Mobile Docked Footnote ─────────────── */
 .cover-plate-bar {
 	width: 100%;
 	max-width: calc(min(68svh, 620px) * 1.2);
+	min-height: 44px;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 16px;
-	padding-top: 10px;
+	padding-top: 8px;
 	font-size: 0.8125rem;
 	color: var(--ink-secondary);
 }
@@ -675,6 +843,48 @@
 	color: var(--bronze);
 	font-size: 0.9375rem;
 	line-height: 1;
+}
+
+.cover-docked-note {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 6px 12px;
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--hairline);
+	background: color-mix(in srgb, var(--surface-elevated, var(--paper)) 92%, transparent);
+	animation: cover-whisper-in var(--ui-duration-control) var(--ui-ease) both;
+}
+
+.cover-docked-text {
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-size: 0.8125rem;
+	line-height: 1.4;
+	color: var(--ink);
+	text-align: left;
+}
+
+.cover-docked-actions {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+.cover-docked-close {
+	appearance: none;
+	border: 0;
+	background: transparent;
+	color: var(--ink-secondary);
+	font-size: 1rem;
+	line-height: 1;
+	min-width: 28px;
+	min-height: 28px;
+	cursor: pointer;
+	display: grid;
+	place-items: center;
 }
 
 /* ── Responsive Adjustments (Desktop Short, Tablet, Mobile) ──────────────── */
@@ -730,13 +940,24 @@
 		max-width: 100%;
 	}
 
-	/* Strict 4:5 aspect ratio matching 819x1023 portrait artwork -> zero cropped legs/cliff! */
+	/* Strict 4:5 aspect ratio matching 819x1023 portrait artwork -> zero cropped legs/cliff */
 	.cover-plate-frame {
 		aspect-ratio: 4 / 5;
 		width: min(74vw, 312px, calc((100svh - 420px) * 0.8));
 		min-width: 168px;
 		max-height: none;
 		max-width: 320px;
+		transition: width var(--ui-duration-control) var(--ui-ease);
+	}
+
+	/* Keep Mở mục lục visible inside 390x844 even when a longer author whisper opens */
+	.book-cover[data-whisper-open='true'] .cover-composition {
+		gap: 10px;
+		padding-block: 8px 16px;
+	}
+
+	.book-cover[data-whisper-open='true'] .cover-plate-frame {
+		width: min(58vw, 232px, calc((100svh - 490px) * 0.8));
 	}
 
 	.cover-plate-img {
@@ -744,9 +965,9 @@
 	}
 
 	.cover-plate-bar {
-		width: min(74vw, 312px, calc((100svh - 420px) * 0.8));
-		min-width: 240px;
-		max-width: 320px;
+		width: min(88vw, 340px);
+		min-width: 0;
+		max-width: 340px;
 		justify-content: center;
 		padding-top: 4px;
 	}
@@ -755,16 +976,21 @@
 		display: none;
 	}
 
+	/* When JS is active on mobile/tablet, marginalia docks cleanly below the frame (never covers art) */
+	.book-cover[data-js='true'] .cover-marginalia-slip {
+		display: none;
+	}
+
 	.book-cover .cover-author {
 		margin-bottom: 6px;
 	}
 
 	.book-cover .cover-narrative {
-		margin-top: 14px;
+		margin-top: 12px;
 	}
 
 	.book-cover .cover-cta {
-		margin-top: 14px;
+		margin-top: 12px;
 	}
 
 	.cover-marginalia-person {
@@ -772,7 +998,10 @@
 		top: 69%;
 	}
 
-	.book-cover[data-atmosphere='night'] .cover-marginalia-person {
+	.book-cover[data-atmosphere='night'] .cover-marginalia-person,
+	html[data-cover-atmosphere='night']
+		.book-cover:not([data-atmosphere-ready='true'])
+		.cover-marginalia-person {
 		left: 76.2%;
 		top: 11.2%;
 	}
@@ -782,20 +1011,26 @@
 		top: 69%;
 	}
 
-	.cover-marginalia-slip {
-		min-width: 196px;
-		max-width: 236px;
-	}
-
-	.cover-marginalia-journey .cover-marginalia-slip {
-		left: auto;
-		right: 0;
-		transform: none;
-	}
-
 	.cover-whisper {
+		margin-top: 10px;
 		margin-inline: auto;
 		text-align: left;
+		max-width: 34ch;
+	}
+
+	.cover-whisper-text {
+		font-size: 0.875rem;
+		line-height: 1.45;
+	}
+}
+
+@media (max-width: 639px) {
+	/* Clean two-item mobile header: Duy Khánh left, account chip right (zero collision) */
+	.book-cover .cover-meta {
+		grid-template-columns: 1fr auto;
+	}
+	.book-cover .cover-colophon {
+		display: none;
 	}
 }
 
@@ -807,7 +1042,7 @@
 	.cover-plate-bar {
 		width: auto;
 		min-width: 0;
-		max-width: 100%;
+		max-width: 360px;
 		justify-content: center;
 		gap: 20px;
 	}
@@ -823,31 +1058,33 @@
 	}
 	.cover-plate-bar {
 		width: 100%;
-		min-width: 0;
 	}
 }
 
-/* Reduced motion & touch-lite safety */
+/* Reduced motion safety */
 @media (prefers-reduced-motion: reduce) {
+	html.cover-blooming::view-transition-new(root),
+	html.cover-blooming::view-transition-old(root),
 	.book-cover,
+	.cover-title-reveal,
+	.cover-plate-figure,
 	.cover-plate-frame,
 	.cover-layer-night,
 	.cover-parallax-far,
 	.cover-parallax-mid,
-	.cover-parallax-near,
 	.cover-sun-aura,
 	.cover-ink-bird,
 	.cover-journey-stroke,
-	.cover-leaf path,
 	.cover-star,
 	.cover-whisper,
-	.cover-marginalia-slip {
+	.cover-marginalia-slip,
+	.cover-docked-note,
+	.cover-settled-cursor {
 		animation: none !important;
 		transition: none !important;
 	}
 	.cover-parallax-far,
-	.cover-parallax-mid,
-	.cover-parallax-near {
+	.cover-parallax-mid {
 		transform: none !important;
 	}
 	.cover-journey-stroke {

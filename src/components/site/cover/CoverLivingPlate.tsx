@@ -28,33 +28,39 @@ import {
 	MOBILE_JOURNEY_PATH,
 	MOBILE_STARS,
 	MOBILE_SUN_POS,
+	type BloomOrigin,
 	type CoverAtmosphere,
 } from './coverAtmosphere';
 
 interface CoverLivingPlateProps {
 	atmosphere: CoverAtmosphere;
-	onToggleAtmosphere: () => void;
+	/** True when full-viewport View Transition handled the latest toggle (avoid double mask). */
+	viewTransitionActive: boolean;
+	onToggleAtmosphere: (origin: BloomOrigin) => void;
 }
 
-const REVEAL_DURATION_MS = 1250;
+const FALLBACK_REVEAL_MS = 1200;
 
 function formatPolyline(points: readonly { x: number; y: number }[]): string {
 	return points.map((p) => `${p.x},${p.y}`).join(' ');
 }
 
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
 /**
- * Living book-cover plate:
- * - Pixel-aligned Dawn & Night indigo ink-wash plates (zero X-ray inversion, zero drift).
- * - Organic rag-paper watercolor reveal mask (SVG feTurbulence + feDisplacementMap) driven
- *   from the sun/moon center or exact pointer click coordinate.
- * - 3-layer paper diorama parallax (far sky -> artwork plate -> foreground drifting leaves).
- * - Quiet life in BOTH modes (gliding ink birds, wind-reactive leaves, golden path shimmer in Dawn;
- *   twinkling starfield, magnetic constellation, soft warm lantern peek in Night).
- * - Bookplate caption bar sits cleanly below the artwork — never overlaps the illustration.
- * - Two native <details> marginalia slips (accessible without JS, Escape/outside-click close).
+ * Living archival bookplate:
+ * - Seamless cotton-paper integration (letterpress plate-mark border, multiply ink blend in Dawn,
+ *   pixel-aligned Prussian-indigo ink-wash plate in Night with zero X-ray inversion).
+ * - Full-viewport synchronized bloom origin tracking (sun/moon center or exact pointer click),
+ *   with organic SVG rag-paper watercolor mask fallback for browsers without View Transitions.
+ * - Tactile living canvas in BOTH Dawn (wind-reactive leaves, sunlit motes, road warmth, sun corona)
+ *   and Night (candlelit amber lantern, magnetic constellation, lunar corona, stardust).
+ * - Crisp editorial asterisk (`✦`) marginalia markers that float in open margin on desktop and
+ *   dock cleanly into the caption bar beneath the artwork on mobile (never obscuring the traveler).
  */
 export default function CoverLivingPlate({
 	atmosphere,
+	viewTransitionActive,
 	onToggleAtmosphere,
 }: CoverLivingPlateProps) {
 	const { allowsAmbient, reduced } = useMotionTier();
@@ -64,19 +70,23 @@ export default function CoverLivingPlate({
 	const lanternGradId = `cover-lantern-grad-${uid}`;
 
 	const frameRef = useRef<HTMLDivElement>(null);
+	const celestialRef = useRef<HTMLButtonElement>(null);
 	const personNoteRef = useRef<HTMLDetailsElement>(null);
 	const journeyNoteRef = useRef<HTMLDetailsElement>(null);
 	const revealCircleRef = useRef<SVGCircleElement>(null);
 	const tweenRafRef = useRef<number | null>(null);
 	const prevAtmosphereRef = useRef<CoverAtmosphere>(atmosphere);
-	const pendingOriginRef = useRef<{ x: number; y: number } | null>(null);
+	const pendingOriginRef = useRef<BloomOrigin | null>(null);
+	const lastPointerRef = useRef<{ x: number; y: number; time: number } | null>(null);
 	const pulseCounterRef = useRef(0);
+	const mountedRef = useRef(false);
 
 	const [isDesktop, setIsDesktop] = useState(true);
 	const [boxSize, setBoxSize] = useState<{ w: number; h: number }>({ w: 720, h: 600 });
-	const [isTransitioning, setIsTransitioning] = useState(false);
+	const [isFallbackTransitioning, setIsFallbackTransitioning] = useState(false);
 	const [pathWarmed, setPathWarmed] = useState(false);
-	const [pointer, setPointer] = useState({ x: 0.5, y: 0.5, active: false });
+	const [hasInteracted, setHasInteracted] = useState(false);
+	const [pointer, setPointer] = useState({ x: 0.5, y: 0.5, vx: 0, vy: 0, active: false });
 	const [gaze, setGaze] = useState({ x: 0, y: 0 });
 	const [pulse, setPulse] = useState<TransitionPulse | null>(null);
 	const [openNote, setOpenNote] = useState<'person' | 'journey' | null>(null);
@@ -104,26 +114,31 @@ export default function CoverLivingPlate({
 		return () => observer.disconnect();
 	}, []);
 
-	// Close marginalia slips on Escape or outside pointer click
+	const closeAllNotes = useCallback(() => {
+		if (personNoteRef.current) personNoteRef.current.open = false;
+		if (journeyNoteRef.current) journeyNoteRef.current.open = false;
+		setOpenNote(null);
+	}, []);
+
+	// Close marginalia on Escape or outside pointer click
 	useEffect(() => {
 		if (!openNote) return;
-		const closeAll = () => {
-			if (personNoteRef.current) personNoteRef.current.open = false;
-			if (journeyNoteRef.current) journeyNoteRef.current.open = false;
-			setOpenNote(null);
-		};
 		const onKeyDown = (event: KeyboardEvent) => {
 			if (event.key !== 'Escape') return;
 			const activeEl = openNote === 'person' ? personNoteRef.current : journeyNoteRef.current;
-			closeAll();
+			closeAllNotes();
 			activeEl?.querySelector('summary')?.focus();
 		};
 		const onPointerDown = (event: PointerEvent) => {
 			const target = event.target as Node;
-			if (personNoteRef.current?.contains(target) || journeyNoteRef.current?.contains(target)) {
+			if (
+				personNoteRef.current?.contains(target) ||
+				journeyNoteRef.current?.contains(target) ||
+				(target instanceof Element && target.closest('.cover-docked-note'))
+			) {
 				return;
 			}
-			closeAll();
+			closeAllNotes();
 		};
 		document.addEventListener('keydown', onKeyDown);
 		document.addEventListener('pointerdown', onPointerDown);
@@ -131,38 +146,41 @@ export default function CoverLivingPlate({
 			document.removeEventListener('keydown', onKeyDown);
 			document.removeEventListener('pointerdown', onPointerDown);
 		};
-	}, [openNote]);
+	}, [closeAllNotes, openNote]);
 
-	const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-
-	// Organic watercolor reveal tween when atmosphere flips (layout effect prevents any 1-frame snap)
+	// Synchronize initial mounted atmosphere & run organic SVG fallback reveal only if needed
 	useIsoLayoutEffect(() => {
+		if (!mountedRef.current) {
+			mountedRef.current = true;
+			prevAtmosphereRef.current = atmosphere;
+			return;
+		}
 		const prev = prevAtmosphereRef.current;
 		if (prev === atmosphere) return;
 		prevAtmosphereRef.current = atmosphere;
 
-		if (tweenRafRef.current) cancelAnimationFrame(tweenRafRef.current);
+		setPathWarmed(atmosphere === 'dawn');
 
-		const desktopNow = window.matchMedia('(min-width: 1024px)').matches;
-		const sunPos = desktopNow ? DESKTOP_SUN_POS : MOBILE_SUN_POS;
-		const origin = pendingOriginRef.current ?? { x: sunPos.x / 100, y: sunPos.y / 100 };
-		pendingOriginRef.current = null;
-
-		if (reduced) {
-			if (revealCircleRef.current) {
-				revealCircleRef.current.setAttribute('r', '0');
-			}
-			setIsTransitioning(false);
+		// When the user's initial pre-paint bootstrap synced state, or View Transitions is animating,
+		// skip the redundant plate-only mask wipe so the whole screen blooms cleanly once.
+		if (reduced || viewTransitionActive || !pendingOriginRef.current) {
+			if (revealCircleRef.current) revealCircleRef.current.setAttribute('r', '0');
+			setIsFallbackTransitioning(false);
 			setPulse(null);
+			pendingOriginRef.current = null;
 			return;
 		}
+
+		if (tweenRafRef.current) cancelAnimationFrame(tweenRafRef.current);
+
+		const origin = pendingOriginRef.current;
+		pendingOriginRef.current = null;
 
 		const frameRect = frameRef.current?.getBoundingClientRect();
 		const w = frameRect?.width ? Math.round(frameRect.width) : 720;
 		const h = frameRect?.height ? Math.round(frameRect.height) : 600;
-		const ox = origin.x * w;
-		const oy = origin.y * h;
-		// Exact distance to the farthest corner from origin + displacement margin
+		const ox = origin.plateX * w;
+		const oy = origin.plateY * h;
 		const maxR =
 			Math.max(
 				Math.hypot(ox, oy),
@@ -171,9 +189,7 @@ export default function CoverLivingPlate({
 				Math.hypot(w - ox, h - oy),
 			) + 52;
 		const startTime = performance.now();
-		const durationMs = REVEAL_DURATION_MS;
 
-		// Synchronously prime the SVG reveal circle before first paint to prevent any 1-frame snap
 		const initialCircle = revealCircleRef.current;
 		if (initialCircle) {
 			initialCircle.setAttribute('cx', ox.toFixed(1));
@@ -181,23 +197,21 @@ export default function CoverLivingPlate({
 			initialCircle.setAttribute('r', atmosphere === 'dawn' ? '0' : maxR.toFixed(1));
 		}
 
-		setIsTransitioning(true);
-		setPathWarmed(atmosphere === 'dawn');
+		setIsFallbackTransitioning(true);
 		pulseCounterRef.current += 1;
 		setPulse({
 			id: pulseCounterRef.current,
 			from: prev,
 			to: atmosphere,
-			originX: origin.x,
-			originY: origin.y,
+			originX: origin.plateX,
+			originY: origin.plateY,
 			startTime,
-			durationMs,
+			durationMs: FALLBACK_REVEAL_MS,
 		});
 
 		const step = (now: number) => {
-			const rawT = (now - startTime) / durationMs;
+			const rawT = (now - startTime) / FALLBACK_REVEAL_MS;
 			const t = Math.min(Math.max(rawT, 0), 1);
-			// Graceful S-curve so the watercolor rag-paper edge blooms visibly across the scene
 			const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 			const radius = atmosphere === 'dawn' ? eased * maxR : (1 - eased) * maxR;
 
@@ -215,7 +229,7 @@ export default function CoverLivingPlate({
 				if (atmosphere === 'night' && circle) {
 					circle.setAttribute('r', '0');
 				}
-				setIsTransitioning(false);
+				setIsFallbackTransitioning(false);
 				setPulse(null);
 			}
 		};
@@ -224,29 +238,67 @@ export default function CoverLivingPlate({
 		return () => {
 			if (tweenRafRef.current) cancelAnimationFrame(tweenRafRef.current);
 		};
-	}, [atmosphere, reduced]);
+	}, [atmosphere, reduced, viewTransitionActive]);
+
+	const computeSunOrigin = useCallback((): BloomOrigin => {
+		const desktopNow =
+			typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)').matches : isDesktop;
+		const sunPos = desktopNow ? DESKTOP_SUN_POS : MOBILE_SUN_POS;
+		const btnRect = celestialRef.current?.getBoundingClientRect();
+		if (btnRect && btnRect.width > 0) {
+			return {
+				clientX: Math.round(btnRect.left + btnRect.width / 2),
+				clientY: Math.round(btnRect.top + btnRect.height / 2),
+				plateX: sunPos.x / 100,
+				plateY: sunPos.y / 100,
+			};
+		}
+		const frameRect = frameRef.current?.getBoundingClientRect();
+		if (frameRect && frameRect.width > 0) {
+			return {
+				clientX: Math.round(frameRect.left + (sunPos.x / 100) * frameRect.width),
+				clientY: Math.round(frameRect.top + (sunPos.y / 100) * frameRect.height),
+				plateX: sunPos.x / 100,
+				plateY: sunPos.y / 100,
+			};
+		}
+		return {
+			clientX: 720,
+			clientY: 320,
+			plateX: sunPos.x / 100,
+			plateY: sunPos.y / 100,
+		};
+	}, [isDesktop]);
 
 	const triggerFromSun = useCallback(() => {
-		const sunPos = isDesktop ? DESKTOP_SUN_POS : MOBILE_SUN_POS;
-		pendingOriginRef.current = { x: sunPos.x / 100, y: sunPos.y / 100 };
-		onToggleAtmosphere();
-	}, [isDesktop, onToggleAtmosphere]);
+		setHasInteracted(true);
+		const origin = computeSunOrigin();
+		pendingOriginRef.current = origin;
+		onToggleAtmosphere(origin);
+	}, [computeSunOrigin, onToggleAtmosphere]);
 
 	const handlePlateClick = useCallback(
 		(event: MouseEvent<HTMLButtonElement>) => {
+			setHasInteracted(true);
 			const frame = frameRef.current;
+			let origin: BloomOrigin;
 			if (frame && event.detail > 0) {
 				const rect = frame.getBoundingClientRect();
 				const nx = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0.05), 0.95);
 				const ny = Math.min(Math.max((event.clientY - rect.top) / rect.height, 0.05), 0.95);
-				pendingOriginRef.current = { x: nx, y: ny };
+				origin = {
+					clientX: Math.round(event.clientX),
+					clientY: Math.round(event.clientY),
+					plateX: nx,
+					plateY: ny,
+				};
 			} else {
-				const sunPos = isDesktop ? DESKTOP_SUN_POS : MOBILE_SUN_POS;
-				pendingOriginRef.current = { x: sunPos.x / 100, y: sunPos.y / 100 };
+				origin = computeSunOrigin();
 			}
-			onToggleAtmosphere();
+			pendingOriginRef.current = origin;
+			onToggleAtmosphere(origin);
 		},
-		[isDesktop, onToggleAtmosphere],
+		[computeSunOrigin, onToggleAtmosphere],
 	);
 
 	const handlePointerMove = useCallback(
@@ -255,18 +307,32 @@ export default function CoverLivingPlate({
 			const rect = frameRef.current.getBoundingClientRect();
 			const nx = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1);
 			const ny = Math.min(Math.max((event.clientY - rect.top) / rect.height, 0), 1);
-			setPointer({ x: nx, y: ny, active: true });
+
+			const now = performance.now();
+			const prev = lastPointerRef.current;
+			let vx = 0;
+			let vy = 0;
+			if (prev) {
+				const dt = Math.max((now - prev.time) / 1000, 0.008);
+				vx = Math.max(-900, Math.min(900, (event.clientX - prev.x) / dt));
+				vy = Math.max(-900, Math.min(900, (event.clientY - prev.y) / dt));
+			}
+			lastPointerRef.current = { x: event.clientX, y: event.clientY, time: now };
+
+			setPointer({ x: nx, y: ny, vx, vy, active: true });
 			setGaze({ x: (nx - 0.5) * 2, y: (ny - 0.5) * 2 });
 		},
 		[allowsAmbient],
 	);
 
 	const handlePointerLeave = useCallback(() => {
-		setPointer((prev) => ({ ...prev, active: false }));
+		lastPointerRef.current = null;
+		setPointer((prev) => ({ ...prev, vx: 0, vy: 0, active: false }));
 		setGaze({ x: 0, y: 0 });
 	}, []);
 
 	const handleNoteToggle = (which: 'person' | 'journey', nextOpen: boolean) => {
+		setHasInteracted(true);
 		if (nextOpen) {
 			const other = which === 'person' ? journeyNoteRef.current : personNoteRef.current;
 			if (other) other.open = false;
@@ -313,9 +379,9 @@ export default function CoverLivingPlate({
 	const journeyPath = isDesktop ? DESKTOP_JOURNEY_PATH : MOBILE_JOURNEY_PATH;
 	const sunPos = isDesktop ? DESKTOP_SUN_POS : MOBILE_SUN_POS;
 
-	const showNightLayer = atmosphere === 'night' || isTransitioning;
+	const showNightLayer = atmosphere === 'night' || isFallbackTransitioning;
 	const nightMaskActive =
-		isTransitioning || (atmosphere === 'night' && allowsAmbient && pointer.active);
+		isFallbackTransitioning || (atmosphere === 'night' && allowsAmbient && pointer.active);
 
 	const stageVars = {
 		'--gaze-x': gaze.x.toFixed(3),
@@ -331,13 +397,28 @@ export default function CoverLivingPlate({
 	const toggleLabel = atmosphere === 'night' ? 'Chạm để gọi bình minh' : 'Chạm để gọi đêm sao';
 	const plateStatus = atmosphere === 'night' ? 'Đêm sao · Hà Nội' : 'Bình minh · Hà Nội';
 
+	const dockedNote =
+		!isDesktop && openNote
+			? openNote === 'person'
+				? {
+						text: introPage.marginalia.person.note,
+						href: routes.contact,
+						linkLabel: introPage.marginalia.person.linkLabel,
+					}
+				: {
+						text: introPage.marginalia.journey.note,
+						href: routes.learnCourses,
+						linkLabel: introPage.marginalia.journey.linkLabel,
+					}
+			: null;
+
 	return (
 		<figure className="cover-plate-figure" style={stageVars}>
 			<div
 				ref={frameRef}
 				className="cover-plate-frame"
 				data-atmosphere={atmosphere}
-				data-transitioning={isTransitioning ? 'true' : undefined}
+				data-transitioning={isFallbackTransitioning ? 'true' : undefined}
 				onMouseMove={allowsAmbient ? handlePointerMove : undefined}
 				onMouseLeave={allowsAmbient ? handlePointerLeave : undefined}
 			>
@@ -382,7 +463,10 @@ export default function CoverLivingPlate({
 							height={boxSize.h}
 						>
 							<rect width={boxSize.w} height={boxSize.h} fill="white" />
-							{atmosphere === 'night' && !isTransitioning && allowsAmbient && pointer.active ? (
+							{atmosphere === 'night' &&
+							!isFallbackTransitioning &&
+							allowsAmbient &&
+							pointer.active ? (
 								<circle cx={lanternX} cy={lanternY} r={lanternR} fill={`url(#${lanternGradId})`} />
 							) : null}
 							<circle
@@ -397,7 +481,7 @@ export default function CoverLivingPlate({
 					</defs>
 				</svg>
 
-				{/* Layer 1: Warm Dawn artwork plate + quiet living dawn overlays */}
+				{/* Layer 1: Warm Dawn archival ink-wash plate + quiet living dawn overlays */}
 				<div className="cover-layer-dawn">
 					<div className="cover-parallax-mid">
 						<picture>
@@ -409,7 +493,7 @@ export default function CoverLivingPlate({
 							<img
 								{...dawnMobile}
 								alt={introPage.desktopImage.alt}
-								className="cover-plate-img intro-image-treatment"
+								className="cover-plate-img cover-plate-img-dawn intro-image-treatment"
 							/>
 						</picture>
 					</div>
@@ -448,40 +532,13 @@ export default function CoverLivingPlate({
 					>
 						<path className="cover-journey-stroke" d={journeyPath} />
 					</svg>
-
-					{/* Near foreground layer (1.75x parallax): subtle wind-reactive ochre autumn leaves */}
-					<svg
-						className="cover-foreground-leaves cover-parallax-near"
-						viewBox="0 0 1000 1000"
-						preserveAspectRatio="none"
-						aria-hidden="true"
-					>
-						<g
-							className="cover-leaf cover-leaf-1"
-							transform={isDesktop ? 'translate(612, 818)' : 'translate(744, 836)'}
-						>
-							<path d="M 0 0 C 7 -5, 16 -4, 21 2 C 14 7, 5 6, 0 0 Z" />
-						</g>
-						<g
-							className="cover-leaf cover-leaf-2"
-							transform={isDesktop ? 'translate(696, 868)' : 'translate(838, 862)'}
-						>
-							<path d="M 0 0 C 5 -4, 13 -3, 17 2 C 11 6, 4 5, 0 0 Z" />
-						</g>
-						<g
-							className="cover-leaf cover-leaf-3"
-							transform={isDesktop ? 'translate(546, 898)' : 'translate(674, 912)'}
-						>
-							<path d="M 0 0 C 6 -4, 14 -2, 18 3 C 12 6, 4 5, 0 0 Z" />
-						</g>
-					</svg>
 				</div>
 
-				{/* Layer 2: Nocturnal Indigo ink-wash plate masked by organic watercolor bleed */}
+				{/* Layer 2: Nocturnal Prussian-indigo ink-wash plate */}
 				<div
 					className="cover-layer-night"
+					data-visible={showNightLayer ? 'true' : undefined}
 					style={{
-						opacity: showNightLayer ? 1 : 0,
 						mask: nightMaskActive ? `url(#${maskId})` : undefined,
 						WebkitMask: nightMaskActive ? `url(#${maskId})` : undefined,
 					}}
@@ -498,7 +555,7 @@ export default function CoverLivingPlate({
 						</picture>
 					</div>
 
-					{/* Far sky layer (0.35x parallax): serene celestial arc, twinkling stars, constellation */}
+					{/* Far sky layer (0.35x parallax): celestial arc, twinkling stars, constellation */}
 					<svg
 						className="cover-night-sky cover-parallax-far"
 						viewBox="0 0 1000 1000"
@@ -528,7 +585,7 @@ export default function CoverLivingPlate({
 					</svg>
 				</div>
 
-				{/* Subtle antique paper texture + atmospheric watercolor frontier canvas */}
+				{/* Subtle rag-paper texture + living tactile physics canvas */}
 				<div className="intro-noise-overlay" aria-hidden="true" />
 				<CoverAtmosphereCanvas
 					atmosphere={atmosphere}
@@ -537,9 +594,10 @@ export default function CoverLivingPlate({
 					reduced={reduced}
 					pointer={pointer}
 					pulse={pulse}
+					hasInteracted={hasInteracted}
 				/>
 
-				{/* Full-plate quiet click surface (natural cursor, toggles Dawn <-> Night from touch point) */}
+				{/* Full-plate click surface */}
 				<button
 					type="button"
 					className="cover-plate-surface-btn"
@@ -549,8 +607,9 @@ export default function CoverLivingPlate({
 					data-testid="cover-plate-toggle"
 				/>
 
-				{/* Natural focal point: sun/moon disc trigger with whisper-soft breathing halo */}
+				{/* Natural focal point: sun/moon disc trigger */}
 				<button
+					ref={celestialRef}
 					type="button"
 					className="cover-celestial-trigger"
 					onClick={triggerFromSun}
@@ -561,10 +620,10 @@ export default function CoverLivingPlate({
 					}
 					title={toggleLabel}
 				>
-					<span className="cover-celestial-ring" aria-hidden="true" />
+					<span className="cover-celestial-halo" aria-hidden="true" />
 				</button>
 
-				{/* Quiet marginalia hotspot 1: Explorer / Guiding star -> Về tôi */}
+				{/* Editorial marginalia 1: Explorer / Guiding star -> Về tôi */}
 				<details
 					ref={personNoteRef}
 					className="cover-marginalia cover-marginalia-person"
@@ -575,7 +634,9 @@ export default function CoverLivingPlate({
 						aria-label={introPage.marginalia.person.triggerLabel}
 						title={introPage.marginalia.person.triggerLabel}
 					>
-						<span className="cover-marginalia-glyph" aria-hidden="true" />
+						<span className="cover-marginalia-seal" aria-hidden="true">
+							✦
+						</span>
 					</summary>
 					<div className="cover-marginalia-slip" role="note">
 						<p>{introPage.marginalia.person.note}</p>
@@ -586,7 +647,7 @@ export default function CoverLivingPlate({
 					</div>
 				</details>
 
-				{/* Quiet marginalia hotspot 2: Winding mountain path -> Học tập */}
+				{/* Editorial marginalia 2: Winding mountain path -> Học tập */}
 				<details
 					ref={journeyNoteRef}
 					className="cover-marginalia cover-marginalia-journey"
@@ -597,7 +658,9 @@ export default function CoverLivingPlate({
 						aria-label={introPage.marginalia.journey.triggerLabel}
 						title={introPage.marginalia.journey.triggerLabel}
 					>
-						<span className="cover-marginalia-glyph" aria-hidden="true" />
+						<span className="cover-marginalia-seal" aria-hidden="true">
+							✦
+						</span>
 					</summary>
 					<div className="cover-marginalia-slip" role="note">
 						<p>{introPage.marginalia.journey.note}</p>
@@ -609,21 +672,43 @@ export default function CoverLivingPlate({
 				</details>
 			</div>
 
-			{/* Archival bookplate caption bar below the artwork (never overlaps the drawing) */}
+			{/* Archival bookplate caption bar below the artwork (doubles as docked mobile footnote slot) */}
 			<figcaption className="cover-plate-bar">
-				<span className="cover-plate-status">{plateStatus}</span>
-				<button
-					type="button"
-					className="cover-atmosphere-toggle"
-					onClick={triggerFromSun}
-					aria-pressed={atmosphere === 'night'}
-					data-testid="cover-atmosphere-toggle"
-				>
-					<span className="cover-atmosphere-icon" aria-hidden="true">
-						{atmosphere === 'night' ? '☼' : '☾'}
-					</span>
-					<span>{toggleLabel}</span>
-				</button>
+				{dockedNote ? (
+					<div className="cover-docked-note" role="note" data-testid="cover-docked-note">
+						<span className="cover-docked-text">{dockedNote.text}</span>
+						<div className="cover-docked-actions">
+							<Link href={dockedNote.href} className="cover-marginalia-link">
+								{dockedNote.linkLabel}
+								<span aria-hidden="true">→</span>
+							</Link>
+							<button
+								type="button"
+								className="cover-docked-close"
+								onClick={closeAllNotes}
+								aria-label="Đóng ghi chú"
+							>
+								×
+							</button>
+						</div>
+					</div>
+				) : (
+					<>
+						<span className="cover-plate-status">{plateStatus}</span>
+						<button
+							type="button"
+							className="cover-atmosphere-toggle"
+							onClick={triggerFromSun}
+							aria-pressed={atmosphere === 'night'}
+							data-testid="cover-atmosphere-toggle"
+						>
+							<span className="cover-atmosphere-icon" aria-hidden="true">
+								{atmosphere === 'night' ? '☼' : '☾'}
+							</span>
+							<span>{toggleLabel}</span>
+						</button>
+					</>
+				)}
 			</figcaption>
 		</figure>
 	);

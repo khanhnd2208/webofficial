@@ -1,8 +1,17 @@
 export type CoverAtmosphere = 'dawn' | 'night';
 
+export interface BloomOrigin {
+	/** Viewport coordinates (for full-screen View Transition bloom). */
+	clientX: number;
+	clientY: number;
+	/** Normalized 0..1 plate coordinates (for SVG fallback & canvas frontier). */
+	plateX: number;
+	plateY: number;
+}
+
 export const COVER_ATMOSPHERE_STORAGE_KEY = 'dk-cover-atmosphere-v1';
 
-/** Hours 06:00–17:59 open in warm Dawn paper; 18:00–05:59 settle into serene Night indigo. */
+/** Hours 06:00–17:59 open in warm Dawn paper; 18:00–05:59 open in serene Night indigo. */
 export function resolveTimeAtmosphere(date: Date = new Date()): CoverAtmosphere {
 	const hour = date.getHours();
 	return hour >= 6 && hour < 18 ? 'dawn' : 'night';
@@ -31,6 +40,16 @@ export function writeStoredAtmosphere(atmosphere: CoverAtmosphere): void {
 	}
 }
 
+export function readInitialClientAtmosphere(): CoverAtmosphere {
+	if (typeof window === 'undefined') return 'dawn';
+	const fromDataset = parseAtmosphereParam(document.documentElement.dataset.coverAtmosphere);
+	if (fromDataset) return fromDataset;
+	const params = new URLSearchParams(window.location.search);
+	return (
+		parseAtmosphereParam(params.get('mode')) ?? readStoredAtmosphere() ?? resolveTimeAtmosphere()
+	);
+}
+
 export interface CoverStar {
 	x: number;
 	y: number;
@@ -38,6 +57,15 @@ export interface CoverStar {
 	opacity: number;
 	delaySec: number;
 	constellation?: boolean;
+}
+
+export interface CoverLeafAnchor {
+	/** Normalized 0..1 coordinates inside the artwork plate. */
+	x: number;
+	y: number;
+	size: number;
+	baseAngle: number;
+	phase: number;
 }
 
 /**
@@ -114,3 +142,27 @@ export const DESKTOP_JOURNEY_PATH =
 
 export const MOBILE_JOURNEY_PATH =
 	'M 732 586 C 756 604, 796 618, 774 638 C 750 658, 676 664, 704 686 C 734 708, 882 702, 846 728 C 810 754, 718 756, 676 778';
+
+/** Sampled waypoints along the desktop winding road (0..1 space) for tactile path warmth on hover. */
+export const DESKTOP_JOURNEY_POINTS: readonly { x: number; y: number }[] = [
+	{ x: 0.484, y: 0.532 },
+	{ x: 0.456, y: 0.562 },
+	{ x: 0.436, y: 0.592 },
+	{ x: 0.478, y: 0.622 },
+	{ x: 0.502, y: 0.648 },
+	{ x: 0.464, y: 0.676 },
+	{ x: 0.428, y: 0.714 },
+	{ x: 0.494, y: 0.748 },
+	{ x: 0.536, y: 0.794 },
+	{ x: 0.498, y: 0.848 },
+	{ x: 0.462, y: 0.902 },
+	{ x: 0.436, y: 0.954 },
+];
+
+/** Physics-driven autumn leaf anchors along the lower-right breeze curve (Dawn & subtle Night). */
+export const DESKTOP_LEAVES: readonly CoverLeafAnchor[] = [
+	{ x: 0.618, y: 0.818, size: 11, baseAngle: -0.42, phase: 0.2 },
+	{ x: 0.706, y: 0.862, size: 9, baseAngle: 0.35, phase: 1.9 },
+	{ x: 0.564, y: 0.896, size: 10, baseAngle: -0.18, phase: 3.4 },
+	{ x: 0.768, y: 0.808, size: 7.5, baseAngle: 0.62, phase: 4.7 },
+];

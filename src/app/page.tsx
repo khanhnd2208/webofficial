@@ -2,8 +2,15 @@ import type { Metadata } from 'next';
 
 import { StructuredData } from '@/components/marketing';
 import IntroLanding from '@/components/site/IntroLanding';
+import { COVER_ATMOSPHERE_STORAGE_KEY } from '@/components/site/cover/coverAtmosphere';
 import { SITE_NAME, SITE_ORIGIN, absoluteUrl } from '@/config/site';
 import { corePositioning, introPage } from '@/content/publicMarketing';
+
+/**
+ * Runs synchronously before first paint on `/` so evening visitors open directly into
+ * Night indigo with zero Dawn cream flash. Without JavaScript, SSR stays warm Dawn paper.
+ */
+const COVER_ATMOSPHERE_BOOTSTRAP = `(()=>{try{var p=new URLSearchParams(location.search).get('mode');var s=sessionStorage.getItem('${COVER_ATMOSPHERE_STORAGE_KEY}');var h=new Date().getHours();var m=p==='dawn'||p==='night'?p:s==='dawn'||s==='night'?s:(h>=6&&h<18?'dawn':'night');document.documentElement.dataset.coverAtmosphere=m;}catch(e){}})();`;
 
 export const metadata: Metadata = {
 	title: { absolute: `${SITE_NAME} — ${introPage.headline}` },
@@ -33,6 +40,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
 	return (
 		<>
+			<script dangerouslySetInnerHTML={{ __html: COVER_ATMOSPHERE_BOOTSTRAP }} />
 			<StructuredData
 				data={[
 					{
