@@ -1,0 +1,116 @@
+export type CoverAtmosphere = 'dawn' | 'night';
+
+export const COVER_ATMOSPHERE_STORAGE_KEY = 'dk-cover-atmosphere-v1';
+
+/** Hours 06:00–17:59 open in warm Dawn paper; 18:00–05:59 settle into serene Night indigo. */
+export function resolveTimeAtmosphere(date: Date = new Date()): CoverAtmosphere {
+	const hour = date.getHours();
+	return hour >= 6 && hour < 18 ? 'dawn' : 'night';
+}
+
+export function parseAtmosphereParam(value: string | null | undefined): CoverAtmosphere | null {
+	if (value === 'dawn' || value === 'night') return value;
+	return null;
+}
+
+export function readStoredAtmosphere(): CoverAtmosphere | null {
+	if (typeof window === 'undefined') return null;
+	try {
+		return parseAtmosphereParam(window.sessionStorage.getItem(COVER_ATMOSPHERE_STORAGE_KEY));
+	} catch {
+		return null;
+	}
+}
+
+export function writeStoredAtmosphere(atmosphere: CoverAtmosphere): void {
+	if (typeof window === 'undefined') return;
+	try {
+		window.sessionStorage.setItem(COVER_ATMOSPHERE_STORAGE_KEY, atmosphere);
+	} catch {
+		// Private browsing or blocked storage leaves the cover fully usable.
+	}
+}
+
+export interface CoverStar {
+	x: number;
+	y: number;
+	r: number;
+	opacity: number;
+	delaySec: number;
+	constellation?: boolean;
+}
+
+/**
+ * Coordinates in normalized 0..1000 artwork plate space.
+ * Desktop uses a 6:5 crop of the 1440×900 plate (left 75% visible);
+ * Mobile uses the full 4:5 portrait plate (819×1023, zero crop).
+ */
+export const DESKTOP_SUN_POS = { x: 43.7, y: 30.8 } as const;
+export const MOBILE_SUN_POS = { x: 73.2, y: 30.2 } as const;
+
+export const DESKTOP_CONSTELLATION: readonly { x: number; y: number }[] = [
+	{ x: 642, y: 274 },
+	{ x: 702, y: 236 },
+	{ x: 752, y: 266 },
+	{ x: 806, y: 204 },
+	{ x: 862, y: 242 },
+	{ x: 916, y: 176 },
+];
+
+export const MOBILE_CONSTELLATION: readonly { x: number; y: number }[] = [
+	{ x: 540, y: 162 },
+	{ x: 618, y: 132 },
+	{ x: 688, y: 158 },
+	{ x: 762, y: 112 },
+	{ x: 842, y: 144 },
+	{ x: 914, y: 98 },
+];
+
+/** Quiet hand-curated starfield (avoids cluttering the figure or moon disc). */
+export const DESKTOP_STARS: readonly CoverStar[] = [
+	{ x: 78, y: 84, r: 1.3, opacity: 0.55, delaySec: 0.4 },
+	{ x: 146, y: 132, r: 1.0, opacity: 0.4, delaySec: 1.8 },
+	{ x: 242, y: 74, r: 1.4, opacity: 0.62, delaySec: 0.9 },
+	{ x: 318, y: 112, r: 1.0, opacity: 0.42, delaySec: 2.5 },
+	{ x: 534, y: 96, r: 1.2, opacity: 0.52, delaySec: 1.2 },
+	{ x: 592, y: 152, r: 1.0, opacity: 0.45, delaySec: 3.1 },
+	{ x: 668, y: 108, r: 1.5, opacity: 0.68, delaySec: 0.6 },
+	{ x: 734, y: 142, r: 1.1, opacity: 0.48, delaySec: 2.2 },
+	{ x: 856, y: 94, r: 1.3, opacity: 0.58, delaySec: 1.6 },
+	{ x: 938, y: 122, r: 1.0, opacity: 0.44, delaySec: 2.9 },
+	{ x: 948, y: 298, r: 1.3, opacity: 0.52, delaySec: 0.7 },
+	{ x: 892, y: 368, r: 1.1, opacity: 0.42, delaySec: 2.4 },
+	{ x: 794, y: 344, r: 1.2, opacity: 0.48, delaySec: 1.4 },
+	{ x: 718, y: 406, r: 1.0, opacity: 0.36, delaySec: 3.3 },
+	{ x: 858, y: 484, r: 1.1, opacity: 0.38, delaySec: 1.9 },
+	{ x: 936, y: 544, r: 1.0, opacity: 0.34, delaySec: 2.7 },
+	{ x: 642, y: 274, r: 2.0, opacity: 0.78, delaySec: 0.3, constellation: true },
+	{ x: 702, y: 236, r: 1.9, opacity: 0.74, delaySec: 1.5, constellation: true },
+	{ x: 752, y: 266, r: 1.8, opacity: 0.7, delaySec: 2.1, constellation: true },
+	{ x: 806, y: 204, r: 2.6, opacity: 0.92, delaySec: 0.8, constellation: true },
+	{ x: 862, y: 242, r: 1.9, opacity: 0.74, delaySec: 2.6, constellation: true },
+	{ x: 916, y: 176, r: 2.1, opacity: 0.82, delaySec: 1.1, constellation: true },
+];
+
+export const MOBILE_STARS: readonly CoverStar[] = [
+	{ x: 112, y: 78, r: 1.3, opacity: 0.52, delaySec: 0.5 },
+	{ x: 208, y: 56, r: 1.1, opacity: 0.45, delaySec: 1.9 },
+	{ x: 392, y: 84, r: 1.4, opacity: 0.6, delaySec: 1.1 },
+	{ x: 472, y: 126, r: 1.0, opacity: 0.44, delaySec: 2.6 },
+	{ x: 540, y: 162, r: 2.0, opacity: 0.76, delaySec: 0.4, constellation: true },
+	{ x: 618, y: 132, r: 1.8, opacity: 0.72, delaySec: 1.7, constellation: true },
+	{ x: 688, y: 158, r: 1.8, opacity: 0.7, delaySec: 2.3, constellation: true },
+	{ x: 762, y: 112, r: 2.6, opacity: 0.92, delaySec: 0.8, constellation: true },
+	{ x: 842, y: 144, r: 1.8, opacity: 0.74, delaySec: 2.8, constellation: true },
+	{ x: 914, y: 98, r: 2.0, opacity: 0.8, delaySec: 1.2, constellation: true },
+	{ x: 896, y: 234, r: 1.2, opacity: 0.48, delaySec: 1.5 },
+	{ x: 486, y: 248, r: 1.1, opacity: 0.42, delaySec: 2.9 },
+	{ x: 928, y: 374, r: 1.1, opacity: 0.4, delaySec: 0.9 },
+];
+
+/** Winding mountain path trace in 0..1000 space (follows the hand-drawn road). */
+export const DESKTOP_JOURNEY_PATH =
+	'M 484 532 C 470 554, 424 568, 434 592 C 446 616, 514 624, 502 648 C 488 674, 412 686, 428 716 C 446 746, 558 756, 536 798 C 516 838, 456 882, 434 962';
+
+export const MOBILE_JOURNEY_PATH =
+	'M 732 586 C 756 604, 796 618, 774 638 C 750 658, 676 664, 704 686 C 734 708, 882 702, 846 728 C 810 754, 718 756, 676 778';

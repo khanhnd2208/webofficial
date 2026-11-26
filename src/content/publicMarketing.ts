@@ -63,8 +63,35 @@ export const introPage = {
 		src: '/brand/learning-as-becoming-desktop.jpg',
 		alt: 'Minh họa người đứng trên vách đá nhìn ra hành trình phía trước',
 	},
+	desktopNightImage: {
+		src: '/brand/learning-as-becoming-desktop-night.webp',
+		alt: 'Minh họa người đứng trên vách đá dưới trời đêm sao nhìn về phía trăng vàng',
+	},
 	mobileImage: {
 		src: '/brand/learning-as-becoming-mobile-ochre.webp',
 		alt: 'Chân dung minh họa Nguyễn Duy Khánh trên hành trình',
+	},
+	mobileNightImage: {
+		src: '/brand/learning-as-becoming-mobile-night.webp',
+		alt: 'Chân dung minh họa Nguyễn Duy Khánh dưới bầu trời đêm sao',
+	},
+	/** Quiet marginalia notes revealed only if a curious reader taps "Chưa xong." */
+	whispers: [
+		corePositioning.manifesto,
+		corePositioning.thesis,
+		corePositioning.promise,
+	] as const,
+	/** Quiet bookplate annotations anchored to natural symbols inside the cover artwork. */
+	marginalia: {
+		person: {
+			triggerLabel: 'Ghi chú về người trong tranh',
+			note: 'Người vẫn đang học cách dạy tốt hơn.',
+			linkLabel: 'Về tôi',
+		},
+		journey: {
+			triggerLabel: 'Ghi chú về con đường phía trước',
+			note: 'Những khóa học và lớp học đang mở.',
+			linkLabel: 'Học tập',
+		},
 	},
 } as const;
