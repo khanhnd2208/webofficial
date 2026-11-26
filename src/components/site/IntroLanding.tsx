@@ -39,19 +39,14 @@ export default function IntroLanding() {
 						<span aria-hidden="true">→</span>
 					</Link>
 				</div>
-				<Link
-					className="cover-art"
-					href={routes.toc}
-					aria-label={introPage.cta}
-					data-testid="intro-image-toc"
-				>
+				<div className="cover-art">
 					<IntroParallaxImage
 						src={introPage.desktopImage.src}
 						mobileSrc={introPage.mobileImage.src}
-						alt=""
+						alt={introPage.desktopImage.alt}
 						sizes="(min-width: 1024px) 60vw, 280px"
 					/>
-				</Link>
+				</div>
 			</main>
 		</div>
 	);
