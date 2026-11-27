@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 
+import { COVER_ATMOSPHERE_BOOTSTRAP_SCRIPT } from '@/components/site/cover/coverAtmosphere';
 import { routes } from '@/config/routes';
 import { absoluteUrl } from '@/config/site';
+
 import TocDoors from './TocDoors';
-import styles from './toc.module.css';
+import TocShell from './TocShell';
 
 export const metadata: Metadata = {
 	title: 'Mục lục',
@@ -14,27 +15,11 @@ export const metadata: Metadata = {
 
 export default function TocPage() {
 	return (
-		<main className={`personal-book ${styles.page}`} data-testid="gate-home">
-			<Image
-				src="/brand/toc-journey.webp"
-				alt=""
-				fill
-				sizes="100vw"
-				preload
-				className={styles.landscape}
-				aria-hidden="true"
-			/>
-			<div className={styles.content}>
-				<header className={styles.header}>
-					<p className={styles.eyebrow}>Nguyễn Duy Khánh · Mục lục</p>
-					<h1>Bạn muốn ghé đâu?</h1>
-					<p>Một chút về tôi. Và những điều để học.</p>
-				</header>
+		<>
+			<script dangerouslySetInnerHTML={{ __html: COVER_ATMOSPHERE_BOOTSTRAP_SCRIPT }} />
+			<TocShell>
 				<TocDoors />
-				<footer className={styles.footer}>
-					<span>Chưa xong. Và vẫn đang tiếp tục.</span>
-				</footer>
-			</div>
-		</main>
+			</TocShell>
+		</>
 	);
 }

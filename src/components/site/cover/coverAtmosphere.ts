@@ -11,6 +11,12 @@ export interface BloomOrigin {
 
 export const COVER_ATMOSPHERE_STORAGE_KEY = 'dk-cover-atmosphere-v1';
 
+/**
+ * Synchronous pre-paint bootstrap shared by `/` and `/muc-luc` so evening visitors
+ * open straight into Night indigo at 0ms (no Dawn flash). Without JS, SSR stays warm Dawn paper.
+ */
+export const COVER_ATMOSPHERE_BOOTSTRAP_SCRIPT = `(()=>{try{var p=new URLSearchParams(location.search).get('mode');var s=sessionStorage.getItem('${COVER_ATMOSPHERE_STORAGE_KEY}');var h=new Date().getHours();var m=p==='dawn'||p==='night'?p:s==='dawn'||s==='night'?s:(h>=6&&h<18?'dawn':'night');document.documentElement.dataset.coverAtmosphere=m;}catch(e){}})();`;
+
 /** Hours 06:00–17:59 open in warm Dawn paper; 18:00–05:59 open in serene Night indigo. */
 export function resolveTimeAtmosphere(date: Date = new Date()): CoverAtmosphere {
 	const hour = date.getHours();
