@@ -1539,22 +1539,25 @@ html.cover-blooming::view-transition-old(root) {
 
 html.cover-blooming::view-transition-new(root) {
 	z-index: 2;
-	animation: book-viewport-bloom 1160ms cubic-bezier(0.32, 0.08, 0.18, 1) both;
+	mix-blend-mode: normal;
+	animation: book-viewport-bloom 660ms cubic-bezier(0.22, 1, 0.36, 1) both;
 	-webkit-mask-image: radial-gradient(
 		circle at var(--cover-bloom-x, 65vw) var(--cover-bloom-y, 38vh),
-		#000 max(0px, calc(var(--cover-bloom-r) - 130px)),
-		rgba(0, 0, 0, 0.72) max(0px, calc(var(--cover-bloom-r) - 56px)),
+		#000 max(0px, calc(var(--cover-bloom-r) - 72px)),
+		rgba(0, 0, 0, 0.85) max(0px, calc(var(--cover-bloom-r) - 42px)),
+		rgba(0, 0, 0, 0.35) max(0px, calc(var(--cover-bloom-r) - 18px)),
 		transparent var(--cover-bloom-r)
 	);
 	mask-image: radial-gradient(
 		circle at var(--cover-bloom-x, 65vw) var(--cover-bloom-y, 38vh),
-		#000 max(0px, calc(var(--cover-bloom-r) - 130px)),
-		rgba(0, 0, 0, 0.72) max(0px, calc(var(--cover-bloom-r) - 56px)),
+		#000 max(0px, calc(var(--cover-bloom-r) - 72px)),
+		rgba(0, 0, 0, 0.85) max(0px, calc(var(--cover-bloom-r) - 42px)),
+		rgba(0, 0, 0, 0.35) max(0px, calc(var(--cover-bloom-r) - 18px)),
 		transparent var(--cover-bloom-r)
 	);
 }
 
-html[data-cover-atmosphere='night']:has([data-testid='gate-home']) {
+html[data-cover-atmosphere='night'] {
 	background-color: #0d1622;
 }
 

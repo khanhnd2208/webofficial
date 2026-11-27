@@ -5,12 +5,12 @@
 
 .page {
 	--toc-bg: #f8f7f4;
-	--toc-veil: rgba(248, 247, 244, 0.76);
-	--toc-row-hover: rgba(248, 247, 244, 0.92);
+	--toc-veil: rgba(248, 247, 244, 0.88);
+	--toc-row-hover: rgba(255, 252, 247, 0.96);
 	--toc-footer-grad: linear-gradient(
 		0deg,
-		rgba(248, 247, 244, 0.94) 0%,
-		rgba(248, 247, 244, 0.72) 56%,
+		rgba(248, 247, 244, 0.97) 0%,
+		rgba(248, 247, 244, 0.84) 58%,
 		transparent 100%
 	);
 	position: relative;
@@ -26,19 +26,19 @@
 	color: var(--ink);
 	overflow: clip;
 	transition:
-		background-color 850ms cubic-bezier(0.32, 0.72, 0, 1),
-		color 700ms cubic-bezier(0.32, 0.72, 0, 1);
+		background-color 620ms cubic-bezier(0.32, 0.72, 0, 1),
+		color 520ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .page[data-atmosphere='night'],
 :global(html[data-cover-atmosphere='night']) .page:not([data-atmosphere-ready='true']) {
 	--toc-bg: #0d1622;
-	--toc-veil: rgba(13, 22, 34, 0.72);
-	--toc-row-hover: rgba(20, 34, 52, 0.86);
+	--toc-veil: rgba(13, 22, 34, 0.84);
+	--toc-row-hover: rgba(22, 37, 56, 0.92);
 	--toc-footer-grad: linear-gradient(
 		0deg,
-		rgba(13, 22, 34, 0.94) 0%,
-		rgba(13, 22, 34, 0.74) 56%,
+		rgba(13, 22, 34, 0.97) 0%,
+		rgba(13, 22, 34, 0.86) 58%,
 		transparent 100%
 	);
 	--canvas: #0d1622;
@@ -54,7 +54,7 @@
 	color: #f2eadc;
 }
 
-/* ── Bottom-anchored panoramic horizon (full width intact, zero cropped sun) ── */
+/* ── Bottom-anchored panoramic horizon with true alpha mask fade (zero seam) ── */
 .horizonWrap {
 	position: absolute;
 	inset-inline: 0;
@@ -63,6 +63,8 @@
 	z-index: -1;
 	overflow: hidden;
 	pointer-events: none;
+	-webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 100%);
+	mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 100%);
 }
 
 .horizonParallax {
@@ -102,16 +104,6 @@
 	.page:not([data-atmosphere-ready='true'])
 	.landscapeNight {
 	opacity: 0.96;
-}
-
-/* Soft feather melts top edge of panorama seamlessly into page paper */
-.horizonTopFade {
-	position: absolute;
-	inset-inline: 0;
-	top: 0;
-	height: 30%;
-	background: linear-gradient(180deg, var(--toc-bg) 0%, transparent 100%);
-	pointer-events: none;
 }
 
 /* Quiet sky layer */
@@ -207,8 +199,8 @@
 /* ── Editorial Content Column ────────────────────────────────────────────── */
 @keyframes toc-soft-arrive {
 	from {
-		opacity: 0.3;
-		transform: translateY(8px);
+		opacity: 0.62;
+		transform: translateY(5px);
 	}
 	to {
 		opacity: 1;
@@ -225,7 +217,7 @@
 
 .header {
 	margin-bottom: clamp(22px, 3.2svh, 34px);
-	animation: toc-soft-arrive 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation: toc-soft-arrive 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .metaRow {
@@ -259,13 +251,17 @@
 	transition: transform var(--ui-duration-hover) var(--ui-ease);
 }
 
-.backLink:hover,
 .backLink:focus-visible {
 	color: var(--ink);
 }
 
-.backLink:hover span:first-child {
-	transform: translateX(-3px);
+@media (hover: hover) and (pointer: fine) {
+	.backLink:hover {
+		color: var(--ink);
+	}
+	.backLink:hover span:first-child {
+		transform: translateX(-3px);
+	}
 }
 
 .header h1 {
@@ -286,8 +282,7 @@
 .navigation {
 	border-top: 1px solid var(--hairline);
 	background: var(--toc-veil);
-	backdrop-filter: blur(6px);
-	animation: toc-soft-arrive 620ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
+	animation: toc-soft-arrive 360ms cubic-bezier(0.22, 1, 0.36, 1) 45ms both;
 }
 
 .door {
@@ -495,15 +490,27 @@
 		border-color var(--ui-duration-hover) var(--ui-ease);
 }
 
-.atmosphereToggle:hover,
 .atmosphereToggle:focus-visible {
 	color: var(--bronze);
 	border-bottom-color: var(--bronze);
 }
 
+@media (hover: hover) and (pointer: fine) {
+	.atmosphereToggle:hover {
+		color: var(--bronze);
+		border-bottom-color: var(--bronze);
+	}
+}
+
 .atmosphereIcon {
+	display: grid;
+	place-items: center;
+	width: 24px;
+	height: 24px;
+	border: 1px solid color-mix(in srgb, currentColor 42%, transparent);
+	border-radius: 50%;
 	color: var(--bronze);
-	font-size: 0.9375rem;
+	font-size: 0.875rem;
 	line-height: 1;
 }
 
@@ -511,11 +518,11 @@
 @media (max-height: 600px) {
 	.page {
 		padding-top: 56px;
-		--toc-veil: rgba(248, 247, 244, 0.88);
+		--toc-veil: rgba(248, 247, 244, 0.9);
 	}
 	.page[data-atmosphere='night'],
 	:global(html[data-cover-atmosphere='night']) .page:not([data-atmosphere-ready='true']) {
-		--toc-veil: rgba(13, 22, 34, 0.86);
+		--toc-veil: rgba(13, 22, 34, 0.88);
 	}
 	.header {
 		margin-bottom: 12px;
@@ -539,7 +546,10 @@
 		height: 44px;
 	}
 	.horizonWrap {
-		height: 44svh;
+		height: clamp(280px, 76svh, 400px);
+	}
+	.landscape {
+		object-position: center 78%;
 	}
 	.footer {
 		padding-top: 10px;
@@ -619,10 +629,10 @@
 		height: 46px;
 	}
 	.horizonWrap {
-		height: clamp(260px, 42svh, 360px);
+		height: clamp(280px, 44svh, 390px);
 	}
 	.landscape {
-		object-position: 34% bottom;
+		object-position: 94% bottom;
 	}
 	.footer {
 		margin-inline: -20px;

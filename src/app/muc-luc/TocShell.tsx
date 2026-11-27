@@ -9,7 +9,6 @@ import {
 	useLayoutEffect,
 	useRef,
 	useState,
-	type CSSProperties,
 	type MouseEvent,
 	type ReactNode,
 } from 'react';
@@ -18,6 +17,7 @@ import { flushSync } from 'react-dom';
 import { useMotionTier } from '@/components/motion/MotionProvider';
 import {
 	readInitialClientAtmosphere,
+	runAtmosphereViewTransition,
 	writeStoredAtmosphere,
 	type CoverAtmosphere,
 } from '@/components/site/cover/coverAtmosphere';
@@ -26,10 +26,6 @@ import { routes } from '@/config/routes';
 import styles from './toc.module.css';
 
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-
-type ViewTransitionDocument = Document & {
-	startViewTransition?: (update: () => void) => { finished: Promise<void> };
-};
 
 interface TocSkyStar {
 	x: number;
@@ -71,7 +67,6 @@ export default function TocShell({ children }: TocShellProps) {
 	const mainRef = useRef<HTMLElement>(null);
 	const [atmosphere, setAtmosphere] = useState<CoverAtmosphere>('dawn');
 	const [ready, setReady] = useState(false);
-	const [gaze, setGaze] = useState({ x: 0, y: 0 });
 
 	useIsoLayoutEffect(() => {
 		const initial = readInitialClientAtmosphere();
@@ -84,6 +79,63 @@ export default function TocShell({ children }: TocShellProps) {
 			document.documentElement.classList.remove('cover-blooming');
 		};
 	}, []);
+
+	// 60fps pointer parallax directly via CSS custom properties (zero React re-renders or reflows)
+	useEffect(() => {
+		const el = mainRef.current;
+		if (!el || !allowsAmbient) return;
+
+		let pending = 0;
+		let latestX = 0;
+		let latestY = 0;
+		let cachedRect: DOMRect | null = null;
+
+		const invalidate = () => {
+			cachedRect = null;
+		};
+
+		const paint = () => {
+			pending = 0;
+			if (!cachedRect) cachedRect = el.getBoundingClientRect();
+			if (!cachedRect.width || !cachedRect.height) return;
+			const gx = ((latestX - cachedRect.left) / cachedRect.width - 0.5) * 2;
+			const gy = ((latestY - cachedRect.top) / cachedRect.height - 0.5) * 2;
+			el.style.setProperty('--toc-gaze-x', Math.max(-1, Math.min(1, gx)).toFixed(3));
+			el.style.setProperty('--toc-gaze-y', Math.max(-1, Math.min(1, gy)).toFixed(3));
+		};
+
+		const onMove = (event: PointerEvent) => {
+			if (event.pointerType === 'touch') return;
+			latestX = event.clientX;
+			latestY = event.clientY;
+			if (!pending) pending = requestAnimationFrame(paint);
+		};
+
+		const onReset = () => {
+			if (pending) cancelAnimationFrame(pending);
+			pending = 0;
+			el.style.removeProperty('--toc-gaze-x');
+			el.style.removeProperty('--toc-gaze-y');
+		};
+
+		const observer = new ResizeObserver(invalidate);
+		observer.observe(el);
+		window.addEventListener('resize', invalidate, { passive: true });
+		el.addEventListener('pointerenter', invalidate);
+		el.addEventListener('pointermove', onMove);
+		el.addEventListener('pointerleave', onReset);
+		el.addEventListener('pointercancel', onReset);
+
+		return () => {
+			observer.disconnect();
+			window.removeEventListener('resize', invalidate);
+			el.removeEventListener('pointerenter', invalidate);
+			el.removeEventListener('pointermove', onMove);
+			el.removeEventListener('pointerleave', onReset);
+			el.removeEventListener('pointercancel', onReset);
+			onReset();
+		};
+	}, [allowsAmbient]);
 
 	// Quiet desktop keyboard shortcuts: 1 -> Về tôi, 2 -> Học tập
 	useEffect(() => {
@@ -111,82 +163,38 @@ export default function TocShell({ children }: TocShellProps) {
 		return () => document.removeEventListener('keydown', onKeyDown);
 	}, [router]);
 
-	const handlePointerMove = useCallback(
-		(event: MouseEvent<HTMLElement>) => {
-			if (!allowsAmbient || !mainRef.current) return;
-			const rect = mainRef.current.getBoundingClientRect();
-			if (!rect.width || !rect.height) return;
-			const nx = (event.clientX - rect.left) / rect.width - 0.5;
-			const ny = (event.clientY - rect.top) / rect.height - 0.5;
-			setGaze({ x: nx * 2, y: ny * 2 });
-		},
-		[allowsAmbient],
-	);
-
-	const handlePointerLeave = useCallback(() => {
-		setGaze({ x: 0, y: 0 });
-	}, []);
-
 	const handleToggleAtmosphere = useCallback(
 		(event: MouseEvent<HTMLButtonElement>) => {
-			const next: CoverAtmosphere = atmosphere === 'night' ? 'dawn' : 'night';
+			const root = document.documentElement;
+			const current = root.dataset.coverAtmosphere === 'night' ? 'night' : 'dawn';
+			const next: CoverAtmosphere = current === 'night' ? 'dawn' : 'night';
 			writeStoredAtmosphere(next);
-
-			const doc = document as ViewTransitionDocument;
-			const canViewTransition = !reduced && typeof doc.startViewTransition === 'function';
-
-			if (!canViewTransition) {
-				document.documentElement.dataset.coverAtmosphere = next;
-				setAtmosphere(next);
-				return;
-			}
 
 			const btnRect = event.currentTarget.getBoundingClientRect();
 			const clientX =
 				event.detail > 0 ? Math.round(event.clientX) : Math.round(btnRect.left + btnRect.width / 2);
 			const clientY =
 				event.detail > 0 ? Math.round(event.clientY) : Math.round(btnRect.top + btnRect.height / 2);
-			const vw = window.innerWidth;
-			const vh = window.innerHeight;
-			const maxRadius =
-				Math.max(
-					Math.hypot(clientX, clientY),
-					Math.hypot(vw - clientX, clientY),
-					Math.hypot(clientX, vh - clientY),
-					Math.hypot(vw - clientX, vh - clientY),
-				) + 140;
 
-			const root = document.documentElement;
-			root.style.setProperty('--cover-bloom-x', `${clientX}px`);
-			root.style.setProperty('--cover-bloom-y', `${clientY}px`);
-			root.style.setProperty('--cover-bloom-max', `${Math.ceil(maxRadius)}px`);
-			root.classList.add('cover-blooming');
-
-			try {
-				const transition = doc.startViewTransition!(() => {
-					flushSync(() => {
+			runAtmosphereViewTransition({
+				clientX,
+				clientY,
+				reduced,
+				commit: (usingViewTransition) => {
+					const apply = () => {
 						root.dataset.coverAtmosphere = next;
 						setAtmosphere(next);
-					});
-				});
-				transition.finished
-					.catch(() => undefined)
-					.finally(() => {
-						root.classList.remove('cover-blooming');
-					});
-			} catch {
-				root.classList.remove('cover-blooming');
-				root.dataset.coverAtmosphere = next;
-				setAtmosphere(next);
-			}
+					};
+					if (usingViewTransition) {
+						flushSync(apply);
+					} else {
+						apply();
+					}
+				},
+			});
 		},
-		[atmosphere, reduced],
+		[reduced],
 	);
-
-	const motionVars = {
-		'--toc-gaze-x': gaze.x.toFixed(3),
-		'--toc-gaze-y': gaze.y.toFixed(3),
-	} as CSSProperties;
 
 	const toggleLabel = atmosphere === 'night' ? 'Gọi bình minh' : 'Gọi đêm sao';
 
@@ -197,11 +205,8 @@ export default function TocShell({ children }: TocShellProps) {
 			data-testid="gate-home"
 			data-atmosphere={atmosphere}
 			data-atmosphere-ready={ready ? 'true' : undefined}
-			style={motionVars}
-			onMouseMove={allowsAmbient ? handlePointerMove : undefined}
-			onMouseLeave={allowsAmbient ? handlePointerLeave : undefined}
 		>
-			{/* Panoramic horizon anchored along the bottom so sun/moon & winding valley remain intact */}
+			{/* Panoramic horizon anchored along the bottom with true alpha mask fade (zero seam) */}
 			<div className={styles.horizonWrap} aria-hidden="true">
 				<div className={styles.horizonParallax}>
 					<Image
@@ -255,11 +260,10 @@ export default function TocShell({ children }: TocShellProps) {
 						))}
 					</g>
 				</svg>
-				<div className={styles.horizonTopFade} />
 			</div>
 
 			<div className={styles.content}>
-				<header className={styles.header}>
+				<div className={styles.header}>
 					<div className={styles.metaRow}>
 						<p className={styles.eyebrow}>Mục lục · Nguyễn Duy Khánh</p>
 						<Link href={routes.home} className={styles.backLink} data-testid="toc-back-cover">
@@ -269,12 +273,12 @@ export default function TocShell({ children }: TocShellProps) {
 					</div>
 					<h1>Bạn muốn ghé đâu?</h1>
 					<p className={styles.lead}>Một chút về tôi. Và những điều để học.</p>
-				</header>
+				</div>
 
 				{children}
 			</div>
 
-			<footer className={styles.footer}>
+			<div className={styles.footer}>
 				<div className={styles.footerInner}>
 					<span className={styles.footerNote}>Chưa xong. Và vẫn đang tiếp tục.</span>
 					<button
@@ -290,7 +294,7 @@ export default function TocShell({ children }: TocShellProps) {
 						<span>{toggleLabel}</span>
 					</button>
 				</div>
-			</footer>
+			</div>
 		</main>
 	);
 }

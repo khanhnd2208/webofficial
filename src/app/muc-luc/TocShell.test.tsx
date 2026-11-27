@@ -65,6 +65,11 @@ describe('TocShell', () => {
 		expect(screen.getByTestId('gate-home')).toHaveAttribute('data-atmosphere', 'dawn');
 		expect(window.sessionStorage.getItem(COVER_ATMOSPHERE_STORAGE_KEY)).toBe('dawn');
 
+		for (let i = 0; i < 6; i += 1) {
+			fireEvent.click(toggle);
+		}
+		expect(screen.getByTestId('gate-home')).toHaveAttribute('data-atmosphere', 'dawn');
+
 		unmount();
 		expect(document.documentElement.dataset.coverAtmosphere).toBeUndefined();
 	});
