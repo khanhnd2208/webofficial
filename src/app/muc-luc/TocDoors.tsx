@@ -7,9 +7,11 @@ import styles from './toc.module.css';
 
 export interface TocDoor {
 	id: string;
+	index: string;
 	href: string;
 	label: string;
 	description: ReactNode;
+	scope: string;
 	icon: string;
 }
 
@@ -17,16 +19,20 @@ export interface TocDoor {
 export const TOC_DOORS: TocDoor[] = [
 	{
 		id: 'about',
+		index: '01',
 		href: routes.contact,
 		label: 'Về tôi',
 		description: 'Tôi là ai, và cách liên hệ.',
+		scope: 'Giới thiệu · Hợp tác · Gửi lời nhắn',
 		icon: '/brand/toc/about-v1.webp',
 	},
 	{
 		id: 'learning',
+		index: '02',
 		href: routes.learnCourses,
 		label: 'Học tập',
 		description: 'Khóa học tự học và trang lớp của bạn.',
+		scope: 'Khóa học · Trang lớp · Ôn tập',
 		icon: '/brand/toc/courses-v1.webp',
 	},
 ];
@@ -43,28 +49,32 @@ function Arrow({ external }: { external: boolean }) {
 function Door({ item, testId }: { item: TocDoor; testId: string }) {
 	return (
 		<Link href={item.href} className={styles.door} data-testid={testId}>
-			<span className={styles.doorIcon}>
+			<span className={styles.doorIndex} aria-hidden="true">
+				{item.index}
+			</span>
+			<span className={styles.doorText}>
+				<span className={styles.doorTitle}>{item.label}</span>
+				<span className={styles.doorDescription}>{item.description}</span>
+				<span className={styles.doorScope}>{item.scope}</span>
+			</span>
+			<span className={styles.doorIcon} aria-hidden="true">
 				<Image
 					src={item.icon}
 					alt=""
-					width={112}
-					height={112}
-					sizes="(max-width: 860px) 64px, 112px"
+					width={72}
+					height={72}
+					sizes="(max-width: 640px) 52px, 72px"
 					loading="eager"
 				/>
 			</span>
-			<span className={styles.doorText}>
-				<span className={styles.doorTitle}>
-					{item.label}
-					<Arrow external={/^https?:/.test(item.href)} />
-				</span>
-				<span className={styles.doorDescription}>{item.description}</span>
+			<span className={styles.doorCue}>
+				<Arrow external={/^https?:/.test(item.href)} />
 			</span>
 		</Link>
 	);
 }
 
-/** Every Mục lục door at once: Về tôi, then Học tập. */
+/** Every Mục lục door at once: Về tôi (01), then Học tập (02). */
 export default function TocDoors({ doors = TOC_DOORS }: { doors?: TocDoor[] }) {
 	return (
 		<nav aria-label="Mục lục" className={styles.navigation}>

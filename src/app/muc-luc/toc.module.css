@@ -1,259 +1,680 @@
+/* Editorial Hairline Book Index for `/muc-luc`.
+ * Global atmosphere backdrop, SiteHeader Night tokens, and View Transitions bloom live in
+ * `src/app/personal-book.css` so every selector here stays pure for Webpack CSS Modules.
+ * Every font-size stays >= 12px and respects `prefers-reduced-motion` and no-JS reading. */
+
 .page {
+	--toc-bg: #f8f7f4;
+	--toc-veil: rgba(248, 247, 244, 0.76);
+	--toc-row-hover: rgba(248, 247, 244, 0.92);
+	--toc-footer-grad: linear-gradient(
+		0deg,
+		rgba(248, 247, 244, 0.94) 0%,
+		rgba(248, 247, 244, 0.72) 56%,
+		transparent 100%
+	);
 	position: relative;
 	isolation: isolate;
-	/* The header is fixed here, so pull the page over its 8px scroll sentinel;
-	   otherwise a full-height page always scrolls by those 8px. */
+	/* Fixed SiteHeader sits above an 8px scroll sentinel; offset keeps 100svh scroll-free. */
 	margin-top: -8px;
 	min-height: 100svh;
 	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 88px 64px 40px;
-	background: #f8f7f4;
-	overflow: hidden;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: clamp(76px, 10svh, 112px) 40px 0;
+	background: var(--toc-bg);
+	color: var(--ink);
+	overflow: clip;
+	transition:
+		background-color 850ms cubic-bezier(0.32, 0.72, 0, 1),
+		color 700ms cubic-bezier(0.32, 0.72, 0, 1);
 }
+
+.page[data-atmosphere='night'],
+:global(html[data-cover-atmosphere='night']) .page:not([data-atmosphere-ready='true']) {
+	--toc-bg: #0d1622;
+	--toc-veil: rgba(13, 22, 34, 0.72);
+	--toc-row-hover: rgba(20, 34, 52, 0.86);
+	--toc-footer-grad: linear-gradient(
+		0deg,
+		rgba(13, 22, 34, 0.94) 0%,
+		rgba(13, 22, 34, 0.74) 56%,
+		transparent 100%
+	);
+	--canvas: #0d1622;
+	--paper: #0e1825;
+	--surface: #132030;
+	--surface-elevated: #162638;
+	--ink: #f2eadc;
+	--ink-secondary: #adb8c4;
+	--hairline: rgba(216, 200, 172, 0.17);
+	--bronze: #d9b269;
+	--accent: #d9b269;
+	background: #0d1622;
+	color: #f2eadc;
+}
+
+/* ── Bottom-anchored panoramic horizon (full width intact, zero cropped sun) ── */
+.horizonWrap {
+	position: absolute;
+	inset-inline: 0;
+	bottom: 0;
+	height: clamp(320px, 60svh, 580px);
+	z-index: -1;
+	overflow: hidden;
+	pointer-events: none;
+}
+
+.horizonParallax {
+	position: absolute;
+	inset: -8px -12px 0;
+	transform: scale(1.018)
+		translate3d(calc(var(--toc-gaze-x, 0) * -4px), calc(var(--toc-gaze-y, 0) * -2.5px), 0);
+	transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+	will-change: transform;
+}
+
 .landscape {
-	z-index: -2;
 	object-fit: cover;
 	object-position: center bottom;
 }
-.page::after {
-	content: '';
-	position: absolute;
-	inset: 0;
-	z-index: -1;
-	background: linear-gradient(
-		180deg,
-		rgba(248, 247, 244, 0.12),
-		rgba(248, 247, 244, 0.45) 55%,
-		transparent
-	);
-	pointer-events: none;
-}
-.content {
-	width: min(100%, 1056px);
-}
-.header {
-	text-align: center;
-	margin-bottom: 40px;
-}
-.eyebrow {
-	font-size: var(--type-footnote);
-	text-transform: uppercase;
-	letter-spacing: 0.2em;
-	color: #786b58;
-	margin-bottom: 18px;
-}
-.header h1 {
-	font-size: clamp(2.4rem, 4.5vw, 4rem);
-	line-height: 1.2;
-	letter-spacing: -0.045em;
-	margin-bottom: 18px;
-}
-.header > p:last-child {
-	font-size: var(--type-subhead);
-	color: var(--ink-secondary);
+
+.landscapeDawn {
+	mix-blend-mode: multiply;
+	opacity: 0.94;
+	transition: opacity 420ms var(--ui-ease);
 }
 
-/* Flat doors on one centred row: two for visitors, four for admins. */
-.navigation {
-	--doors-per-row: 2;
-	--door-gap: 20px;
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	gap: var(--door-gap);
+.landscapeNight {
+	opacity: 0;
+	transition: opacity 420ms var(--ui-ease);
+}
+
+.page[data-atmosphere='night'] .landscapeDawn,
+:global(html[data-cover-atmosphere='night'])
+	.page:not([data-atmosphere-ready='true'])
+	.landscapeDawn {
+	opacity: 0;
+}
+
+.page[data-atmosphere='night'] .landscapeNight,
+:global(html[data-cover-atmosphere='night'])
+	.page:not([data-atmosphere-ready='true'])
+	.landscapeNight {
+	opacity: 0.96;
+}
+
+/* Soft feather melts top edge of panorama seamlessly into page paper */
+.horizonTopFade {
+	position: absolute;
+	inset-inline: 0;
+	top: 0;
+	height: 30%;
+	background: linear-gradient(180deg, var(--toc-bg) 0%, transparent 100%);
+	pointer-events: none;
+}
+
+/* Quiet sky layer */
+.skyOverlay {
+	position: absolute;
+	inset-inline: 0;
+	top: 0;
+	width: 100%;
+	height: 78%;
+	transform: translate3d(
+		calc(var(--toc-gaze-x, 0) * -1.8px),
+		calc(var(--toc-gaze-y, 0) * -1.2px),
+		0
+	);
+	transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+	pointer-events: none;
+}
+
+.dawnBirds {
+	opacity: 1;
+	transition: opacity 420ms var(--ui-ease);
+}
+
+.nightStars {
+	opacity: 0;
+	transition: opacity 420ms var(--ui-ease);
+}
+
+.page[data-atmosphere='night'] .dawnBirds,
+:global(html[data-cover-atmosphere='night']) .page:not([data-atmosphere-ready='true']) .dawnBirds {
+	opacity: 0;
+}
+
+.page[data-atmosphere='night'] .nightStars,
+:global(html[data-cover-atmosphere='night']) .page:not([data-atmosphere-ready='true']) .nightStars {
+	opacity: 1;
+}
+
+.inkBird {
+	fill: none;
+	stroke: rgba(23, 23, 23, 0.44);
+	stroke-width: 1.6;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.inkBirdA {
+	animation: toc-bird-glide 24s ease-in-out infinite;
+}
+
+.inkBirdB {
+	animation: toc-bird-glide 29s ease-in-out 5s infinite;
+}
+
+@keyframes toc-bird-glide {
+	0% {
+		opacity: 0;
+		transform: translate(-42px, 12px);
+	}
+	15% {
+		opacity: 0.68;
+	}
+	82% {
+		opacity: 0.54;
+	}
+	100% {
+		opacity: 0;
+		transform: translate(68px, -16px);
+	}
+}
+
+.celestialArc {
+	fill: none;
+	stroke: rgba(226, 198, 146, 0.14);
+	stroke-width: 1;
+}
+
+.starDot {
+	fill: #efe4cc;
+	animation: toc-star-twinkle 5.6s ease-in-out infinite;
+}
+
+@keyframes toc-star-twinkle {
+	0%,
+	100% {
+		opacity: 0.36;
+	}
+	50% {
+		opacity: 0.92;
+	}
+}
+
+/* ── Editorial Content Column ────────────────────────────────────────────── */
+@keyframes toc-soft-arrive {
+	from {
+		opacity: 0.3;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+.content {
+	width: min(100%, 760px);
 	margin: 0 auto;
+	position: relative;
+	z-index: 2;
 }
-.navigation:has(> :nth-child(4)):not(:has(> :nth-child(5))) {
-	--doors-per-row: 4;
+
+.header {
+	margin-bottom: clamp(22px, 3.2svh, 34px);
+	animation: toc-soft-arrive 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+.metaRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 12px;
+}
+
+.eyebrow {
+	font-size: var(--type-caption);
+	text-transform: uppercase;
+	letter-spacing: 0.16em;
+	color: var(--bronze);
+}
+
+.backLink {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 44px;
+	font-size: var(--type-footnote);
+	color: var(--ink-secondary);
+	text-decoration: none;
+	white-space: nowrap;
+	transition: color var(--ui-duration-hover) var(--ui-ease);
+}
+
+.backLink span:first-child {
+	transition: transform var(--ui-duration-hover) var(--ui-ease);
+}
+
+.backLink:hover,
+.backLink:focus-visible {
+	color: var(--ink);
+}
+
+.backLink:hover span:first-child {
+	transform: translateX(-3px);
+}
+
+.header h1 {
+	font-size: clamp(2.15rem, 4vw, 3.35rem);
+	font-weight: 600;
+	line-height: 1.15;
+	letter-spacing: -0.038em;
+	margin-bottom: 10px;
+}
+
+.lead {
+	font-size: var(--type-subhead);
+	color: var(--ink-secondary);
+	line-height: 1.6;
+}
+
+/* ── Editorial Hairline Index Rows (01 / 02) ─────────────────────────────── */
+.navigation {
+	border-top: 1px solid var(--hairline);
+	background: var(--toc-veil);
+	backdrop-filter: blur(6px);
+	animation: toc-soft-arrive 620ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
+}
+
 .door {
 	position: relative;
-	flex: 0 0 calc((100% - (var(--doors-per-row) - 1) * var(--door-gap)) / var(--doors-per-row));
-	min-width: 0;
-	display: flex;
-	flex-direction: column;
+	display: grid;
+	grid-template-columns: 44px minmax(0, 1fr) 72px 28px;
 	align-items: center;
-	justify-content: center;
-	text-align: center;
-	min-height: 300px;
-	padding: 28px 20px 32px;
+	gap: 12px 20px;
+	padding: 20px 14px;
 	text-decoration: none;
 	color: inherit;
-	background: color-mix(in srgb, var(--surface-elevated) 74%, transparent);
-	border: 1px solid var(--hairline);
-	border-radius: 16px;
-	box-shadow: 0 16px 60px rgba(75, 58, 33, 0.04);
-	backdrop-filter: blur(8px);
+	border-bottom: 1px solid var(--hairline);
 	transition:
-		border-color 250ms,
-		box-shadow 350ms,
-		transform 350ms cubic-bezier(0.2, 0.7, 0.2, 1),
-		opacity 250ms;
+		background-color var(--ui-duration-control) var(--ui-ease),
+		opacity var(--ui-duration-control) var(--ui-ease);
 }
-.door:hover {
-	border-color: rgba(134, 115, 82, 0.32);
-	box-shadow: 0 22px 60px rgba(75, 58, 33, 0.08);
-	transform: translateY(-4px);
+
+/* Animated antique-bronze hairline rule drawing smoothly across on hover/focus */
+.door::after {
+	content: '';
+	position: absolute;
+	inset-inline: 0;
+	bottom: -1px;
+	height: 1.5px;
+	background: var(--bronze);
+	transform: scaleX(0);
+	transform-origin: left center;
+	transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+.door:hover,
+.door:focus-visible {
+	background: var(--toc-row-hover);
+}
+
+.door:hover::after,
+.door:focus-visible::after {
+	transform: scaleX(1);
+}
+
 .door:focus-visible {
 	outline: 2px solid var(--bronze);
-	outline-offset: 4px;
+	outline-offset: -2px;
 }
-.doorIcon {
-	width: 112px;
-	height: 112px;
-	display: block;
-	margin-bottom: 20px;
+
+@media (hover: hover) and (pointer: fine) {
+	.navigation:has(.door:hover) .door:not(:hover) {
+		opacity: 0.68;
+	}
 }
-.doorIcon img {
-	width: 100%;
-	height: 100%;
-	object-fit: contain;
-	transition: transform 400ms;
+
+.doorIndex {
+	align-self: start;
+	padding-top: 5px;
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-size: 0.9375rem;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0.04em;
+	color: var(--ink-secondary);
+	transition: color var(--ui-duration-hover) var(--ui-ease);
 }
-.door:hover .doorIcon img {
-	transform: rotate(-3deg) scale(1.04);
+
+.door:hover .doorIndex,
+.door:focus-visible .doorIndex {
+	color: var(--bronze);
 }
+
 .doorText {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
 	min-width: 0;
-	max-width: 100%;
-}
-.doorTitle {
-	font-family: var(--font-serif-display), serif;
-	font-size: clamp(1.35rem, 2vw, 1.875rem);
-	line-height: 1.3;
-}
-.doorDescription {
-	font-size: var(--type-footnote);
-	color: var(--ink-secondary);
-	margin-top: 8px;
-	max-width: 16rem;
-}
-.arrow {
-	display: inline-block;
-	margin-left: 8px;
-	font-size: 15px;
-	color: #917344;
-	transition: transform 300ms cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-.door:hover .arrow {
-	transform: translateX(3px);
-}
-.door:hover .arrow[data-external] {
-	transform: translate(2px, -2px);
 }
 
-.footer {
-	display: flex;
-	justify-content: center;
-	text-align: center;
-	/* A paper halo keeps the line readable where it crosses the drawing. */
-	text-shadow:
-		0 0 2px #f8f7f4,
-		0 0 6px #f8f7f4,
-		0 0 14px #f8f7f4;
-	gap: 24px;
-	margin-top: 24px;
-	font-size: var(--type-footnote);
-	color: #655d51;
+.doorTitle {
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-size: clamp(1.45rem, 2.2vw, 1.85rem);
+	font-weight: 600;
+	line-height: 1.24;
+	letter-spacing: -0.025em;
+	color: var(--ink);
 }
-.footer a {
+
+.doorDescription {
+	margin-top: 4px;
+	font-size: var(--type-subhead);
+	line-height: 1.5;
+	color: var(--ink-secondary);
+}
+
+.doorScope {
+	margin-top: 6px;
+	font-size: var(--type-caption);
+	letter-spacing: 0.03em;
+	color: var(--ink-secondary);
+	opacity: 0.84;
+}
+
+.doorIcon {
+	width: 72px;
+	height: 72px;
+	display: grid;
+	place-items: center;
+	border-radius: 9999px;
+	position: relative;
+}
+
+.doorIcon img {
+	width: 64px;
+	height: 64px;
+	object-fit: contain;
+	mix-blend-mode: multiply;
+	transition: transform 340ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.page[data-atmosphere='night'] .doorIcon,
+:global(html[data-cover-atmosphere='night']) .page:not([data-atmosphere-ready='true']) .doorIcon {
+	background: radial-gradient(
+		circle,
+		rgba(242, 234, 220, 0.22) 0%,
+		rgba(242, 234, 220, 0.06) 62%,
+		transparent 76%
+	);
+}
+
+.page[data-atmosphere='night'] .doorIcon img,
+:global(html[data-cover-atmosphere='night'])
+	.page:not([data-atmosphere-ready='true'])
+	.doorIcon
+	img {
+	mix-blend-mode: normal;
+	filter: brightness(0.96) contrast(1.04) drop-shadow(0 4px 10px rgba(3, 8, 16, 0.42));
+}
+
+.door:hover .doorIcon img,
+.door:focus-visible .doorIcon img {
+	transform: rotate(-3deg) scale(1.06);
+}
+
+.doorCue {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.arrow {
+	display: inline-block;
+	font-size: 1rem;
+	color: var(--bronze);
+	transition: transform var(--ui-duration-control) var(--ui-ease);
+}
+
+.door:hover .arrow,
+.door:focus-visible .arrow {
+	transform: translateX(4px);
+}
+
+.door:hover .arrow[data-external],
+.door:focus-visible .arrow[data-external] {
+	transform: translate(3px, -3px);
+}
+
+/* ── Bottom Archival Colophon Bar (Clean contrast over horizon) ──────────── */
+.footer {
+	position: relative;
+	z-index: 2;
+	margin-top: auto;
+	margin-inline: -40px;
+	padding: 32px 40px 18px;
+	background: var(--toc-footer-grad);
+}
+
+.footerInner {
+	width: min(100%, 760px);
+	margin: 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	font-size: var(--type-footnote);
+	color: var(--ink-secondary);
+}
+
+.footerNote {
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+}
+
+.atmosphereToggle {
+	appearance: none;
+	border: 0;
+	border-bottom: 1px solid transparent;
+	background: transparent;
+	padding: 0 2px;
 	min-height: 44px;
 	display: inline-flex;
 	align-items: center;
-}
-.footer > span {
-	display: inline-flex;
-	align-items: center;
-}
-
-@media (max-width: 1080px) {
-	.page {
-		padding-inline: 32px;
-	}
-	.navigation:has(> :nth-child(4)):not(:has(> :nth-child(5))) {
-		--doors-per-row: 2;
-	}
+	gap: 7px;
+	font-size: var(--type-footnote);
+	color: var(--ink);
+	letter-spacing: 0.02em;
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		color var(--ui-duration-hover) var(--ui-ease),
+		border-color var(--ui-duration-hover) var(--ui-ease);
 }
 
-/* Tablet and phone: one column of rows, picture left, words right. */
-@media (max-width: 860px) {
+.atmosphereToggle:hover,
+.atmosphereToggle:focus-visible {
+	color: var(--bronze);
+	border-bottom-color: var(--bronze);
+}
+
+.atmosphereIcon {
+	color: var(--bronze);
+	font-size: 0.9375rem;
+	line-height: 1;
+}
+
+/* ── Short Desktop (`1440×500`, `720×450`) ───────────────────────────────── */
+@media (max-height: 600px) {
 	.page {
-		padding: 96px 20px 48px;
+		padding-top: 56px;
+		--toc-veil: rgba(248, 247, 244, 0.88);
 	}
-	.content {
-		width: min(100%, 560px);
+	.page[data-atmosphere='night'],
+	:global(html[data-cover-atmosphere='night']) .page:not([data-atmosphere-ready='true']) {
+		--toc-veil: rgba(13, 22, 34, 0.86);
 	}
 	.header {
-		margin-bottom: 28px;
+		margin-bottom: 12px;
 	}
-	.navigation,
-	.navigation:has(> :nth-child(4)):not(:has(> :nth-child(5))) {
-		--doors-per-row: 1;
-		--door-gap: 12px;
+	.metaRow {
+		margin-bottom: 2px;
+	}
+	.header h1 {
+		font-size: clamp(1.8rem, 3.2vw, 2.35rem);
+		margin-bottom: 4px;
 	}
 	.door {
-		flex-direction: row;
-		justify-content: flex-start;
-		gap: 16px;
-		min-height: 0;
-		padding: 14px 18px 14px 14px;
-		text-align: left;
-	}
-	.door:hover {
-		transform: none;
+		padding: 10px 10px;
 	}
 	.doorIcon {
-		flex: none;
-		width: 64px;
-		height: 64px;
-		margin: 0;
+		width: 48px;
+		height: 48px;
 	}
-	.doorText {
-		flex: 1;
-		align-items: flex-start;
+	.doorIcon img {
+		width: 44px;
+		height: 44px;
 	}
-	.doorTitle {
-		font-size: 23px;
-	}
-	.doorDescription {
-		margin-top: 2px;
-		max-width: none;
-		overflow-wrap: anywhere;
-	}
-	.landscape {
-		object-position: 62% bottom;
+	.horizonWrap {
+		height: 44svh;
 	}
 	.footer {
-		margin-top: 20px;
+		padding-top: 10px;
+		padding-bottom: 6px;
+	}
+}
+
+/* ── Tablet & Mobile (`<= 860px`) ────────────────────────────────────────── */
+@media (max-width: 860px) {
+	.page {
+		padding: 76px 24px 0;
+	}
+	.horizonWrap {
+		height: clamp(290px, 46svh, 440px);
+	}
+	.landscape {
+		object-position: 86% bottom;
+	}
+	.door {
+		grid-template-columns: 34px minmax(0, 1fr) 56px 22px;
+		gap: 10px 14px;
+		padding: 18px 8px;
+	}
+	.doorIcon {
+		width: 56px;
+		height: 56px;
+	}
+	.doorIcon img {
+		width: 52px;
+		height: 52px;
+	}
+	.footer {
+		margin-inline: -24px;
+		padding: 28px 24px 16px;
+	}
+}
+
+@media (max-width: 639px) {
+	.page {
+		padding: 72px 20px 0;
+	}
+	.metaRow {
+		margin-bottom: 8px;
+		gap: 8px;
+	}
+	.eyebrow {
+		letter-spacing: 0.08em;
+		white-space: nowrap;
+	}
+	.header h1 {
+		font-size: clamp(1.95rem, 8.2vw, 2.4rem);
+	}
+	.door {
+		grid-template-columns: 28px minmax(0, 1fr) 48px 18px;
+		gap: 8px 12px;
+		padding: 16px 4px;
+	}
+	.doorIndex {
+		font-size: 0.8125rem;
+		padding-top: 4px;
+	}
+	.doorTitle {
+		font-size: 1.35rem;
+	}
+	.doorDescription {
+		font-size: var(--type-footnote);
+	}
+	.doorScope {
+		font-size: var(--type-caption);
+	}
+	.doorIcon {
+		width: 48px;
+		height: 48px;
+	}
+	.doorIcon img {
+		width: 46px;
+		height: 46px;
+	}
+	.horizonWrap {
+		height: clamp(260px, 42svh, 360px);
+	}
+	.landscape {
+		object-position: 34% bottom;
+	}
+	.footer {
+		margin-inline: -20px;
+		padding: 24px 20px 14px;
+	}
+	.footerInner {
 		font-size: var(--type-caption);
 		gap: 12px;
 	}
+	.atmosphereToggle {
+		font-size: var(--type-caption);
+	}
 }
 
-@media (max-width: 640px) {
-	.page {
-		align-items: flex-start;
+@media (max-width: 359px) {
+	.door {
+		grid-template-columns: 24px minmax(0, 1fr) 18px;
 	}
-	.header h1 {
-		font-size: 36px;
+	.doorIcon {
+		display: none;
+	}
+	.footerInner {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0;
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
+	.page,
+	.header,
+	.navigation,
+	.horizonParallax,
+	.skyOverlay,
+	.landscapeDawn,
+	.landscapeNight,
 	.door,
+	.door::after,
 	.doorIcon img,
-	.arrow {
-		transition-duration: 0s;
+	.arrow,
+	.inkBird,
+	.starDot {
+		animation: none !important;
+		transition: none !important;
 	}
-	.door:hover,
+	.horizonParallax,
+	.skyOverlay,
 	.door:hover .doorIcon img,
 	.door:hover .arrow {
-		transform: none;
+		transform: none !important;
+	}
+	.dawnBirds {
+		display: none;
 	}
 }
