@@ -1,16 +1,24 @@
-/* Editorial Hairline Book Index for `/muc-luc`.
+/* Poetic Open-Book Index Spread for `/muc-luc`.
+ * Shares the sunlit rag paper & starlit midnight indigo atmosphere with `/` so turning
+ * from the cover feels like opening directly into the first chapter spread above the valley.
  * Global atmosphere backdrop, SiteHeader Night tokens, and View Transitions bloom live in
  * `src/app/personal-book.css` so every selector here stays pure for Webpack CSS Modules.
  * Every font-size stays >= 12px and respects `prefers-reduced-motion` and no-JS reading. */
 
 .page {
-	--toc-bg: #f8f7f4;
-	--toc-veil: rgba(248, 247, 244, 0.88);
-	--toc-row-hover: rgba(255, 252, 247, 0.96);
+	--toc-bg: #f8f4ea;
+	--toc-ink-warm: #24362e;
+	--toc-accent-warm: #8a5634;
+	--toc-blush: radial-gradient(
+		ellipse 85% 80% at 50% 45%,
+		rgba(214, 168, 96, 0.14) 0%,
+		rgba(214, 168, 96, 0.04) 55%,
+		transparent 80%
+	);
 	--toc-footer-grad: linear-gradient(
 		0deg,
-		rgba(248, 247, 244, 0.97) 0%,
-		rgba(248, 247, 244, 0.84) 58%,
+		rgba(248, 244, 234, 0.96) 0%,
+		rgba(248, 244, 234, 0.82) 56%,
 		transparent 100%
 	);
 	position: relative;
@@ -21,9 +29,9 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
-	padding: clamp(76px, 10svh, 112px) 40px 0;
+	padding: clamp(70px, 8.8svh, 102px) 40px 0;
 	background: var(--toc-bg);
-	color: var(--ink);
+	color: var(--toc-ink-warm);
 	overflow: clip;
 	transition:
 		background-color 620ms cubic-bezier(0.32, 0.72, 0, 1),
@@ -32,26 +40,65 @@
 
 .page[data-atmosphere='night'],
 :global(html[data-cover-atmosphere='night']) .page:not([data-atmosphere-ready='true']) {
-	--toc-bg: #0d1622;
-	--toc-veil: rgba(13, 22, 34, 0.84);
-	--toc-row-hover: rgba(22, 37, 56, 0.92);
+	--toc-bg: #0e1925;
+	--toc-ink-warm: #f4e8cd;
+	--toc-accent-warm: #e4ba7c;
+	--toc-blush: radial-gradient(
+		ellipse 85% 80% at 50% 45%,
+		rgba(232, 188, 114, 0.12) 0%,
+		rgba(232, 188, 114, 0.03) 56%,
+		transparent 80%
+	);
 	--toc-footer-grad: linear-gradient(
 		0deg,
-		rgba(13, 22, 34, 0.97) 0%,
-		rgba(13, 22, 34, 0.86) 58%,
+		rgba(14, 25, 37, 0.97) 0%,
+		rgba(14, 25, 37, 0.85) 56%,
 		transparent 100%
 	);
-	--canvas: #0d1622;
-	--paper: #0e1825;
-	--surface: #132030;
-	--surface-elevated: #162638;
-	--ink: #f2eadc;
-	--ink-secondary: #adb8c4;
-	--hairline: rgba(216, 200, 172, 0.17);
-	--bronze: #d9b269;
-	--accent: #d9b269;
-	background: #0d1622;
-	color: #f2eadc;
+	--canvas: #0e1925;
+	--paper: #101d2b;
+	--surface: #142334;
+	--surface-elevated: #17283b;
+	--ink: #f4e8cd;
+	--ink-secondary: #b4bec8;
+	--hairline: rgba(226, 206, 174, 0.18);
+	--bronze: #e4ba7c;
+	--accent: #e4ba7c;
+	background: #0e1925;
+	color: #f4e8cd;
+}
+
+/* ── Living Window Sunlight (Dawn) / Warm Reading Lamp Aura (Night) ──────── */
+@keyframes toc-light-breathe {
+	0%,
+	100% {
+		opacity: 0.78;
+		transform: translate3d(0, 0, 0);
+	}
+	50% {
+		opacity: 1;
+		transform: translate3d(10px, 6px, 0);
+	}
+}
+
+.sunlightWash {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	background:
+		radial-gradient(ellipse 46% 42% at 16% 10%, rgba(255, 236, 186, 0.34), transparent 72%),
+		radial-gradient(ellipse 40% 34% at 86% 24%, rgba(246, 222, 168, 0.18), transparent 70%);
+	animation: toc-light-breathe 20s ease-in-out infinite;
+}
+
+.page[data-atmosphere='night'] .sunlightWash,
+:global(html[data-cover-atmosphere='night'])
+	.page:not([data-atmosphere-ready='true'])
+	.sunlightWash {
+	background:
+		radial-gradient(ellipse 56% 46% at 50% 18%, rgba(235, 190, 118, 0.11), transparent 74%),
+		radial-gradient(ellipse 38% 36% at 84% 58%, rgba(235, 194, 120, 0.08), transparent 70%);
 }
 
 /* ── Bottom-anchored panoramic horizon with true alpha mask fade (zero seam) ── */
@@ -59,12 +106,12 @@
 	position: absolute;
 	inset-inline: 0;
 	bottom: 0;
-	height: clamp(320px, 60svh, 580px);
+	height: clamp(320px, 62svh, 580px);
 	z-index: -1;
 	overflow: hidden;
 	pointer-events: none;
-	-webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 100%);
-	mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 100%);
+	-webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 30%, #000 100%);
+	mask-image: linear-gradient(to bottom, transparent 0%, #000 30%, #000 100%);
 }
 
 .horizonParallax {
@@ -106,13 +153,13 @@
 	opacity: 0.96;
 }
 
-/* Quiet sky layer */
+/* Quiet sky layer — sits cleanly in the open valley sky below the chapter titles */
 .skyOverlay {
 	position: absolute;
 	inset-inline: 0;
-	top: 0;
+	top: 22%;
 	width: 100%;
-	height: 78%;
+	height: 66%;
 	transform: translate3d(
 		calc(var(--toc-gaze-x, 0) * -1.8px),
 		calc(var(--toc-gaze-y, 0) * -1.2px),
@@ -175,6 +222,33 @@
 	}
 }
 
+.sunMote {
+	fill: rgba(196, 150, 66, 0.42);
+	animation: toc-mote-float 9s ease-in-out infinite;
+}
+
+.sunMoteB {
+	animation-duration: 11.5s;
+	animation-delay: 2.2s;
+}
+
+.sunMoteC {
+	animation-duration: 13s;
+	animation-delay: 4.1s;
+}
+
+@keyframes toc-mote-float {
+	0%,
+	100% {
+		opacity: 0.16;
+		transform: translate3d(0, 4px, 0);
+	}
+	50% {
+		opacity: 0.58;
+		transform: translate3d(8px, -12px, 0);
+	}
+}
+
 .celestialArc {
 	fill: none;
 	stroke: rgba(226, 198, 146, 0.14);
@@ -196,7 +270,34 @@
 	}
 }
 
-/* ── Editorial Content Column ────────────────────────────────────────────── */
+.shootingStar {
+	stroke: rgba(248, 232, 192, 0.72);
+	stroke-width: 1.25;
+	stroke-linecap: round;
+	stroke-dasharray: 108;
+	stroke-dashoffset: 108;
+	opacity: 0;
+	animation: toc-shooting-star 13s ease-out 3.5s infinite;
+}
+
+@keyframes toc-shooting-star {
+	0%,
+	88%,
+	100% {
+		opacity: 0;
+		stroke-dashoffset: 108;
+	}
+	91% {
+		opacity: 0.72;
+		stroke-dashoffset: 38;
+	}
+	96% {
+		opacity: 0;
+		stroke-dashoffset: -108;
+	}
+}
+
+/* ── Editorial Poetic Content Spread ─────────────────────────────────────── */
 @keyframes toc-soft-arrive {
 	from {
 		opacity: 0.62;
@@ -209,14 +310,14 @@
 }
 
 .content {
-	width: min(100%, 760px);
+	width: min(100%, 880px);
 	margin: 0 auto;
 	position: relative;
 	z-index: 2;
 }
 
 .header {
-	margin-bottom: clamp(22px, 3.2svh, 34px);
+	margin-bottom: clamp(18px, 3svh, 30px);
 	animation: toc-soft-arrive 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -225,14 +326,22 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 16px;
-	margin-bottom: 12px;
+	margin-bottom: clamp(12px, 2.2svh, 22px);
 }
 
 .eyebrow {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
 	font-size: var(--type-caption);
 	text-transform: uppercase;
 	letter-spacing: 0.16em;
-	color: var(--bronze);
+	color: var(--toc-accent-warm);
+}
+
+.eyebrowStar {
+	font-size: 0.75rem;
+	opacity: 0.78;
 }
 
 .backLink {
@@ -240,7 +349,9 @@
 	align-items: center;
 	gap: 6px;
 	min-height: 44px;
-	font-size: var(--type-footnote);
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-style: italic;
+	font-size: 0.875rem;
 	color: var(--ink-secondary);
 	text-decoration: none;
 	white-space: nowrap;
@@ -248,161 +359,191 @@
 }
 
 .backLink span:first-child {
+	font-style: normal;
 	transition: transform var(--ui-duration-hover) var(--ui-ease);
 }
 
 .backLink:focus-visible {
-	color: var(--ink);
+	color: var(--toc-ink-warm);
 }
 
 @media (hover: hover) and (pointer: fine) {
 	.backLink:hover {
-		color: var(--ink);
+		color: var(--toc-ink-warm);
 	}
 	.backLink:hover span:first-child {
 		transform: translateX(-3px);
 	}
 }
 
-.header h1 {
-	font-size: clamp(2.15rem, 4vw, 3.35rem);
-	font-weight: 600;
-	line-height: 1.15;
-	letter-spacing: -0.038em;
+.titleBlock {
+	text-align: center;
+}
+
+.titleBlock h1 {
+	font-size: clamp(2.25rem, 4.2vw, 3.45rem);
+	font-weight: 500;
+	line-height: 1.14;
+	letter-spacing: -0.032em;
+	color: var(--toc-ink-warm);
 	margin-bottom: 10px;
 }
 
 .lead {
-	font-size: var(--type-subhead);
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-style: italic;
+	font-size: clamp(1rem, 1.4vw, 1.15rem);
 	color: var(--ink-secondary);
-	line-height: 1.6;
+	line-height: 1.55;
 }
 
-/* ── Editorial Hairline Index Rows (01 / 02) ─────────────────────────────── */
+.ornamentRule {
+	display: block;
+	width: 148px;
+	height: 11px;
+	margin: clamp(14px, 2.2svh, 22px) auto 0;
+	color: var(--toc-accent-warm);
+	opacity: 0.74;
+}
+
+/* ── Open-Book Chapter Diptych (Two Literary Leaves, Zero SaaS Box) ──────── */
 .navigation {
-	border-top: 1px solid var(--hairline);
-	background: var(--toc-veil);
+	position: relative;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0;
 	animation: toc-soft-arrive 360ms cubic-bezier(0.22, 1, 0.36, 1) 45ms both;
+}
+
+/* Delicate vertical book-spine hairline fading gently at top & bottom */
+.navigation::before {
+	content: '';
+	position: absolute;
+	left: 50%;
+	top: 10%;
+	bottom: 10%;
+	width: 1px;
+	transform: translateX(-0.5px);
+	background: linear-gradient(
+		180deg,
+		transparent 0%,
+		var(--hairline) 22%,
+		var(--hairline) 78%,
+		transparent 100%
+	);
+	pointer-events: none;
 }
 
 .door {
 	position: relative;
-	display: grid;
-	grid-template-columns: 44px minmax(0, 1fr) 72px 28px;
-	align-items: center;
-	gap: 12px 20px;
-	padding: 20px 14px;
+	isolation: isolate;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding: clamp(20px, 2.8svh, 30px) clamp(24px, 3.6vw, 44px);
 	text-decoration: none;
 	color: inherit;
-	border-bottom: 1px solid var(--hairline);
-	transition:
-		background-color var(--ui-duration-control) var(--ui-ease),
-		opacity var(--ui-duration-control) var(--ui-ease);
+	transition: opacity var(--ui-duration-control) var(--ui-ease);
 }
 
-/* Animated antique-bronze hairline rule drawing smoothly across on hover/focus */
+/* Warm sunlit watercolor blush that blooms softly behind the hovered chapter */
+.door::before {
+	content: '';
+	position: absolute;
+	inset: 2px 6px;
+	z-index: -1;
+	border-radius: 12px;
+	background: var(--toc-blush);
+	opacity: 0;
+	transition: opacity 340ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Fine antique-gold ink underline drawing gently across the bottom of the leaf */
 .door::after {
 	content: '';
 	position: absolute;
-	inset-inline: 0;
-	bottom: -1px;
-	height: 1.5px;
-	background: var(--bronze);
+	inset-inline: clamp(24px, 3.6vw, 44px);
+	bottom: 4px;
+	height: 1px;
+	background: linear-gradient(90deg, var(--toc-accent-warm) 0%, transparent 100%);
 	transform: scaleX(0);
 	transform-origin: left center;
-	transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+	transition: transform 340ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.door:hover,
 .door:focus-visible {
-	background: var(--toc-row-hover);
+	outline: 2px solid var(--toc-accent-warm);
+	outline-offset: -4px;
+	border-radius: 8px;
 }
 
-.door:hover::after,
+.door:focus-visible::before {
+	opacity: 1;
+}
+
 .door:focus-visible::after {
 	transform: scaleX(1);
 }
 
-.door:focus-visible {
-	outline: 2px solid var(--bronze);
-	outline-offset: -2px;
-}
-
 @media (hover: hover) and (pointer: fine) {
+	.door:hover::before {
+		opacity: 1;
+	}
+	.door:hover::after {
+		transform: scaleX(1);
+	}
 	.navigation:has(.door:hover) .door:not(:hover) {
-		opacity: 0.68;
+		opacity: 0.64;
 	}
 }
 
+.doorTop {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
 .doorIndex {
-	align-self: start;
-	padding-top: 5px;
 	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
-	font-size: 0.9375rem;
+	font-style: italic;
+	font-size: 1rem;
 	font-variant-numeric: tabular-nums;
 	letter-spacing: 0.04em;
-	color: var(--ink-secondary);
-	transition: color var(--ui-duration-hover) var(--ui-ease);
+	color: var(--toc-accent-warm);
+	flex-shrink: 0;
 }
 
-.door:hover .doorIndex,
-.door:focus-visible .doorIndex {
-	color: var(--bronze);
-}
-
-.doorText {
-	display: flex;
-	flex-direction: column;
-	min-width: 0;
-}
-
-.doorTitle {
-	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
-	font-size: clamp(1.45rem, 2.2vw, 1.85rem);
-	font-weight: 600;
-	line-height: 1.24;
-	letter-spacing: -0.025em;
-	color: var(--ink);
-}
-
-.doorDescription {
-	margin-top: 4px;
-	font-size: var(--type-subhead);
-	line-height: 1.5;
-	color: var(--ink-secondary);
-}
-
-.doorScope {
-	margin-top: 6px;
-	font-size: var(--type-caption);
-	letter-spacing: 0.03em;
-	color: var(--ink-secondary);
-	opacity: 0.84;
+.doorRule {
+	flex: 1;
+	height: 1px;
+	background: linear-gradient(90deg, var(--hairline) 0%, transparent 92%);
+	transition: background-color var(--ui-duration-control) var(--ui-ease);
 }
 
 .doorIcon {
-	width: 72px;
-	height: 72px;
+	width: 78px;
+	height: 78px;
 	display: grid;
 	place-items: center;
 	border-radius: 9999px;
+	flex-shrink: 0;
 	position: relative;
 }
 
 .doorIcon img {
-	width: 64px;
-	height: 64px;
+	width: 74px;
+	height: 74px;
 	object-fit: contain;
 	mix-blend-mode: multiply;
-	transition: transform 340ms cubic-bezier(0.22, 1, 0.36, 1);
+	transition: transform 380ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .page[data-atmosphere='night'] .doorIcon,
 :global(html[data-cover-atmosphere='night']) .page:not([data-atmosphere-ready='true']) .doorIcon {
 	background: radial-gradient(
 		circle,
-		rgba(242, 234, 220, 0.22) 0%,
-		rgba(242, 234, 220, 0.06) 62%,
+		rgba(244, 232, 205, 0.18) 0%,
+		rgba(244, 232, 205, 0.05) 58%,
 		transparent 76%
 	);
 }
@@ -413,32 +554,95 @@
 	.doorIcon
 	img {
 	mix-blend-mode: normal;
-	filter: brightness(0.96) contrast(1.04) drop-shadow(0 4px 10px rgba(3, 8, 16, 0.42));
+	filter: brightness(0.96) contrast(1.04) drop-shadow(0 4px 12px rgba(3, 8, 16, 0.45));
 }
 
-.door:hover .doorIcon img,
 .door:focus-visible .doorIcon img {
-	transform: rotate(-3deg) scale(1.06);
+	transform: translateY(-2px) rotate(-3deg) scale(1.05);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.door:hover .doorIcon img {
+		transform: translateY(-2px) rotate(-3deg) scale(1.05);
+	}
+}
+
+.doorText {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.doorTitleRow {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.doorTitle {
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-size: clamp(1.65rem, 2.4vw, 2.1rem);
+	font-weight: 500;
+	line-height: 1.2;
+	letter-spacing: -0.024em;
+	color: var(--toc-ink-warm);
+	transition: color var(--ui-duration-hover) var(--ui-ease);
+}
+
+.door:focus-visible .doorTitle {
+	color: var(--toc-accent-warm);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.door:hover .doorTitle {
+		color: var(--toc-accent-warm);
+	}
+}
+
+.doorDescription {
+	margin-top: 6px;
+	font-size: var(--type-subhead);
+	line-height: 1.55;
+	color: var(--ink-secondary);
+}
+
+.doorScope {
+	margin-top: 10px;
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-style: italic;
+	font-size: 0.8125rem;
+	letter-spacing: 0.015em;
+	color: var(--ink-secondary);
+	opacity: 0.82;
 }
 
 .doorCue {
-	display: flex;
-	justify-content: flex-end;
+	display: inline-flex;
+	align-items: center;
+	flex-shrink: 0;
 }
 
 .arrow {
 	display: inline-block;
-	font-size: 1rem;
-	color: var(--bronze);
+	font-size: 1.125rem;
+	color: var(--toc-accent-warm);
 	transition: transform var(--ui-duration-control) var(--ui-ease);
 }
 
-.door:hover .arrow,
 .door:focus-visible .arrow {
-	transform: translateX(4px);
+	transform: translateX(5px);
 }
 
-.door:hover .arrow[data-external],
+@media (hover: hover) and (pointer: fine) {
+	.door:hover .arrow {
+		transform: translateX(5px);
+	}
+	.door:hover .arrow[data-external] {
+		transform: translate(3px, -3px);
+	}
+}
+
 .door:focus-visible .arrow[data-external] {
 	transform: translate(3px, -3px);
 }
@@ -454,7 +658,7 @@
 }
 
 .footerInner {
-	width: min(100%, 760px);
+	width: min(100%, 880px);
 	margin: 0 auto;
 	display: flex;
 	align-items: center;
@@ -468,6 +672,9 @@
 	display: inline-flex;
 	align-items: center;
 	min-height: 44px;
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-style: italic;
+	font-size: 0.875rem;
 }
 
 .atmosphereToggle {
@@ -479,9 +686,9 @@
 	min-height: 44px;
 	display: inline-flex;
 	align-items: center;
-	gap: 7px;
+	gap: 8px;
 	font-size: var(--type-footnote);
-	color: var(--ink);
+	color: var(--toc-ink-warm);
 	letter-spacing: 0.02em;
 	white-space: nowrap;
 	cursor: pointer;
@@ -491,14 +698,14 @@
 }
 
 .atmosphereToggle:focus-visible {
-	color: var(--bronze);
-	border-bottom-color: var(--bronze);
+	color: var(--toc-accent-warm);
+	border-bottom-color: var(--toc-accent-warm);
 }
 
 @media (hover: hover) and (pointer: fine) {
 	.atmosphereToggle:hover {
-		color: var(--bronze);
-		border-bottom-color: var(--bronze);
+		color: var(--toc-accent-warm);
+		border-bottom-color: var(--toc-accent-warm);
 	}
 }
 
@@ -509,7 +716,7 @@
 	height: 24px;
 	border: 1px solid color-mix(in srgb, currentColor 42%, transparent);
 	border-radius: 50%;
-	color: var(--bronze);
+	color: var(--toc-accent-warm);
 	font-size: 0.875rem;
 	line-height: 1;
 }
@@ -517,36 +724,46 @@
 /* ── Short Desktop (`1440×500`, `720×450`) ───────────────────────────────── */
 @media (max-height: 600px) {
 	.page {
-		padding-top: 56px;
-		--toc-veil: rgba(248, 247, 244, 0.9);
-	}
-	.page[data-atmosphere='night'],
-	:global(html[data-cover-atmosphere='night']) .page:not([data-atmosphere-ready='true']) {
-		--toc-veil: rgba(13, 22, 34, 0.88);
+		padding-top: 52px;
 	}
 	.header {
-		margin-bottom: 12px;
+		margin-bottom: 8px;
 	}
 	.metaRow {
-		margin-bottom: 2px;
+		margin-bottom: 4px;
 	}
-	.header h1 {
+	.titleBlock h1 {
 		font-size: clamp(1.8rem, 3.2vw, 2.35rem);
 		margin-bottom: 4px;
 	}
+	.lead {
+		font-size: 0.9375rem;
+	}
+	.ornamentRule {
+		margin-top: 8px;
+	}
 	.door {
-		padding: 10px 10px;
+		gap: 8px;
+		padding: 12px 24px;
 	}
 	.doorIcon {
+		width: 52px;
+		height: 52px;
+	}
+	.doorIcon img {
 		width: 48px;
 		height: 48px;
 	}
-	.doorIcon img {
-		width: 44px;
-		height: 44px;
+	.doorTitle {
+		font-size: 1.45rem;
+	}
+	.doorScope {
+		margin-top: 4px;
 	}
 	.horizonWrap {
-		height: clamp(280px, 76svh, 400px);
+		height: clamp(270px, 74svh, 390px);
+		-webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 18%, #000 100%);
+		mask-image: linear-gradient(to bottom, transparent 0%, #000 18%, #000 100%);
 	}
 	.landscape {
 		object-position: center 78%;
@@ -557,29 +774,19 @@
 	}
 }
 
-/* ── Tablet & Mobile (`<= 860px`) ────────────────────────────────────────── */
+/* ── Tablet (`768px..860px`) ─────────────────────────────────────────────── */
 @media (max-width: 860px) {
 	.page {
-		padding: 76px 24px 0;
+		padding: 72px 24px 0;
 	}
 	.horizonWrap {
-		height: clamp(290px, 46svh, 440px);
+		height: clamp(290px, 48svh, 440px);
 	}
 	.landscape {
 		object-position: 86% bottom;
 	}
 	.door {
-		grid-template-columns: 34px minmax(0, 1fr) 56px 22px;
-		gap: 10px 14px;
-		padding: 18px 8px;
-	}
-	.doorIcon {
-		width: 56px;
-		height: 56px;
-	}
-	.doorIcon img {
-		width: 52px;
-		height: 52px;
+		padding: 18px 22px;
 	}
 	.footer {
 		margin-inline: -24px;
@@ -587,49 +794,89 @@
 	}
 }
 
-@media (max-width: 639px) {
+/* ── Mobile (`<= 767px`) ─────────────────────────────────────────────────── */
+@media (max-width: 767px) {
 	.page {
-		padding: 72px 20px 0;
+		padding: 68px 20px 0;
 	}
 	.metaRow {
-		margin-bottom: 8px;
+		margin-bottom: 10px;
 		gap: 8px;
 	}
 	.eyebrow {
 		letter-spacing: 0.08em;
 		white-space: nowrap;
 	}
-	.header h1 {
-		font-size: clamp(1.95rem, 8.2vw, 2.4rem);
+	.titleBlock {
+		text-align: left;
+	}
+	.titleBlock h1 {
+		font-size: clamp(1.95rem, 8.2vw, 2.45rem);
+	}
+	.ornamentRule {
+		margin: 12px 0 0;
+		width: 112px;
+	}
+	.navigation {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 4px;
+	}
+	.navigation::before {
+		display: none;
 	}
 	.door {
-		grid-template-columns: 28px minmax(0, 1fr) 48px 18px;
-		gap: 8px 12px;
-		padding: 16px 4px;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 58px;
+		align-items: center;
+		gap: 6px 14px;
+		padding: 18px 4px;
+		border-bottom: 1px solid var(--hairline);
+	}
+	.door:last-child {
+		border-bottom: 0;
+	}
+	.door::after {
+		inset-inline: 0;
+		bottom: -1px;
+	}
+	.doorTop {
+		display: contents;
 	}
 	.doorIndex {
+		grid-column: 1;
+		grid-row: 1;
 		font-size: 0.8125rem;
-		padding-top: 4px;
+	}
+	.doorRule {
+		display: none;
+	}
+	.doorText {
+		grid-column: 1;
+		grid-row: 2;
+	}
+	.doorIcon {
+		grid-column: 2;
+		grid-row: 1 / 3;
+		width: 58px;
+		height: 58px;
+	}
+	.doorIcon img {
+		width: 56px;
+		height: 56px;
 	}
 	.doorTitle {
-		font-size: 1.35rem;
+		font-size: 1.45rem;
 	}
 	.doorDescription {
 		font-size: var(--type-footnote);
+		margin-top: 3px;
 	}
 	.doorScope {
 		font-size: var(--type-caption);
-	}
-	.doorIcon {
-		width: 48px;
-		height: 48px;
-	}
-	.doorIcon img {
-		width: 46px;
-		height: 46px;
+		margin-top: 6px;
 	}
 	.horizonWrap {
-		height: clamp(280px, 44svh, 390px);
+		height: clamp(275px, 44svh, 390px);
 	}
 	.landscape {
 		object-position: 94% bottom;
@@ -642,6 +889,9 @@
 		font-size: var(--type-caption);
 		gap: 12px;
 	}
+	.footerNote {
+		font-size: 0.8125rem;
+	}
 	.atmosphereToggle {
 		font-size: var(--type-caption);
 	}
@@ -649,7 +899,7 @@
 
 @media (max-width: 359px) {
 	.door {
-		grid-template-columns: 24px minmax(0, 1fr) 18px;
+		grid-template-columns: minmax(0, 1fr);
 	}
 	.doorIcon {
 		display: none;
@@ -663,6 +913,7 @@
 
 @media (prefers-reduced-motion: reduce) {
 	.page,
+	.sunlightWash,
 	.header,
 	.navigation,
 	.horizonParallax,
@@ -670,11 +921,14 @@
 	.landscapeDawn,
 	.landscapeNight,
 	.door,
+	.door::before,
 	.door::after,
 	.doorIcon img,
 	.arrow,
 	.inkBird,
-	.starDot {
+	.sunMote,
+	.starDot,
+	.shootingStar {
 		animation: none !important;
 		transition: none !important;
 	}
@@ -684,7 +938,8 @@
 	.door:hover .arrow {
 		transform: none !important;
 	}
-	.dawnBirds {
+	.dawnBirds,
+	.shootingStar {
 		display: none;
 	}
 }
