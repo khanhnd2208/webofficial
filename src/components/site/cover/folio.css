@@ -1,38 +1,45 @@
-/* Cloth, paper and the shadow cast by the binding share a single light source. */
+/* Cloth, rag paper, dappled morning light / evening lamplight, and binding shadow share one light source. */
 .personal-book.cover-folio {
-	--cloth: #28483e;
-	--cloth-shadow: #142e29;
-	--cloth-light: #577466;
-	--leaf: #f8f3e5;
+	--cloth: #2a463c;
+	--cloth-shadow: #152b25;
+	--cloth-light: #5c7a67;
+	--leaf: #f9f4e7;
 	--edge: #cabfa6;
 	--edge-light: #ece4d1;
-	--binding: #273e34;
+	--binding: #263d33;
 	--fold-shade: #574320;
-	--ribbon: #943c30;
-	--folio-ink: #273c32;
-	--cover-accent: #825233;
-	--button-paper: #fff9e7;
+	--ribbon: #993f32;
+	--folio-ink: #24382f;
+	--cover-accent: #8a5534;
+	--button-paper: #fdf8eb;
 	isolation: isolate;
 	padding: 0 clamp(20px, 4.4vw, 78px) clamp(26px, 5svh, 60px);
 	background:
+		radial-gradient(ellipse 46% 36% at 14% 2%, rgba(250, 232, 186, 0.16), transparent 68%),
 		repeating-linear-gradient(92deg, transparent 0 2px, rgb(255 255 255 / 2%) 2.5px 3px),
 		repeating-linear-gradient(2deg, transparent 0 2px, rgb(0 0 0 / 4%) 2.5px 3px),
 		radial-gradient(ellipse at 11% 0%, var(--cloth-light), transparent 64%),
 		linear-gradient(130deg, var(--cloth), var(--cloth-shadow));
 }
 html[data-cover-atmosphere='night'] .personal-book.cover-folio {
-	--cloth: #152831;
-	--cloth-shadow: #0a161b;
-	--cloth-light: #38505b;
-	--leaf: #1b2e39;
+	--cloth: #14252e;
+	--cloth-shadow: #091319;
+	--cloth-light: #354c57;
+	--leaf: #192b36;
 	--edge: #465158;
 	--edge-light: #627177;
-	--binding: #0a1c23;
+	--binding: #0a1b22;
 	--fold-shade: #020b10;
-	--ribbon: #a85c41;
-	--folio-ink: #f4e5bf;
-	--cover-accent: #e6bb82;
-	--button-paper: #1e3035;
+	--ribbon: #b26347;
+	--folio-ink: #f5e7c6;
+	--cover-accent: #e5ba7d;
+	--button-paper: #16262f;
+	background:
+		radial-gradient(ellipse 52% 40% at 50% 4%, rgba(235, 190, 118, 0.08), transparent 68%),
+		repeating-linear-gradient(92deg, transparent 0 2px, rgb(255 255 255 / 1.5%) 2.5px 3px),
+		repeating-linear-gradient(2deg, transparent 0 2px, rgb(0 0 0 / 4.5%) 2.5px 3px),
+		radial-gradient(ellipse at 14% 0%, var(--cloth-light), transparent 62%),
+		linear-gradient(135deg, var(--cloth), var(--cloth-shadow));
 }
 .cover-folio .cover-meta {
 	position: relative;
@@ -128,7 +135,84 @@ html[data-cover-atmosphere='night'] .personal-book.cover-folio {
 	clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%);
 	filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.22));
 	pointer-events: none;
+	z-index: 4;
 }
+
+/* Soft dappled morning sunlight (Dawn) / warm brass desk-lamp pool (Night) across the open pages */
+@keyframes cover-sunlight-sway {
+	0%,
+	100% {
+		opacity: 0.78;
+		transform: translate3d(0, 0, 0);
+	}
+	50% {
+		opacity: 1;
+		transform: translate3d(8px, 5px, 0);
+	}
+}
+.cover-folio .cover-sunlight-wash {
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	pointer-events: none;
+	z-index: 3;
+	background:
+		radial-gradient(ellipse 42% 48% at 18% 12%, rgba(255, 241, 200, 0.28), transparent 70%),
+		linear-gradient(
+			118deg,
+			rgba(255, 244, 212, 0.16) 0%,
+			rgba(255, 244, 212, 0.04) 36%,
+			transparent 58%,
+			rgba(48, 40, 26, 0.03) 100%
+		);
+	animation: cover-sunlight-sway 18s ease-in-out infinite;
+}
+html[data-cover-atmosphere='night'] .cover-folio .cover-sunlight-wash {
+	background:
+		radial-gradient(ellipse 64% 68% at 54% 16%, rgba(238, 192, 118, 0.12), transparent 72%),
+		radial-gradient(ellipse 44% 48% at 24% 26%, rgba(235, 196, 130, 0.06), transparent 68%);
+}
+
+/* Delicate botanical ink sprig between [động từ] and narrative prose */
+.cover-folio .cover-ink-sprig {
+	display: block;
+	width: 72px;
+	height: 11px;
+	margin-top: clamp(10px, 1.8svh, 18px);
+	color: var(--cover-accent);
+	opacity: 0.62;
+}
+
+/* Quiet vermilion bookmaker chop seal & page number tucked into lower-left margin */
+.cover-folio .cover-leaf-colophon {
+	position: absolute;
+	left: clamp(32px, 4.4vw, 72px);
+	bottom: clamp(18px, 2.6svh, 30px);
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding-inline-start: clamp(10px, 2.4vw, 45px);
+	pointer-events: none;
+	z-index: 2;
+	transition: opacity var(--ui-duration-control) var(--ui-ease);
+}
+.cover-folio[data-whisper-open='true'] .cover-leaf-colophon {
+	opacity: 0;
+}
+.cover-folio .cover-chop-seal {
+	width: 20px;
+	height: 20px;
+	color: var(--ribbon);
+	opacity: 0.68;
+}
+.cover-folio .cover-folio-page-num {
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-style: italic;
+	font-size: 0.75rem;
+	letter-spacing: 0.08em;
+	color: color-mix(in srgb, var(--folio-ink) 52%, transparent);
+}
+
 .cover-folio .cover-copy {
 	color: var(--folio-ink);
 	padding-inline-start: clamp(10px, 2.4vw, 45px);
@@ -175,33 +259,104 @@ html[data-cover-atmosphere='night'] .personal-book.cover-folio {
 	color: var(--cover-accent);
 }
 .cover-folio .cover-narrative {
-	margin-top: clamp(14px, 3svh, 32px);
-	font-size: clamp(1.14rem, 1.65vw, 1.52rem);
-	line-height: 1.45;
+	margin-top: clamp(10px, 2.2svh, 22px);
+	font-size: clamp(1.14rem, 1.65vw, 1.5rem);
+	line-height: 1.48;
 }
+
+/* Handcrafted literary bookplate invitation (replaces heavy boxy SaaS button) */
 .cover-folio .cover-cta {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
 	display: inline-flex;
 	align-items: center;
-	gap: 26px;
+	gap: 14px;
 	min-height: 46px;
-	margin-top: clamp(17px, 3.3svh, 38px);
-	padding: 0 8px 0 20px;
-	border: 1px solid transparent;
-	border-radius: 3px;
-	background: var(--folio-ink);
-	color: var(--button-paper);
+	margin-top: clamp(18px, 3.2svh, 34px);
+	padding: 0 22px 0 18px;
+	border: 1px solid color-mix(in srgb, var(--folio-ink) 30%, transparent);
+	border-radius: 9999px;
+	background: color-mix(in srgb, var(--folio-ink) 5%, transparent);
+	color: var(--folio-ink);
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-size: 1.0625rem;
 	font-weight: 500;
+	letter-spacing: 0.01em;
+	transition:
+		border-color var(--ui-duration-control) var(--ui-ease),
+		color var(--ui-duration-control) var(--ui-ease),
+		transform var(--ui-duration-hover) var(--ui-ease);
 }
-.cover-folio .cover-cta span {
-	display: grid;
-	place-items: center;
-	width: 32px;
-	height: 32px;
-	border-left: 1px solid color-mix(in srgb, currentColor 32%, transparent);
+.cover-folio .cover-cta::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background: var(--folio-ink);
+	transform: scaleX(0);
+	transform-origin: left center;
+	transition: transform 340ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-.cover-folio .cover-cta:is(:hover, :focus-visible) {
-	background: var(--cover-accent);
+html[data-cover-atmosphere='night'] .cover-folio .cover-cta {
+	border-color: rgba(230, 187, 130, 0.42);
+	background: rgba(230, 187, 130, 0.08);
+	color: var(--folio-ink);
+}
+html[data-cover-atmosphere='night'] .cover-folio .cover-cta::before {
+	background: var(--folio-ink);
+}
+.cover-folio .cover-cta-seal {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--ribbon);
+	flex-shrink: 0;
+	transition:
+		background-color var(--ui-duration-control) var(--ui-ease),
+		transform var(--ui-duration-control) var(--ui-ease);
+}
+.cover-folio .cover-cta-text {
+	line-height: 1;
+}
+.cover-folio .cover-cta-arrow {
+	display: inline-block;
+	margin-left: 4px;
+	color: var(--cover-accent);
+	transition:
+		transform var(--ui-duration-control) var(--ui-ease),
+		color var(--ui-duration-control) var(--ui-ease);
+}
+.cover-folio .cover-cta:focus-visible {
 	color: var(--button-paper);
+	border-color: var(--folio-ink);
+}
+.cover-folio .cover-cta:focus-visible::before {
+	transform: scaleX(1);
+}
+.cover-folio .cover-cta:focus-visible .cover-cta-seal {
+	background: var(--cover-accent);
+}
+.cover-folio .cover-cta:focus-visible .cover-cta-arrow {
+	color: var(--button-paper);
+	transform: translateX(4px);
+}
+@media (hover: hover) and (pointer: fine) {
+	.cover-folio .cover-cta:hover {
+		color: var(--button-paper);
+		border-color: var(--folio-ink);
+	}
+	.cover-folio .cover-cta:hover::before {
+		transform: scaleX(1);
+	}
+	.cover-folio .cover-cta:hover .cover-cta-seal {
+		background: var(--cover-accent);
+		transform: scale(1.15);
+	}
+	.cover-folio .cover-cta:hover .cover-cta-arrow {
+		color: var(--button-paper);
+		transform: translateX(4px);
+	}
 }
 .cover-folio .cover-plate-figure {
 	align-items: stretch;
@@ -365,6 +520,14 @@ html.cover-blooming .cover-folio[data-js] .cover-plate-frame .cover-layer-night 
 	.cover-folio .cover-copy {
 		padding: 0;
 	}
+	.cover-folio .cover-ink-sprig {
+		margin-inline: auto;
+		margin-top: 4px;
+		width: 58px;
+	}
+	.cover-folio .cover-leaf-colophon {
+		display: none;
+	}
 	.cover-folio .cover-whisper {
 		left: auto;
 	}
@@ -462,6 +625,12 @@ html.cover-blooming .cover-folio[data-js] .cover-plate-frame .cover-layer-night 
 	}
 	.cover-folio .cover-pos {
 		font-size: 1rem;
+	}
+	.cover-folio .cover-ink-sprig {
+		display: none;
+	}
+	.cover-folio .cover-leaf-colophon {
+		display: none;
 	}
 	.cover-folio .cover-narrative {
 		margin-top: 8px;
