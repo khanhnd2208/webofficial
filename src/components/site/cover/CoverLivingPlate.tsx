@@ -11,13 +11,14 @@ import {
 	useRef,
 	useState,
 	type CSSProperties,
-	type MouseEvent,
 } from 'react';
 
 import { useMotionTier } from '@/components/motion/MotionProvider';
 import { routes } from '@/config/routes';
 import { introPage } from '@/content/publicMarketing';
 
+import CoverPageCorner from './CoverPageCorner';
+import { useCoverPointer } from './useCoverPointer';
 import CoverAtmosphereCanvas, { type TransitionPulse } from './CoverAtmosphereCanvas';
 import {
 	DESKTOP_CONSTELLATION,
@@ -77,7 +78,7 @@ export default function CoverLivingPlate({
 	const tweenRafRef = useRef<number | null>(null);
 	const prevAtmosphereRef = useRef<CoverAtmosphere>(atmosphere);
 	const pendingOriginRef = useRef<BloomOrigin | null>(null);
-	const lastPointerRef = useRef<{ x: number; y: number; time: number } | null>(null);
+	const { pointerRef, lanternRef } = useCoverPointer(frameRef, allowsAmbient);
 	const pulseCounterRef = useRef(0);
 	const mountedRef = useRef(false);
 
@@ -86,8 +87,6 @@ export default function CoverLivingPlate({
 	const [isFallbackTransitioning, setIsFallbackTransitioning] = useState(false);
 	const [pathWarmed, setPathWarmed] = useState(false);
 	const [hasInteracted, setHasInteracted] = useState(false);
-	const [pointer, setPointer] = useState({ x: 0.5, y: 0.5, vx: 0, vy: 0, active: false });
-	const [gaze, setGaze] = useState({ x: 0, y: 0 });
 	const [pulse, setPulse] = useState<TransitionPulse | null>(null);
 	const [openNote, setOpenNote] = useState<'person' | 'journey' | null>(null);
 
@@ -122,14 +121,15 @@ export default function CoverLivingPlate({
 
 	// Close marginalia on Escape or outside pointer click
 	useEffect(() => {
-		if (!openNote) return;
 		const onKeyDown = (event: KeyboardEvent) => {
 			if (event.key !== 'Escape') return;
-			const activeEl = openNote === 'person' ? personNoteRef.current : journeyNoteRef.current;
+			const activeEl = [personNoteRef.current, journeyNoteRef.current].find((note) => note?.open);
+			if (!activeEl) return;
 			closeAllNotes();
 			activeEl?.querySelector('summary')?.focus();
 		};
 		const onPointerDown = (event: PointerEvent) => {
+			if (!personNoteRef.current?.open && !journeyNoteRef.current?.open) return;
 			const target = event.target as Node;
 			if (
 				personNoteRef.current?.contains(target) ||
@@ -146,7 +146,7 @@ export default function CoverLivingPlate({
 			document.removeEventListener('keydown', onKeyDown);
 			document.removeEventListener('pointerdown', onPointerDown);
 		};
-	}, [closeAllNotes, openNote]);
+	}, [closeAllNotes]);
 
 	// Synchronize initial mounted atmosphere & run organic SVG fallback reveal only if needed
 	useIsoLayoutEffect(() => {
@@ -277,59 +277,19 @@ export default function CoverLivingPlate({
 		onToggleAtmosphere(origin);
 	}, [computeSunOrigin, onToggleAtmosphere]);
 
-	const handlePlateClick = useCallback(
-		(event: MouseEvent<HTMLButtonElement>) => {
-			setHasInteracted(true);
-			const frame = frameRef.current;
-			let origin: BloomOrigin;
-			if (frame && event.detail > 0) {
-				const rect = frame.getBoundingClientRect();
-				const nx = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0.05), 0.95);
-				const ny = Math.min(Math.max((event.clientY - rect.top) / rect.height, 0.05), 0.95);
-				origin = {
-					clientX: Math.round(event.clientX),
-					clientY: Math.round(event.clientY),
-					plateX: nx,
-					plateY: ny,
-				};
-			} else {
-				origin = computeSunOrigin();
-			}
-			pendingOriginRef.current = origin;
-			onToggleAtmosphere(origin);
-		},
-		[computeSunOrigin, onToggleAtmosphere],
-	);
-
-	const handlePointerMove = useCallback(
-		(event: MouseEvent<HTMLDivElement>) => {
-			if (!allowsAmbient || !frameRef.current) return;
-			const rect = frameRef.current.getBoundingClientRect();
-			const nx = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1);
-			const ny = Math.min(Math.max((event.clientY - rect.top) / rect.height, 0), 1);
-
-			const now = performance.now();
-			const prev = lastPointerRef.current;
-			let vx = 0;
-			let vy = 0;
-			if (prev) {
-				const dt = Math.max((now - prev.time) / 1000, 0.008);
-				vx = Math.max(-900, Math.min(900, (event.clientX - prev.x) / dt));
-				vy = Math.max(-900, Math.min(900, (event.clientY - prev.y) / dt));
-			}
-			lastPointerRef.current = { x: event.clientX, y: event.clientY, time: now };
-
-			setPointer({ x: nx, y: ny, vx, vy, active: true });
-			setGaze({ x: (nx - 0.5) * 2, y: (ny - 0.5) * 2 });
-		},
-		[allowsAmbient],
-	);
-
-	const handlePointerLeave = useCallback(() => {
-		lastPointerRef.current = null;
-		setPointer((prev) => ({ ...prev, vx: 0, vy: 0, active: false }));
-		setGaze({ x: 0, y: 0 });
-	}, []);
+	function turnFromPoint(clientX: number, clientY: number) {
+		const rect = frameRef.current?.getBoundingClientRect();
+		if (!rect?.width || !rect.height) return triggerFromSun();
+		const origin = {
+			clientX,
+			clientY,
+			plateX: Math.min(Math.max((clientX - rect.left) / rect.width, 0.05), 0.95),
+			plateY: Math.min(Math.max((clientY - rect.top) / rect.height, 0.05), 0.95),
+		};
+		setHasInteracted(true);
+		pendingOriginRef.current = origin;
+		onToggleAtmosphere(origin);
+	}
 
 	const handleNoteToggle = (which: 'person' | 'journey', nextOpen: boolean) => {
 		setHasInteracted(true);
@@ -346,7 +306,7 @@ export default function CoverLivingPlate({
 		src: introPage.desktopImage.src,
 		alt: introPage.desktopImage.alt,
 		fill: true,
-		sizes: '(min-width: 1024px) 62vw, 340px',
+		sizes: '(min-width: 1360px) 540px, 41vw',
 		loading: 'eager',
 	});
 	const { props: dawnMobile } = getImageProps({
@@ -360,7 +320,7 @@ export default function CoverLivingPlate({
 		src: introPage.desktopNightImage.src,
 		alt: '',
 		fill: true,
-		sizes: '(min-width: 1024px) 62vw, 340px',
+		sizes: '(min-width: 1360px) 540px, 41vw',
 		loading: 'eager',
 	});
 	const { props: nightMobile } = getImageProps({
@@ -380,18 +340,13 @@ export default function CoverLivingPlate({
 	const sunPos = isDesktop ? DESKTOP_SUN_POS : MOBILE_SUN_POS;
 
 	const showNightLayer = atmosphere === 'night' || isFallbackTransitioning;
-	const nightMaskActive =
-		isFallbackTransitioning || (atmosphere === 'night' && allowsAmbient && pointer.active);
 
 	const stageVars = {
-		'--gaze-x': gaze.x.toFixed(3),
-		'--gaze-y': gaze.y.toFixed(3),
+		'--cover-lantern-mask': `url(#${maskId})`,
 		'--sun-x': `${sunPos.x}%`,
 		'--sun-y': `${sunPos.y}%`,
 	} as CSSProperties;
 
-	const lanternX = (pointer.x * boxSize.w).toFixed(1);
-	const lanternY = (pointer.y * boxSize.h).toFixed(1);
 	const lanternR = Math.round(Math.min(boxSize.w, boxSize.h) * 0.145);
 
 	const toggleLabel = atmosphere === 'night' ? 'Chạm để gọi bình minh' : 'Chạm để gọi đêm sao';
@@ -419,8 +374,6 @@ export default function CoverLivingPlate({
 				className="cover-plate-frame"
 				data-atmosphere={atmosphere}
 				data-transitioning={isFallbackTransitioning ? 'true' : undefined}
-				onMouseMove={allowsAmbient ? handlePointerMove : undefined}
-				onMouseLeave={allowsAmbient ? handlePointerLeave : undefined}
 			>
 				{/* Inline SVG organic paper-bleed mask definition */}
 				<svg
@@ -463,11 +416,8 @@ export default function CoverLivingPlate({
 							height={boxSize.h}
 						>
 							<rect width={boxSize.w} height={boxSize.h} fill="white" />
-							{atmosphere === 'night' &&
-							!isFallbackTransitioning &&
-							allowsAmbient &&
-							pointer.active ? (
-								<circle cx={lanternX} cy={lanternY} r={lanternR} fill={`url(#${lanternGradId})`} />
+							{atmosphere === 'night' && !isFallbackTransitioning && allowsAmbient ? (
+								<circle ref={lanternRef} r={lanternR} fill={`url(#${lanternGradId})`} />
 							) : null}
 							<circle
 								ref={revealCircleRef}
@@ -539,8 +489,8 @@ export default function CoverLivingPlate({
 					className="cover-layer-night"
 					data-visible={showNightLayer ? 'true' : undefined}
 					style={{
-						mask: nightMaskActive ? `url(#${maskId})` : undefined,
-						WebkitMask: nightMaskActive ? `url(#${maskId})` : undefined,
+						mask: isFallbackTransitioning ? `url(#${maskId})` : undefined,
+						WebkitMask: isFallbackTransitioning ? `url(#${maskId})` : undefined,
 					}}
 					aria-hidden="true"
 				>
@@ -592,7 +542,7 @@ export default function CoverLivingPlate({
 					isDesktop={isDesktop}
 					allowsAmbient={allowsAmbient}
 					reduced={reduced}
-					pointer={pointer}
+					pointerRef={pointerRef}
 					pulse={pulse}
 					hasInteracted={hasInteracted}
 				/>
@@ -601,11 +551,15 @@ export default function CoverLivingPlate({
 				<button
 					type="button"
 					className="cover-plate-surface-btn"
-					onClick={handlePlateClick}
+					onClick={(event) =>
+						event.detail > 0 ? turnFromPoint(event.clientX, event.clientY) : triggerFromSun()
+					}
 					aria-label={toggleLabel}
 					aria-pressed={atmosphere === 'night'}
 					data-testid="cover-plate-toggle"
-				/>
+				>
+					{!reduced && <CoverPageCorner frameRef={frameRef} onTurn={turnFromPoint} />}
+				</button>
 
 				{/* Natural focal point: sun/moon disc trigger */}
 				<button

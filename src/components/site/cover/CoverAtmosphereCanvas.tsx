@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 
 import {
 	DESKTOP_CONSTELLATION,
@@ -23,12 +23,20 @@ export interface TransitionPulse {
 	durationMs: number;
 }
 
+export interface CoverPointer {
+	x: number;
+	y: number;
+	vx: number;
+	vy: number;
+	active: boolean;
+}
+
 interface CoverAtmosphereCanvasProps {
 	atmosphere: CoverAtmosphere;
 	isDesktop: boolean;
 	allowsAmbient: boolean;
 	reduced: boolean;
-	pointer: { x: number; y: number; vx: number; vy: number; active: boolean };
+	pointerRef: RefObject<CoverPointer>;
 	pulse: TransitionPulse | null;
 	hasInteracted: boolean;
 }
@@ -115,12 +123,11 @@ export default function CoverAtmosphereCanvas({
 	isDesktop,
 	allowsAmbient,
 	reduced,
-	pointer,
+	pointerRef,
 	pulse,
 	hasInteracted,
 }: CoverAtmosphereCanvasProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const pointerRef = useRef(pointer);
 	const pulseRef = useRef(pulse);
 	const atmosphereRef = useRef(atmosphere);
 	const isDesktopRef = useRef(isDesktop);
@@ -131,10 +138,6 @@ export default function CoverAtmosphereCanvas({
 	const motesRef = useRef<DustMote[]>(createInitialMotes());
 	const sunWarmthRef = useRef(0);
 	const mountTimeRef = useRef(0);
-
-	useEffect(() => {
-		pointerRef.current = pointer;
-	}, [pointer]);
 
 	useEffect(() => {
 		pulseRef.current = pulse;
@@ -163,13 +166,16 @@ export default function CoverAtmosphereCanvas({
 		let rafId = 0;
 		let lastTime = performance.now();
 		let hidden = document.hidden;
+		let w = 0;
+		let h = 0;
 
 		const resize = () => {
-			const rect = canvas.getBoundingClientRect();
-			if (!rect.width || !rect.height) return;
+			w = canvas.clientWidth;
+			h = canvas.clientHeight;
+			if (!w || !h) return;
 			const dpr = Math.min(window.devicePixelRatio || 1, 2);
-			canvas.width = Math.round(rect.width * dpr);
-			canvas.height = Math.round(rect.height * dpr);
+			canvas.width = Math.round(w * dpr);
+			canvas.height = Math.round(h * dpr);
 			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 		};
 
@@ -189,9 +195,6 @@ export default function CoverAtmosphereCanvas({
 		const draw = (now: number) => {
 			rafId = 0;
 			if (hidden) return;
-			const rect = canvas.getBoundingClientRect();
-			const w = rect.width;
-			const h = rect.height;
 			if (!w || !h) return;
 
 			const dt = Math.min((now - lastTime) / 1000, 0.05);
@@ -467,7 +470,7 @@ export default function CoverAtmosphereCanvas({
 			observer.disconnect();
 			document.removeEventListener('visibilitychange', onVisibilityChange);
 		};
-	}, [allowsAmbient, reduced, pulse]);
+	}, [allowsAmbient, reduced, pulse, pointerRef]);
 
 	return <canvas ref={canvasRef} className="cover-atmosphere-canvas" aria-hidden="true" />;
 }
