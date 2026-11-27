@@ -47,6 +47,13 @@
 			"reference": "public/brand/learning-as-becoming-mobile-ochre.webp",
 			"processing": "819×1023 WebP; deep Prussian-indigo paper, moonlit parchment linework, antique-gold moon/leaves, velvety charcoal fills preserved without X-ray inversion"
 		},
+		"toc-journey-night.webp": {
+			"frame": "scene",
+			"createdAt": "2026-11-27",
+			"generator": "Pixel-aligned nocturnal indigo ink-wash panorama derived from toc-journey.webp",
+			"reference": "public/brand/toc-journey.webp",
+			"processing": "1983×793 WebP; Prussian-indigo twilight sky seamlessly fading to #0d1622 at top edge, moonlit silver-parchment ridges and road, antique-gold moon and wildflower buds"
+		},
 		"myspace/teaching-v3.webp": {
 			"frame": "spot",
 			"createdAt": "2026-10-05",
