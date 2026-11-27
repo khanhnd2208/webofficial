@@ -12,6 +12,7 @@ import BrandWordmark from './BrandWordmark';
 import SiteAuthChip from './SiteAuthChip';
 import {
 	readInitialClientAtmosphere,
+	runAtmosphereViewTransition,
 	writeStoredAtmosphere,
 	type BloomOrigin,
 	type CoverAtmosphere,
@@ -23,23 +24,18 @@ import './cover/folio.css';
 
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
-type ViewTransitionDocument = Document & {
-	startViewTransition?: (update: () => void) => { finished: Promise<void> };
-};
-
 /**
  * Living book cover at `/`:
  * - SSR & no-JS render warm Dawn paper (zero hidden text).
  * - Pre-paint bootstrap script sets `html[data-cover-atmosphere]` at 0ms so evening
  *   visitors land straight into serene Night indigo with zero Dawn flash.
- * - Toggling Dawn <-> Night triggers a synchronized full-viewport feathered watercolor
- *   bloom radiating outward from the sun/moon or exact click coordinates.
+ * - Toggling Dawn <-> Night triggers a synchronized, interruptible full-viewport bloom
+ *   radiating outward from the sun/moon or exact click/drag coordinates.
  */
 export default function IntroLanding() {
 	const { reduced } = useMotionTier();
 	const [atmosphere, setAtmosphere] = useState<CoverAtmosphere>('dawn');
 	const [ready, setReady] = useState(false);
-	const [opening, setOpening] = useState(false);
 	const [whisperOpen, setWhisperOpen] = useState(false);
 	const [viewTransitionActive, setViewTransitionActive] = useState(false);
 
@@ -57,62 +53,34 @@ export default function IntroLanding() {
 
 	const handleToggleAtmosphere = useCallback(
 		(origin: BloomOrigin) => {
-			const next: CoverAtmosphere = atmosphere === 'night' ? 'dawn' : 'night';
+			const root = document.documentElement;
+			const current = root.dataset.coverAtmosphere === 'night' ? 'night' : 'dawn';
+			const next: CoverAtmosphere = current === 'night' ? 'dawn' : 'night';
 			writeStoredAtmosphere(next);
 
-			const doc = document as ViewTransitionDocument;
-			const canViewTransition = !reduced && typeof doc.startViewTransition === 'function';
-
-			if (!canViewTransition) {
-				setViewTransitionActive(false);
-				document.documentElement.dataset.coverAtmosphere = next;
-				setAtmosphere(next);
-				return;
-			}
-
-			const vw = window.innerWidth;
-			const vh = window.innerHeight;
-			const maxRadius =
-				Math.max(
-					Math.hypot(origin.clientX, origin.clientY),
-					Math.hypot(vw - origin.clientX, origin.clientY),
-					Math.hypot(origin.clientX, vh - origin.clientY),
-					Math.hypot(vw - origin.clientX, vh - origin.clientY),
-				) + 140;
-
-			const root = document.documentElement;
-			root.style.setProperty('--cover-bloom-x', `${origin.clientX}px`);
-			root.style.setProperty('--cover-bloom-y', `${origin.clientY}px`);
-			root.style.setProperty('--cover-bloom-max', `${Math.ceil(maxRadius)}px`);
-			root.classList.add('cover-blooming');
-
-			try {
-				const transition = doc.startViewTransition!(() => {
-					flushSync(() => {
-						setViewTransitionActive(true);
+			runAtmosphereViewTransition({
+				clientX: origin.clientX,
+				clientY: origin.clientY,
+				reduced,
+				commit: (usingViewTransition) => {
+					const apply = () => {
+						setViewTransitionActive(usingViewTransition);
 						root.dataset.coverAtmosphere = next;
 						setAtmosphere(next);
-					});
-				});
-				transition.finished
-					.catch(() => undefined)
-					.finally(() => {
-						root.classList.remove('cover-blooming');
-						setViewTransitionActive(false);
-					});
-			} catch {
-				root.classList.remove('cover-blooming');
-				setViewTransitionActive(false);
-				root.dataset.coverAtmosphere = next;
-				setAtmosphere(next);
-			}
+					};
+					if (usingViewTransition) {
+						flushSync(apply);
+					} else {
+						apply();
+					}
+				},
+				onFinish: () => {
+					setViewTransitionActive(false);
+				},
+			});
 		},
-		[atmosphere, reduced],
+		[reduced],
 	);
-
-	const handleOpenToc = useCallback(() => {
-		if (atmosphere === 'night') setOpening(true);
-	}, [atmosphere]);
 
 	return (
 		<div
@@ -120,7 +88,6 @@ export default function IntroLanding() {
 			data-testid="intro-home"
 			data-atmosphere={atmosphere}
 			data-atmosphere-ready={ready ? 'true' : undefined}
-			data-opening={opening ? 'true' : undefined}
 			data-whisper-open={whisperOpen ? 'true' : undefined}
 			data-js={ready ? 'true' : undefined}
 		>
@@ -134,7 +101,7 @@ export default function IntroLanding() {
 				<SiteAuthChip variant="chrome" />
 			</header>
 			<main className="cover-composition">
-				<CoverEditorialCopy onOpenToc={handleOpenToc} onWhisperChange={setWhisperOpen} />
+				<CoverEditorialCopy onWhisperChange={setWhisperOpen} />
 				<CoverLivingPlate
 					atmosphere={atmosphere}
 					viewTransitionActive={viewTransitionActive}

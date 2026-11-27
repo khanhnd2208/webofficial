@@ -126,11 +126,15 @@ html[data-cover-atmosphere='night'] .personal-book.cover-folio {
 		),
 		repeating-linear-gradient(0deg, transparent 0 1px, rgb(0 0 0 / 8%) 1px 2px), var(--ribbon);
 	clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%);
+	filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.22));
 	pointer-events: none;
 }
 .cover-folio .cover-copy {
 	color: var(--folio-ink);
 	padding-inline-start: clamp(10px, 2.4vw, 45px);
+}
+.cover-folio .cover-whisper {
+	left: clamp(10px, 2.4vw, 45px);
 }
 .cover-folio .cover-author {
 	display: flex;
@@ -236,16 +240,27 @@ html[data-cover-atmosphere='night'] .personal-book.cover-folio {
 .cover-folio .cover-layer-dawn > .cover-parallax-mid:has(picture) {
 	mix-blend-mode: multiply;
 }
-.cover-folio .cover-plate-frame[data-cover-pointer][data-atmosphere='night'] .cover-layer-night {
-	mask: var(--cover-lantern-mask);
+/* Warm cast shadow on the Dawn sheet peeking from underneath a Night cover, preventing a harsh sticker corner */
+.cover-folio .cover-plate-frame[data-atmosphere='night'] .cover-layer-dawn::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 3;
+	background: linear-gradient(
+		225deg,
+		rgba(206, 189, 156, 0.62) 0%,
+		rgba(182, 164, 132, 0.28) 18%,
+		transparent 38%
+	);
 }
 
 /* The upper corner of the illustration exposes the other print underneath.
  * The surface and its caption activate the same action by touch or keyboard. */
 .cover-folio[data-js] .cover-plate-figure {
-	--fold: clamp(76px, 10vw, 144px);
-	--corner: calc(var(--fold) * 0.35);
-	--curl-scale: 0.35;
+	--fold: clamp(54px, min(8.2vw, 11.5svh), 104px);
+	--corner: calc(var(--fold) * 0.26);
+	--curl-scale: 0.26;
 	--curl-ease: cubic-bezier(0.2, 0.76, 0.22, 1);
 }
 .cover-folio[data-js] .cover-plate-frame:not([data-transitioning]) .cover-layer-night {
@@ -257,7 +272,7 @@ html[data-cover-atmosphere='night'] .personal-book.cover-folio {
 		100% var(--corner),
 		calc(100% - var(--corner)) 0
 	);
-	transition: clip-path 520ms var(--curl-ease);
+	transition: clip-path 440ms var(--curl-ease);
 }
 .cover-folio[data-js]
 	.cover-plate-frame[data-atmosphere='night']:not([data-transitioning])
@@ -271,14 +286,16 @@ html[data-cover-atmosphere='night'] .personal-book.cover-folio {
 	right: 0;
 	width: var(--fold);
 	height: var(--fold);
-	background: linear-gradient(135deg, #a39070 1%, #f6ecd4 22%, #fff9e9 44%, #d1bd9e 73%, #958469);
+	background: linear-gradient(135deg, #9d8b6b 1%, #f4ead1 24%, #fcf5e3 45%, #ccba9b 74%, #8f7e63);
 	clip-path: polygon(0 0, 100% 100%, 4% 94%);
+	filter: drop-shadow(-2px 3px 5px rgba(10, 16, 24, 0.24));
 	transform-origin: top right;
 	transform: scale(var(--curl-scale));
-	transition: transform 520ms var(--curl-ease);
+	transition: transform 440ms var(--curl-ease);
 }
 html[data-cover-atmosphere='night'] .cover-folio .cover-plate-surface-btn::after {
-	background: linear-gradient(135deg, #192630, #5a7079 24%, #8a9ca0 44%, #46565d 73%, #192630);
+	background: linear-gradient(135deg, #16242d 0%, #465c67 26%, #748993 46%, #364751 74%, #15232c);
+	filter: drop-shadow(-2px 3px 6px rgba(2, 6, 12, 0.42));
 }
 .cover-folio
 	.cover-plate-figure:has(:is(.cover-atmosphere-toggle, .cover-plate-surface-btn):focus-visible) {
@@ -308,6 +325,10 @@ html[data-cover-atmosphere='night'] .cover-folio .cover-plate-surface-btn::after
 .cover-plate-frame[data-peeling] .cover-corner-grip {
 	cursor: grabbing;
 }
+/* Lift the peeling page flap above marginalia & celestial triggers so markers never float over the fold */
+.cover-folio[data-js] .cover-plate-frame[data-peeling] .cover-plate-surface-btn {
+	z-index: 20;
+}
 .cover-folio[data-js] .cover-plate-frame[data-peeling] .cover-layer-night,
 .cover-folio[data-js] .cover-plate-frame[data-peeling] .cover-plate-surface-btn::after,
 html.cover-blooming .cover-folio[data-js] .cover-plate-frame .cover-layer-night {
@@ -316,11 +337,11 @@ html.cover-blooming .cover-folio[data-js] .cover-plate-frame .cover-layer-night 
 
 @media (max-width: 1023px) {
 	.personal-book.cover-folio {
-		padding: 0 clamp(12px, 3.4vw, 28px) 28px;
+		padding: 0 clamp(12px, 3.4vw, 28px) 22px;
 	}
 	.cover-folio .cover-meta {
 		max-width: 640px;
-		min-height: 54px;
+		min-height: 52px;
 	}
 	.cover-folio .cover-composition,
 	.cover-folio[data-whisper-open='true'] .cover-composition {
@@ -328,17 +349,24 @@ html.cover-blooming .cover-folio[data-js] .cover-plate-frame .cover-layer-night 
 		width: min(100%, 640px);
 		min-height: 0;
 		grid-template-columns: minmax(0, 1fr);
-		gap: 18px;
-		padding: 26px 18px 12px 23px;
+		gap: 16px;
+		padding: 24px 18px 12px 23px;
+	}
+	.cover-folio[data-whisper-open='true'] .cover-composition {
+		gap: 12px;
+		padding-top: 18px;
 	}
 	.cover-folio .cover-composition::before {
 		left: auto;
 		right: 8%;
-		height: 40px;
+		height: 38px;
 		width: 15px;
 	}
 	.cover-folio .cover-copy {
 		padding: 0;
+	}
+	.cover-folio .cover-whisper {
+		left: auto;
 	}
 	.cover-folio .cover-author {
 		justify-content: center;
@@ -360,16 +388,20 @@ html.cover-blooming .cover-folio[data-js] .cover-plate-frame .cover-layer-night 
 		font-size: 1rem;
 	}
 	.cover-folio .cover-narrative {
-		font-size: 1.15rem;
-		margin-top: 10px;
+		font-size: 1.125rem;
+		margin-top: 8px;
 	}
 	.cover-folio .cover-cta {
-		margin-top: 14px;
+		margin-top: 12px;
 	}
 	.cover-folio .cover-plate-figure {
 		grid-row: auto;
-		width: clamp(148px, min(64vw, 32svh), 305px);
+		width: clamp(164px, min(64vw, 33svh), 288px);
 		max-width: 100%;
+		transition: width var(--ui-duration-control) var(--ui-ease);
+	}
+	.cover-folio[data-whisper-open='true'] .cover-plate-figure {
+		width: clamp(148px, min(54vw, 26svh), 232px);
 	}
 	.cover-folio[data-whisper-open='true'] .cover-plate-frame,
 	.cover-folio .cover-plate-frame {
@@ -380,17 +412,78 @@ html.cover-blooming .cover-folio[data-js] .cover-plate-frame .cover-layer-night 
 		justify-content: center;
 		margin-top: 5px;
 	}
+	.cover-folio .cover-plate-bar:has(.cover-docked-note) {
+		width: min(82vw, 316px);
+		align-self: center;
+	}
 	.cover-folio .cover-plate-status {
 		display: none;
+	}
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+	.cover-folio .cover-plate-figure {
+		width: clamp(220px, min(48vw, 37svh), 344px);
+	}
+	.cover-folio[data-whisper-open='true'] .cover-plate-figure {
+		width: clamp(192px, min(42vw, 31svh), 286px);
 	}
 }
 @media (min-width: 1024px) and (max-height: 690px) {
 	.cover-folio .cover-composition {
 		min-height: 0;
-		padding-block: 28px;
+		padding-block: 24px;
 	}
 	.cover-folio .cover-plate-figure {
-		max-width: min(100%, 68svh);
+		max-width: min(100%, 66svh);
+	}
+}
+@media (min-width: 1024px) and (max-height: 600px) {
+	.personal-book.cover-folio {
+		padding: 0 clamp(20px, 4vw, 64px) 14px;
+	}
+	.cover-folio .cover-meta {
+		min-height: 44px;
+	}
+	.cover-folio .cover-composition {
+		min-height: 0;
+		padding: 18px clamp(28px, 4vw, 56px);
+		gap: clamp(32px, 5vw, 84px);
+	}
+	.cover-folio .cover-composition::before {
+		height: 36px;
+		width: 16px;
+	}
+	.cover-folio .cover-author {
+		margin-bottom: 6px;
+	}
+	.cover-folio .cover-title {
+		font-size: clamp(2.8rem, 11svh, 4.3rem);
+		line-height: 0.96;
+	}
+	.cover-folio .cover-pos {
+		font-size: 1rem;
+	}
+	.cover-folio .cover-narrative {
+		margin-top: 8px;
+		font-size: 1.0625rem;
+		line-height: 1.4;
+	}
+	.cover-folio .cover-cta {
+		margin-top: 12px;
+		min-height: 42px;
+	}
+	.cover-folio .cover-whisper {
+		top: calc(100% + 8px);
+	}
+	.cover-folio .cover-plate-figure {
+		max-width: min(100%, 440px, 70svh);
+	}
+	.cover-folio .cover-plate-bar {
+		min-height: 36px;
+		margin-top: 4px;
+	}
+	.cover-folio .cover-atmosphere-toggle {
+		min-height: 36px;
 	}
 }
 @media (prefers-reduced-motion: reduce) {

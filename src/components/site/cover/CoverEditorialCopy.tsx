@@ -7,20 +7,16 @@ import { routes } from '@/config/routes';
 import { introPage } from '@/content/publicMarketing';
 
 interface CoverEditorialCopyProps {
-	onOpenToc: () => void;
 	onWhisperChange?: (open: boolean) => void;
 }
 
 /**
  * Editorial book-cover typography column.
- * - `[động từ]` carries a subtle dictionary-note underline and unfolds the author's
- *   three authentic marginalia notes on click (closed by default to preserve silence).
+ * - `[động từ]` carries a 44px touch target with a dictionary-note underline and unfolds the
+ *   author's three authentic marginalia notes below the primary action (zero headline shift).
  * - `Chưa xong.` stays pure editorial serif prose with a finite 3-breath ink bar.
  */
-export default function CoverEditorialCopy({
-	onOpenToc,
-	onWhisperChange,
-}: CoverEditorialCopyProps) {
+export default function CoverEditorialCopy({ onWhisperChange }: CoverEditorialCopyProps) {
 	const [whisperIndex, setWhisperIndex] = useState<number>(-1);
 	const [firstWord, ...remainingWords] = introPage.headline.split(' ');
 	const totalWhispers = introPage.whispers.length;
@@ -67,7 +63,7 @@ export default function CoverEditorialCopy({
 					aria-controls="cover-author-whisper"
 					title="Chạm để đọc ghi chú nhỏ bên lề"
 				>
-					{introPage.partOfSpeech}
+					<span className="cover-pos-label">{introPage.partOfSpeech}</span>
 				</button>
 			</p>
 			<div className="cover-narrative">
@@ -84,6 +80,10 @@ export default function CoverEditorialCopy({
 					</p>
 				))}
 			</div>
+			<Link className="book-link cover-cta" href={routes.toc} data-testid="intro-open-toc">
+				{introPage.cta}
+				<span aria-hidden="true">→</span>
+			</Link>
 			{activeWhisper ? (
 				<aside
 					id="cover-author-whisper"
@@ -112,15 +112,6 @@ export default function CoverEditorialCopy({
 					</div>
 				</aside>
 			) : null}
-			<Link
-				className="book-link cover-cta"
-				href={routes.toc}
-				data-testid="intro-open-toc"
-				onNavigate={onOpenToc}
-			>
-				{introPage.cta}
-				<span aria-hidden="true">→</span>
-			</Link>
 		</div>
 	);
 }

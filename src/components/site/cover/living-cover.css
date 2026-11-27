@@ -1,53 +1,7 @@
-/* Living book-cover atmosphere, full-viewport synchronized watercolor bloom,
- * letterpress plate-mark framing, diorama parallax, editorial marginalia, and zero-flash night boot.
- * Scoped strictly to `.book-cover` (and `html.cover-blooming` only during the active toggle).
+/* Living book-cover atmosphere, letterpress plate-mark framing, diorama parallax,
+ * editorial marginalia, and zero-flash night boot.
+ * Global View Transitions bloom & html[data-cover-atmosphere] live in `src/app/personal-book.css`.
  * Every font-size stays >= 12px and respects `prefers-reduced-motion`. */
-
-@property --cover-bloom-r {
-	syntax: '<length>';
-	inherits: true;
-	initial-value: 0px;
-}
-
-@keyframes cover-viewport-bloom {
-	from {
-		--cover-bloom-r: 0px;
-	}
-	to {
-		--cover-bloom-r: var(--cover-bloom-max, 1800px);
-	}
-}
-
-html.cover-blooming::view-transition-group(root) {
-	animation: none;
-}
-
-html.cover-blooming::view-transition-old(root) {
-	animation: none;
-	z-index: 1;
-}
-
-html.cover-blooming::view-transition-new(root) {
-	z-index: 2;
-	animation: cover-viewport-bloom 1160ms cubic-bezier(0.32, 0.08, 0.18, 1) both;
-	-webkit-mask-image: radial-gradient(
-		circle at var(--cover-bloom-x, 65vw) var(--cover-bloom-y, 38vh),
-		#000 max(0px, calc(var(--cover-bloom-r) - 130px)),
-		rgba(0, 0, 0, 0.72) max(0px, calc(var(--cover-bloom-r) - 56px)),
-		transparent var(--cover-bloom-r)
-	);
-	mask-image: radial-gradient(
-		circle at var(--cover-bloom-x, 65vw) var(--cover-bloom-y, 38vh),
-		#000 max(0px, calc(var(--cover-bloom-r) - 130px)),
-		rgba(0, 0, 0, 0.72) max(0px, calc(var(--cover-bloom-r) - 56px)),
-		transparent var(--cover-bloom-r)
-	);
-}
-
-/* Zero-flash pre-paint background match when evening visitors arrive directly into Night */
-html[data-cover-atmosphere='night']:has(.book-cover) {
-	background-color: #0d1622;
-}
 
 /* Seamless cotton-paper foundation matching the Dawn ink-wash artwork (#F8F7F4) */
 .personal-book.book-cover {
@@ -55,8 +9,8 @@ html[data-cover-atmosphere='night']:has(.book-cover) {
 	overflow: clip;
 	background: var(--canvas);
 	transition:
-		background-color 900ms cubic-bezier(0.32, 0.72, 0, 1),
-		color 750ms cubic-bezier(0.32, 0.72, 0, 1);
+		background-color 620ms cubic-bezier(0.32, 0.72, 0, 1),
+		color 520ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .book-cover[data-atmosphere='night'],
@@ -86,19 +40,11 @@ html[data-cover-atmosphere='night']
 	opacity: 1;
 }
 
-/* Gentle book-opening illumination when leaving Night cover toward /muc-luc */
-.book-cover[data-atmosphere='night'][data-opening='true'] {
-	filter: brightness(1.12);
-	transition:
-		filter var(--ui-duration-page) var(--ui-ease),
-		background-color var(--ui-duration-page) var(--ui-ease);
-}
-
-/* ── Authored Opening Choreography (crisp & grounded — zero blank ghost screen) ─ */
+/* ── Crisp Opening Choreography (immediate legibility, zero sluggish fade) ─ */
 @keyframes cover-soft-settle {
 	from {
-		opacity: 0.25;
-		transform: translateY(8px);
+		opacity: 0.62;
+		transform: translateY(5px);
 	}
 	to {
 		opacity: 1;
@@ -106,58 +52,47 @@ html[data-cover-atmosphere='night']
 	}
 }
 
-@keyframes cover-title-clip {
-	from {
-		clip-path: inset(0 0 100% 0);
-		transform: translateY(10px);
-	}
-	to {
-		clip-path: inset(0 0 -10% 0);
-		transform: none;
-	}
-}
-
 .book-cover
 	:where(.cover-meta, .cover-author, .cover-title, .cover-pos, .cover-narrative p, .cover-cta) {
-	animation: cover-soft-settle 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation: cover-soft-settle 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .book-cover .cover-meta {
-	animation-duration: 420ms;
+	animation-duration: 280ms;
 	border-bottom-color: var(--hairline);
 	transition:
-		border-color 750ms var(--ui-ease),
-		color 750ms var(--ui-ease);
+		border-color 520ms var(--ui-ease),
+		color 520ms var(--ui-ease);
 }
 
 .book-cover .cover-author {
-	animation-delay: 40ms;
+	animation-delay: 20ms;
 }
 
 .book-cover .cover-title {
-	animation: none;
+	animation-delay: 30ms;
 }
 
 .cover-title-reveal {
 	display: inline-block;
-	animation: cover-title-clip 680ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both;
 }
 
 .book-cover .cover-pos {
-	animation-delay: 180ms;
+	animation-delay: 60ms;
 }
 
 .book-cover .cover-narrative p {
-	animation-delay: 260ms;
+	animation-delay: 85ms;
 }
 
 .book-cover .cover-narrative p + p {
-	animation-delay: 340ms;
+	animation-delay: 110ms;
 }
 
 .book-cover .cover-cta {
-	animation-delay: 440ms;
+	animation-delay: 130ms;
 	transition:
+		background-color var(--ui-duration-control) var(--ui-ease),
 		color var(--ui-duration-control) var(--ui-ease),
 		border-color var(--ui-duration-control) var(--ui-ease);
 }
@@ -211,42 +146,58 @@ html[data-cover-atmosphere='night']
 	animation: cover-ink-settle 3.4s ease-in-out 0.7s both;
 }
 
-/* Unmistakable literary dictionary annotation trigger on "[động từ]" */
+/* Unmistakable literary dictionary annotation trigger on "[động từ]" with full 44px touch target */
 .cover-pos-trigger {
 	appearance: none;
 	border: 0;
-	border-bottom: 1px dotted color-mix(in srgb, currentColor 48%, transparent);
-	padding: 0 0 2px;
-	margin: 0;
+	padding: 6px 2px;
+	margin: -6px -2px;
+	min-height: 44px;
 	background: transparent;
 	font: inherit;
 	color: inherit;
 	letter-spacing: inherit;
 	line-height: inherit;
 	cursor: pointer;
-	display: inline;
-	transition:
-		border-color var(--ui-duration-control) var(--ui-ease),
-		color var(--ui-duration-hover) var(--ui-ease);
+	display: inline-flex;
+	align-items: center;
+	transition: color var(--ui-duration-hover) var(--ui-ease);
 }
 
-.cover-pos-trigger:hover,
-.cover-pos-trigger:focus-visible,
-.cover-pos-trigger[aria-expanded='true'] {
+.cover-pos-label {
+	display: inline-block;
+	border-bottom: 1px dotted color-mix(in srgb, currentColor 48%, transparent);
+	padding-bottom: 2px;
+	transition: border-color var(--ui-duration-control) var(--ui-ease);
+}
+
+.cover-pos-trigger:focus-visible .cover-pos-label,
+.cover-pos-trigger[aria-expanded='true'] .cover-pos-label {
 	border-bottom-style: solid;
 	border-bottom-color: currentColor;
 }
 
+@media (hover: hover) and (pointer: fine) {
+	.cover-pos-trigger:hover .cover-pos-label {
+		border-bottom-style: solid;
+		border-bottom-color: currentColor;
+	}
+}
+
+/* Desktop: docked in the calm lower margin beneath the CTA -> zero headline/CTA layout shift */
 .cover-whisper {
-	margin-top: 16px;
+	position: absolute;
+	top: calc(100% + 16px);
+	left: 0;
+	right: 0;
 	padding-left: 14px;
 	border-left: 1px solid var(--bronze);
-	max-width: 36ch;
+	max-width: 38ch;
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
 	gap: 12px;
-	animation: cover-whisper-in var(--ui-duration-page) var(--ui-ease) both;
+	animation: cover-whisper-in var(--ui-duration-control) var(--ui-ease) both;
 }
 
 .cover-whisper-text {
@@ -319,7 +270,7 @@ html[data-cover-atmosphere='night']
 	justify-self: end;
 	width: 100%;
 	max-width: 760px;
-	animation: cover-soft-settle 780ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
+	animation: cover-soft-settle 380ms cubic-bezier(0.22, 1, 0.36, 1) 45ms both;
 }
 
 /* Letterpress plate-mark framing: feels printed directly onto rag paper, never a floating white box */
@@ -631,28 +582,17 @@ html[data-cover-atmosphere='night']
 	transform: scale(1.06);
 }
 
-/* ── Editorial Asterisk Marginalia Markers (✦) — Readable in BOTH Modes ──── */
+/* ── Editorial Asterisk Marginalia Markers (✦) — Anchored faithfully in BOTH Modes ── */
 .cover-marginalia {
 	position: absolute;
 	z-index: 15;
-	transition:
-		left 500ms var(--ui-ease),
-		top 500ms var(--ui-ease);
 }
 
-/* Dawn: sits gracefully beside the explorer on the cliff; Night: sits on the guiding star */
+/* Anchored calmly beside the explorer on the cliff in BOTH Dawn and Night */
 .cover-marginalia-person {
 	left: 29.5%;
 	top: 63.5%;
 	transform: translate(-50%, -50%);
-}
-
-.book-cover[data-atmosphere='night'] .cover-marginalia-person,
-html[data-cover-atmosphere='night']
-	.book-cover:not([data-atmosphere-ready='true'])
-	.cover-marginalia-person {
-	left: 80.6%;
-	top: 20.4%;
 }
 
 .cover-marginalia-journey {
@@ -737,13 +677,6 @@ html[data-cover-atmosphere='night']
 	top: auto;
 	bottom: calc(100% + 4px);
 	left: 0;
-}
-
-.book-cover[data-atmosphere='night'] .cover-marginalia-person .cover-marginalia-slip {
-	top: calc(100% + 4px);
-	bottom: auto;
-	left: auto;
-	right: 0;
 }
 
 .cover-marginalia-journey .cover-marginalia-slip {
@@ -833,10 +766,16 @@ html[data-cover-atmosphere='night']
 		border-color var(--ui-duration-hover) var(--ui-ease);
 }
 
-.cover-atmosphere-toggle:hover,
 .cover-atmosphere-toggle:focus-visible {
 	color: var(--bronze);
 	border-bottom-color: var(--bronze);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.cover-atmosphere-toggle:hover {
+		color: var(--bronze);
+		border-bottom-color: var(--bronze);
+	}
 }
 
 .cover-atmosphere-icon {
@@ -998,20 +937,13 @@ html[data-cover-atmosphere='night']
 		top: 69%;
 	}
 
-	.book-cover[data-atmosphere='night'] .cover-marginalia-person,
-	html[data-cover-atmosphere='night']
-		.book-cover:not([data-atmosphere-ready='true'])
-		.cover-marginalia-person {
-		left: 76.2%;
-		top: 11.2%;
-	}
-
 	.cover-marginalia-journey {
 		left: 74%;
 		top: 69%;
 	}
 
 	.cover-whisper {
+		position: static;
 		margin-top: 10px;
 		margin-inline: auto;
 		text-align: left;
@@ -1063,8 +995,6 @@ html[data-cover-atmosphere='night']
 
 /* Reduced motion safety */
 @media (prefers-reduced-motion: reduce) {
-	html.cover-blooming::view-transition-new(root),
-	html.cover-blooming::view-transition-old(root),
 	.book-cover,
 	.cover-title-reveal,
 	.cover-plate-figure,

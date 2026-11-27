@@ -137,14 +137,19 @@ export default function CoverAtmosphereCanvas({
 	);
 	const motesRef = useRef<DustMote[]>(createInitialMotes());
 	const sunWarmthRef = useRef(0);
+	const lanternGlowRef = useRef(0);
+	const lastPointerPosRef = useRef({ x: 0.5, y: 0.5 });
 	const mountTimeRef = useRef(0);
+	const kickRef = useRef<(() => void) | null>(null);
 
 	useEffect(() => {
 		pulseRef.current = pulse;
+		if (pulse) kickRef.current?.();
 	}, [pulse]);
 
 	useEffect(() => {
 		atmosphereRef.current = atmosphere;
+		kickRef.current?.();
 	}, [atmosphere]);
 
 	useEffect(() => {
@@ -164,7 +169,7 @@ export default function CoverAtmosphereCanvas({
 		if (!mountTimeRef.current) mountTimeRef.current = performance.now();
 
 		let rafId = 0;
-		let lastTime = performance.now();
+		let lastPaint = performance.now();
 		let hidden = document.hidden;
 		let w = 0;
 		let h = 0;
@@ -173,7 +178,7 @@ export default function CoverAtmosphereCanvas({
 			w = canvas.clientWidth;
 			h = canvas.clientHeight;
 			if (!w || !h) return;
-			const dpr = Math.min(window.devicePixelRatio || 1, 2);
+			const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
 			canvas.width = Math.round(w * dpr);
 			canvas.height = Math.round(h * dpr);
 			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -186,7 +191,7 @@ export default function CoverAtmosphereCanvas({
 		const onVisibilityChange = () => {
 			hidden = document.hidden;
 			if (!hidden) {
-				lastTime = performance.now();
+				lastPaint = performance.now();
 				kick();
 			}
 		};
@@ -197,27 +202,45 @@ export default function CoverAtmosphereCanvas({
 			if (hidden) return;
 			if (!w || !h) return;
 
-			const dt = Math.min((now - lastTime) / 1000, 0.05);
-			lastTime = now;
+			const ptr = pointerRef.current;
+			const activePulse = pulseRef.current;
+			const elapsedSinceMount = (now - mountTimeRef.current) / 1000;
+			const inWelcomeWindow =
+				!hasInteractedRef.current && elapsedSinceMount > 1.6 && elapsedSinceMount < 3.4;
+
+			// Full native frame rate during interaction/transitions; calm ~30fps when idle.
+			const highRate =
+				ptr.active ||
+				Boolean(activePulse) ||
+				inWelcomeWindow ||
+				sunWarmthRef.current > 0.02 ||
+				lanternGlowRef.current > 0.02;
+			if (!highRate && now - lastPaint < 32) {
+				if (allowsAmbient) rafId = requestAnimationFrame(draw);
+				return;
+			}
+
+			const dt = Math.min((now - lastPaint) / 1000, 0.05);
+			lastPaint = now;
 			const sec = now / 1000;
 
 			ctx.clearRect(0, 0, w, h);
 
 			const mode = atmosphereRef.current;
 			const isNight = mode === 'night';
-			const ptr = pointerRef.current;
-			const px = ptr.x * w;
-			const py = ptr.y * h;
+			if (ptr.active) {
+				lastPointerPosRef.current = { x: ptr.x, y: ptr.y };
+			}
+			const px = lastPointerPosRef.current.x * w;
+			const py = lastPointerPosRef.current.y * h;
 			const sunPos = isDesktopRef.current ? DESKTOP_SUN_POS : MOBILE_SUN_POS;
 			const sunX = (sunPos.x / 100) * w;
 			const sunY = (sunPos.y / 100) * h;
 
-			// 1) Gentle celestial corona & extending beams when hovering near sun/moon (+ 1 welcoming pulse at ~2.2s)
-			const elapsedSinceMount = (now - mountTimeRef.current) / 1000;
-			const welcomePulse =
-				!hasInteractedRef.current && elapsedSinceMount > 1.8 && elapsedSinceMount < 3.6
-					? Math.sin(((elapsedSinceMount - 1.8) / 1.8) * Math.PI) * 0.55
-					: 0;
+			// 1) Gentle celestial corona & extending beams when hovering near sun/moon (+ 1 welcoming pulse)
+			const welcomePulse = inWelcomeWindow
+				? Math.sin(((elapsedSinceMount - 1.6) / 1.8) * Math.PI) * 0.55
+				: 0;
 			const sunDist = ptr.active ? Math.hypot(px - sunX, py - sunY) : Infinity;
 			const sunProximity = ptr.active ? Math.max(0, 1 - sunDist / (Math.min(w, h) * 0.28)) : 0;
 			const targetWarmth = Math.max(sunProximity, welcomePulse);
@@ -270,7 +293,6 @@ export default function CoverAtmosphereCanvas({
 					let mx = m.x * w + Math.sin(sec * 0.65 + m.phase) * 7;
 					let my = m.y * h + Math.cos(sec * 0.52 + m.phase) * 5;
 
-					// Gentle parting ripple when pointer glides past motes
 					if (ptr.active) {
 						const dx = mx - px;
 						const dy = my - py;
@@ -320,7 +342,6 @@ export default function CoverAtmosphereCanvas({
 						}
 					}
 
-					// Soft spring back toward anchor + gentle air damping
 					const spring = 3.2;
 					const damping = Math.exp(-2.6 * dt);
 					st.vx = (st.vx - st.ox * spring * dt) * damping;
@@ -342,7 +363,6 @@ export default function CoverAtmosphereCanvas({
 					);
 				}
 
-				// Tactile golden sheen along the nearest winding-road segment on hover
 				if (ptr.active) {
 					const roadRadius = Math.min(w, h) * 0.24;
 					ctx.save();
@@ -367,15 +387,18 @@ export default function CoverAtmosphereCanvas({
 				}
 			}
 
-			// 4) Night magnetic constellation filaments + warm candlelit lantern
-			if (allowsAmbient && isNight && ptr.active) {
+			// 4) Night magnetic constellation filaments + smooth-fading warm candlelit lantern
+			const targetLantern = allowsAmbient && isNight && ptr.active ? 1 : 0;
+			lanternGlowRef.current += (targetLantern - lanternGlowRef.current) * Math.min(1, dt * 8);
+			const lanternAlpha = lanternGlowRef.current;
+			if (lanternAlpha > 0.015) {
 				const stars = isDesktopRef.current ? DESKTOP_CONSTELLATION : MOBILE_CONSTELLATION;
 				const threshold = Math.min(w, h) * 0.34;
 
-				const lanternR = Math.min(w, h) * 0.145;
+				const lanternR = Math.min(w, h) * 0.165;
 				const lantern = ctx.createRadialGradient(px, py, 0, px, py, lanternR);
-				lantern.addColorStop(0, 'rgba(222, 178, 96, 0.21)');
-				lantern.addColorStop(0.52, 'rgba(200, 157, 75, 0.08)');
+				lantern.addColorStop(0, `rgba(232, 192, 114, ${(0.24 * lanternAlpha).toFixed(3)})`);
+				lantern.addColorStop(0.5, `rgba(204, 158, 76, ${(0.09 * lanternAlpha).toFixed(3)})`);
 				lantern.addColorStop(1, 'rgba(200, 157, 75, 0)');
 				ctx.fillStyle = lantern;
 				ctx.beginPath();
@@ -389,15 +412,15 @@ export default function CoverAtmosphereCanvas({
 					const sy = (star.y / 1000) * h;
 					const dist = Math.hypot(px - sx, py - sy);
 					if (dist < threshold) {
-						const strength = 1 - dist / threshold;
-						ctx.strokeStyle = `rgba(232, 198, 134, ${(strength * 0.36).toFixed(3)})`;
+						const strength = (1 - dist / threshold) * lanternAlpha;
+						ctx.strokeStyle = `rgba(232, 198, 134, ${(strength * 0.38).toFixed(3)})`;
 						ctx.lineWidth = 0.9;
 						ctx.beginPath();
 						ctx.moveTo(sx, sy);
 						ctx.lineTo(px, py);
 						ctx.stroke();
 
-						ctx.fillStyle = `rgba(246, 226, 178, ${(strength * 0.6).toFixed(3)})`;
+						ctx.fillStyle = `rgba(246, 226, 178, ${(strength * 0.62).toFixed(3)})`;
 						ctx.beginPath();
 						ctx.arc(sx, sy, 2.2 + strength * 1.5, 0, Math.PI * 2);
 						ctx.fill();
@@ -407,7 +430,6 @@ export default function CoverAtmosphereCanvas({
 			}
 
 			// 5) Fallback transition pulse halo (for browsers without View Transitions API)
-			const activePulse = pulseRef.current;
 			let pulseRunning = false;
 			if (activePulse) {
 				const rawT = (now - activePulse.startTime) / activePulse.durationMs;
@@ -452,7 +474,7 @@ export default function CoverAtmosphereCanvas({
 				}
 			}
 
-			if (allowsAmbient || pulseRunning || welcomePulse > 0.01) {
+			if (allowsAmbient || pulseRunning || inWelcomeWindow || lanternAlpha > 0.015) {
 				rafId = requestAnimationFrame(draw);
 			}
 		};
@@ -463,14 +485,16 @@ export default function CoverAtmosphereCanvas({
 			}
 		};
 
+		kickRef.current = kick;
 		kick();
 
 		return () => {
+			kickRef.current = null;
 			if (rafId) cancelAnimationFrame(rafId);
 			observer.disconnect();
 			document.removeEventListener('visibilitychange', onVisibilityChange);
 		};
-	}, [allowsAmbient, reduced, pulse, pointerRef]);
+	}, [allowsAmbient, reduced, pointerRef]);
 
 	return <canvas ref={canvasRef} className="cover-atmosphere-canvas" aria-hidden="true" />;
 }

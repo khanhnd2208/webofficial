@@ -9,6 +9,91 @@ export interface BloomOrigin {
 	plateY: number;
 }
 
+type ViewTransitionLike = {
+	finished: Promise<void>;
+	skipTransition?: () => void;
+};
+
+type ViewTransitionDocument = Document & {
+	startViewTransition?: (update: () => void) => ViewTransitionLike;
+};
+
+let activeBloomToken = 0;
+let activeViewTransition: ViewTransitionLike | null = null;
+
+/**
+ * Interruptible full-viewport atmosphere transition shared by `/` and `/muc-luc`.
+ * Rapid clicks cancel any in-flight View Transition and stamp a monotonic token so
+ * stale `.finally()` handlers never strip `.cover-blooming` mid-bloom or drop clicks.
+ */
+export function runAtmosphereViewTransition(options: {
+	clientX: number;
+	clientY: number;
+	reduced: boolean;
+	commit: (usingViewTransition: boolean) => void;
+	onFinish?: () => void;
+}): void {
+	const { clientX, clientY, reduced, commit, onFinish } = options;
+	const root = document.documentElement;
+	const doc = document as ViewTransitionDocument;
+
+	activeBloomToken += 1;
+	const token = activeBloomToken;
+
+	if (activeViewTransition) {
+		try {
+			activeViewTransition.skipTransition?.();
+		} catch {
+			// Ignore already-finished transition errors.
+		}
+		activeViewTransition = null;
+	}
+
+	const canViewTransition = !reduced && typeof doc.startViewTransition === 'function';
+	if (!canViewTransition) {
+		root.classList.remove('cover-blooming');
+		commit(false);
+		onFinish?.();
+		return;
+	}
+
+	const vw = window.innerWidth;
+	const vh = window.innerHeight;
+	const maxRadius =
+		Math.max(
+			Math.hypot(clientX, clientY),
+			Math.hypot(vw - clientX, clientY),
+			Math.hypot(clientX, vh - clientY),
+			Math.hypot(vw - clientX, vh - clientY),
+		) + 84;
+
+	root.style.setProperty('--cover-bloom-x', `${Math.round(clientX)}px`);
+	root.style.setProperty('--cover-bloom-y', `${Math.round(clientY)}px`);
+	root.style.setProperty('--cover-bloom-max', `${Math.ceil(maxRadius)}px`);
+	root.classList.add('cover-blooming');
+
+	try {
+		const transition = doc.startViewTransition!(() => {
+			commit(true);
+		});
+		activeViewTransition = transition;
+		transition.finished
+			.catch(() => undefined)
+			.finally(() => {
+				if (activeBloomToken !== token) return;
+				activeViewTransition = null;
+				root.classList.remove('cover-blooming');
+				onFinish?.();
+			});
+	} catch {
+		if (activeBloomToken !== token) return;
+		activeViewTransition = null;
+		root.classList.remove('cover-blooming');
+		commit(false);
+		onFinish?.();
+	}
+}
+
 export const COVER_ATMOSPHERE_STORAGE_KEY = 'dk-cover-atmosphere-v1';
 
 /**
