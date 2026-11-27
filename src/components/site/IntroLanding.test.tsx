@@ -84,6 +84,12 @@ describe('IntroLanding', () => {
 		fireEvent.click(toggle);
 		expect(screen.getByTestId('intro-home')).toHaveAttribute('data-atmosphere', 'dawn');
 		expect(window.sessionStorage.getItem(COVER_ATMOSPHERE_STORAGE_KEY)).toBe('dawn');
+
+		// Rapid consecutive clicks never drop state updates (6 clicks from dawn -> dawn)
+		for (let i = 0; i < 6; i += 1) {
+			fireEvent.click(toggle);
+		}
+		expect(screen.getByTestId('intro-home')).toHaveAttribute('data-atmosphere', 'dawn');
 	});
 
 	it('unfolds sincere author marginalia whispers from [động từ] and closes via Escape or close button', () => {

@@ -40,7 +40,7 @@ interface CoverLivingPlateProps {
 	onToggleAtmosphere: (origin: BloomOrigin) => void;
 }
 
-const FALLBACK_REVEAL_MS = 1200;
+const FALLBACK_REVEAL_MS = 760;
 
 function formatPolyline(points: readonly { x: number; y: number }[]): string {
 	return points.map((p) => `${p.x},${p.y}`).join(' ');
@@ -68,7 +68,6 @@ export default function CoverLivingPlate({
 	const uid = useId().replace(/:/g, '');
 	const maskId = `cover-reveal-mask-${uid}`;
 	const bleedFilterId = `cover-bleed-filter-${uid}`;
-	const lanternGradId = `cover-lantern-grad-${uid}`;
 
 	const frameRef = useRef<HTMLDivElement>(null);
 	const celestialRef = useRef<HTMLButtonElement>(null);
@@ -78,12 +77,12 @@ export default function CoverLivingPlate({
 	const tweenRafRef = useRef<number | null>(null);
 	const prevAtmosphereRef = useRef<CoverAtmosphere>(atmosphere);
 	const pendingOriginRef = useRef<BloomOrigin | null>(null);
-	const { pointerRef, lanternRef } = useCoverPointer(frameRef, allowsAmbient);
+	const { pointerRef } = useCoverPointer(frameRef, allowsAmbient);
 	const pulseCounterRef = useRef(0);
 	const mountedRef = useRef(false);
 
 	const [isDesktop, setIsDesktop] = useState(true);
-	const [boxSize, setBoxSize] = useState<{ w: number; h: number }>({ w: 720, h: 600 });
+	const [fallbackBox, setFallbackBox] = useState<{ w: number; h: number }>({ w: 720, h: 600 });
 	const [isFallbackTransitioning, setIsFallbackTransitioning] = useState(false);
 	const [pathWarmed, setPathWarmed] = useState(false);
 	const [hasInteracted, setHasInteracted] = useState(false);
@@ -96,21 +95,6 @@ export default function CoverLivingPlate({
 		sync();
 		mq.addEventListener('change', sync);
 		return () => mq.removeEventListener('change', sync);
-	}, []);
-
-	useEffect(() => {
-		const frame = frameRef.current;
-		if (!frame) return;
-		const measure = () => {
-			const rect = frame.getBoundingClientRect();
-			if (rect.width > 0 && rect.height > 0) {
-				setBoxSize({ w: Math.round(rect.width), h: Math.round(rect.height) });
-			}
-		};
-		measure();
-		const observer = new ResizeObserver(measure);
-		observer.observe(frame);
-		return () => observer.disconnect();
 	}, []);
 
 	const closeAllNotes = useCallback(() => {
@@ -179,6 +163,7 @@ export default function CoverLivingPlate({
 		const frameRect = frameRef.current?.getBoundingClientRect();
 		const w = frameRect?.width ? Math.round(frameRect.width) : 720;
 		const h = frameRect?.height ? Math.round(frameRect.height) : 600;
+		setFallbackBox({ w, h });
 		const ox = origin.plateX * w;
 		const oy = origin.plateY * h;
 		const maxR =
@@ -342,12 +327,9 @@ export default function CoverLivingPlate({
 	const showNightLayer = atmosphere === 'night' || isFallbackTransitioning;
 
 	const stageVars = {
-		'--cover-lantern-mask': `url(#${maskId})`,
 		'--sun-x': `${sunPos.x}%`,
 		'--sun-y': `${sunPos.y}%`,
 	} as CSSProperties;
-
-	const lanternR = Math.round(Math.min(boxSize.w, boxSize.h) * 0.145);
 
 	const toggleLabel = atmosphere === 'night' ? 'Chạm để gọi bình minh' : 'Chạm để gọi đêm sao';
 	const plateStatus = atmosphere === 'night' ? 'Đêm sao · Hà Nội' : 'Bình minh · Hà Nội';
@@ -375,61 +357,55 @@ export default function CoverLivingPlate({
 				data-atmosphere={atmosphere}
 				data-transitioning={isFallbackTransitioning ? 'true' : undefined}
 			>
-				{/* Inline SVG organic paper-bleed mask definition */}
-				<svg
-					className="cover-mask-defs"
-					width={boxSize.w}
-					height={boxSize.h}
-					viewBox={`0 0 ${boxSize.w} ${boxSize.h}`}
-					aria-hidden="true"
-				>
-					<defs>
-						<filter id={bleedFilterId} x="-18%" y="-18%" width="136%" height="136%">
-							<feTurbulence
-								type="fractalNoise"
-								baseFrequency="0.019"
-								numOctaves="3"
-								seed="7"
-								result="paperNoise"
-							/>
-							<feDisplacementMap
-								in="SourceGraphic"
-								in2="paperNoise"
-								scale="34"
-								xChannelSelector="R"
-								yChannelSelector="G"
-								result="displaced"
-							/>
-							<feGaussianBlur in="displaced" stdDeviation="5" />
-						</filter>
-						<radialGradient id={lanternGradId}>
-							<stop offset="0%" stopColor="black" stopOpacity="0.34" />
-							<stop offset="56%" stopColor="black" stopOpacity="0.14" />
-							<stop offset="100%" stopColor="black" stopOpacity="0" />
-						</radialGradient>
-						<mask
-							id={maskId}
-							maskUnits="userSpaceOnUse"
-							x="0"
-							y="0"
-							width={boxSize.w}
-							height={boxSize.h}
-						>
-							<rect width={boxSize.w} height={boxSize.h} fill="white" />
-							{atmosphere === 'night' && !isFallbackTransitioning && allowsAmbient ? (
-								<circle ref={lanternRef} r={lanternR} fill={`url(#${lanternGradId})`} />
-							) : null}
-							<circle
-								ref={revealCircleRef}
-								cx={0}
-								cy={0}
-								r={0}
-								fill="black"
-								filter={`url(#${bleedFilterId})`}
-							/>
-						</mask>
-					</defs>
-				</svg>
+				{/* Mount SVG rag-paper bleed filter ONLY during non-View-Transitions fallback */}
+				{isFallbackTransitioning ? (
+					<svg
+						className="cover-mask-defs"
+						width={fallbackBox.w}
+						height={fallbackBox.h}
+						viewBox={`0 0 ${fallbackBox.w} ${fallbackBox.h}`}
+						aria-hidden="true"
+					>
+						<defs>
+							<filter id={bleedFilterId} x="-18%" y="-18%" width="136%" height="136%">
+								<feTurbulence
+									type="fractalNoise"
+									baseFrequency="0.019"
+									numOctaves="2"
+									seed="7"
+									result="paperNoise"
+								/>
+								<feDisplacementMap
+									in="SourceGraphic"
+									in2="paperNoise"
+									scale="28"
+									xChannelSelector="R"
+									yChannelSelector="G"
+									result="displaced"
+								/>
+								<feGaussianBlur in="displaced" stdDeviation="4" />
+							</filter>
+							<mask
+								id={maskId}
+								maskUnits="userSpaceOnUse"
+								x="0"
+								y="0"
+								width={fallbackBox.w}
+								height={fallbackBox.h}
+							>
+								<rect width={fallbackBox.w} height={fallbackBox.h} fill="white" />
+								<circle
+									ref={revealCircleRef}
+									cx={0}
+									cy={0}
+									r={0}
+									fill="black"
+									filter={`url(#${bleedFilterId})`}
+								/>
+							</mask>
+						</defs>
+					</svg>
+				) : null}
 
 				{/* Layer 1: Warm Dawn archival ink-wash plate + quiet living dawn overlays */}
 				<div className="cover-layer-dawn">

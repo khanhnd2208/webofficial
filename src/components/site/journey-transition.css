@@ -1,24 +1,32 @@
+/* Clean sequential page dissolve between `/` and `/muc-luc`:
+ * zero overlap ghosting and normal blending (avoids Chromium's plus-lighter grey wash). */
 ::view-transition-group(.journey-crossfade) {
-	animation-duration: var(--ui-duration-page);
+	animation-duration: 320ms;
 	animation-timing-function: var(--ui-ease);
 }
-/* Exit crisply before the new page settles so display headlines never ghost over the next view. */
 ::view-transition-old(.journey-crossfade) {
-	animation: journey-out 160ms var(--ease-in) both;
+	mix-blend-mode: normal;
+	animation: journey-out 110ms var(--ease-in) both;
 }
 ::view-transition-new(.journey-crossfade) {
-	animation: journey-in 320ms var(--ui-ease) 70ms both;
+	mix-blend-mode: normal;
+	animation: journey-in 210ms cubic-bezier(0.22, 1, 0.36, 1) 110ms both;
+}
+html:not(.cover-blooming)::view-transition-old(root),
+html:not(.cover-blooming)::view-transition-new(root) {
+	mix-blend-mode: normal;
+	animation-duration: 180ms;
 }
 @keyframes journey-out {
 	to {
 		opacity: 0;
-		transform: translateY(-6px);
+		transform: translateY(-4px);
 	}
 }
 @keyframes journey-in {
 	from {
 		opacity: 0;
-		transform: translateY(8px);
+		transform: translateY(6px);
 	}
 	to {
 		opacity: 1;
@@ -28,7 +36,9 @@
 @media (prefers-reduced-motion: reduce) {
 	::view-transition-group(.journey-crossfade),
 	::view-transition-old(.journey-crossfade),
-	::view-transition-new(.journey-crossfade) {
+	::view-transition-new(.journey-crossfade),
+	html:not(.cover-blooming)::view-transition-old(root),
+	html:not(.cover-blooming)::view-transition-new(root) {
 		animation: none;
 	}
 }

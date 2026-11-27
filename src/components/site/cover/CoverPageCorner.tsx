@@ -80,11 +80,13 @@ export default function CoverPageCorner({
 	function finish(event: PointerEvent<HTMLSpanElement>) {
 		const drag = grip.current;
 		if (!drag || drag.id !== event.pointerId) return;
-		suppressClick.current = Boolean(frameRef.current?.dataset.peeling);
-		if (suppressClick.current && distance(event, drag) >= drag.limit * 0.22) {
+		const wasPeeling = Boolean(frameRef.current?.dataset.peeling);
+		suppressClick.current = wasPeeling;
+		const shouldTurn = wasPeeling && distance(event, drag) >= drag.limit * 0.22;
+		release();
+		if (shouldTurn) {
 			onTurn(event.clientX, event.clientY);
 		}
-		release();
 	}
 
 	return (
