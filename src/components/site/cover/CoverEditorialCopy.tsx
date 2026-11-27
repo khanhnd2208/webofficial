@@ -22,6 +22,7 @@ export default function CoverEditorialCopy({
 	onWhisperChange,
 }: CoverEditorialCopyProps) {
 	const [whisperIndex, setWhisperIndex] = useState<number>(-1);
+	const [firstWord, ...remainingWords] = introPage.headline.split(' ');
 	const totalWhispers = introPage.whispers.length;
 
 	const cycleWhisper = () => {
@@ -53,7 +54,9 @@ export default function CoverEditorialCopy({
 		<div className="cover-copy">
 			<p className="book-caption cover-author">Nguyễn Duy Khánh</p>
 			<h1 className="cover-title">
-				<span className="cover-title-reveal">{introPage.headline}</span>
+				<span className="cover-title-reveal">
+					{firstWord} <em>{remainingWords.join(' ')}</em>
+				</span>
 			</h1>
 			<p className="cover-pos">
 				<button
@@ -113,7 +116,7 @@ export default function CoverEditorialCopy({
 				className="book-link cover-cta"
 				href={routes.toc}
 				data-testid="intro-open-toc"
-				onClick={onOpenToc}
+				onNavigate={onOpenToc}
 			>
 				{introPage.cta}
 				<span aria-hidden="true">→</span>

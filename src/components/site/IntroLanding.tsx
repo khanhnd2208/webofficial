@@ -19,6 +19,7 @@ import {
 import CoverEditorialCopy from './cover/CoverEditorialCopy';
 import CoverLivingPlate from './cover/CoverLivingPlate';
 import './cover/living-cover.css';
+import './cover/folio.css';
 
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -115,7 +116,7 @@ export default function IntroLanding() {
 
 	return (
 		<div
-			className="personal-book book-cover"
+			className="personal-book book-cover cover-folio"
 			data-testid="intro-home"
 			data-atmosphere={atmosphere}
 			data-atmosphere-ready={ready ? 'true' : undefined}

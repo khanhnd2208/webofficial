@@ -15,7 +15,7 @@ for (const width of [320, 390, 768, 1024, 1440]) {
 				.toBe(true);
 			if (path === '/') {
 				await expect(page.getByText('Nguyễn Duy Khánh', { exact: true })).toBeVisible();
-				await expect(page.getByTestId('intro-open-toc')).toBeVisible();
+				await expect(page.getByTestId('intro-open-toc')).toBeInViewport({ ratio: 1 });
 				expect(
 					await page.getByTestId('intro-open-toc').evaluate((el) => getComputedStyle(el).position),
 				).not.toBe('fixed');
@@ -42,6 +42,41 @@ for (const width of [320, 390, 768, 1024, 1440]) {
 		}
 	});
 }
+
+test.describe('illustrated page corner', () => {
+	test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
+
+	test('a short pull peeks and a longer pull turns without a synthetic click', async ({
+		page,
+		context,
+		browserName,
+	}) => {
+		test.skip(browserName !== 'chromium', 'Touch input is dispatched through CDP');
+		await page.goto('/?mode=dawn');
+		const cover = page.getByTestId('intro-home');
+		await expect(cover).toHaveAttribute('data-js', 'true');
+		const grip = page.locator('.cover-corner-grip');
+		await grip.scrollIntoViewIfNeeded();
+		const rect = (await grip.boundingBox())!;
+		const x = rect.x + rect.width - 6;
+		const y = rect.y + 6;
+		const input = await context.newCDPSession(page);
+		for (const [distance, atmosphere] of [
+			[16, 'dawn'],
+			[100, 'night'],
+		] as const) {
+			await input.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+			await input.send('Input.dispatchTouchEvent', {
+				type: 'touchMove',
+				touchPoints: [{ x: x - distance, y: y + distance }],
+			});
+			await expect(page.locator('.cover-plate-frame')).toHaveAttribute('data-peeling', 'true');
+			await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+			await expect(page.locator('.cover-plate-frame')).not.toHaveAttribute('data-peeling', 'true');
+			await expect(cover).toHaveAttribute('data-atmosphere', atmosphere);
+		}
+	});
+});
 
 test('public reading and native links survive without JavaScript', async ({ browser, baseURL }) => {
 	const context = await browser.newContext({
