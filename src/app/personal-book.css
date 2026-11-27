@@ -1512,19 +1512,69 @@
 	object-fit: cover;
 }
 
-/* Shared full-viewport atmosphere bloom and `/muc-luc` Night header harmony */
-@property --cover-bloom-r {
+/* Shared organic multi-lobe atmosphere transition and `/muc-luc` Night header harmony */
+@property --cover-bloom-r1 {
+	syntax: '<length>';
+	inherits: true;
+	initial-value: 0px;
+}
+
+@property --cover-bloom-r2 {
+	syntax: '<length>';
+	inherits: true;
+	initial-value: 0px;
+}
+
+@property --cover-bloom-r3 {
+	syntax: '<length>';
+	inherits: true;
+	initial-value: 0px;
+}
+
+@property --cover-bloom-sweep {
 	syntax: '<length>';
 	inherits: true;
 	initial-value: 0px;
 }
 
 @keyframes book-viewport-bloom {
-	from {
-		--cover-bloom-r: 0px;
+	0% {
+		--cover-bloom-r1: 0px;
+		--cover-bloom-r2: 0px;
+		--cover-bloom-r3: 0px;
+		--cover-bloom-sweep: 0px;
+		opacity: 0;
 	}
-	to {
-		--cover-bloom-r: var(--cover-bloom-max, 1800px);
+	10% {
+		--cover-bloom-r2: 0px;
+		--cover-bloom-r3: 0px;
+		--cover-bloom-sweep: 0px;
+		opacity: 0.94;
+	}
+	20% {
+		--cover-bloom-r1: var(--cover-bloom-r1-a, 420px);
+		--cover-bloom-r2: 0px;
+		--cover-bloom-sweep: 0px;
+		opacity: 1;
+	}
+	54% {
+		--cover-bloom-r3: var(--cover-bloom-r3-b, 1280px);
+	}
+	58% {
+		--cover-bloom-r1: var(--cover-bloom-r1-b, 1140px);
+	}
+	60% {
+		--cover-bloom-r2: var(--cover-bloom-r2-b, 920px);
+	}
+	62% {
+		--cover-bloom-sweep: var(--cover-bloom-sweep-b, 1060px);
+	}
+	100% {
+		--cover-bloom-r1: var(--cover-bloom-r1-end, 2200px);
+		--cover-bloom-r2: var(--cover-bloom-r2-end, 2400px);
+		--cover-bloom-r3: var(--cover-bloom-r3-end, 2350px);
+		--cover-bloom-sweep: var(--cover-bloom-sweep-end, 2400px);
+		opacity: 1;
 	}
 }
 
@@ -1537,24 +1587,86 @@ html.cover-blooming::view-transition-old(root) {
 	z-index: 1;
 }
 
+/* Three staggered, asymmetric watercolor mist lobes + a diagonal sky twilight veil roll calmly
+   across the spread over 1.85s so dusk and dawn settle like natural light rather than a ring */
 html.cover-blooming::view-transition-new(root) {
 	z-index: 2;
 	mix-blend-mode: normal;
-	animation: book-viewport-bloom 660ms cubic-bezier(0.22, 1, 0.36, 1) both;
-	-webkit-mask-image: radial-gradient(
-		circle at var(--cover-bloom-x, 65vw) var(--cover-bloom-y, 38vh),
-		#000 max(0px, calc(var(--cover-bloom-r) - 72px)),
-		rgba(0, 0, 0, 0.85) max(0px, calc(var(--cover-bloom-r) - 42px)),
-		rgba(0, 0, 0, 0.35) max(0px, calc(var(--cover-bloom-r) - 18px)),
-		transparent var(--cover-bloom-r)
-	);
-	mask-image: radial-gradient(
-		circle at var(--cover-bloom-x, 65vw) var(--cover-bloom-y, 38vh),
-		#000 max(0px, calc(var(--cover-bloom-r) - 72px)),
-		rgba(0, 0, 0, 0.85) max(0px, calc(var(--cover-bloom-r) - 42px)),
-		rgba(0, 0, 0, 0.35) max(0px, calc(var(--cover-bloom-r) - 18px)),
-		transparent var(--cover-bloom-r)
-	);
+	animation: book-viewport-bloom 1850ms cubic-bezier(0.38, 0.04, 0.22, 1) both;
+	-webkit-mask-image:
+		radial-gradient(
+			circle at var(--cover-bloom-x, 65vw) var(--cover-bloom-y, 38vh),
+			#000 max(0px, calc(var(--cover-bloom-r1) - 520px)),
+			rgba(0, 0, 0, 0.9) max(0px, calc(var(--cover-bloom-r1) - 430px)),
+			rgba(0, 0, 0, 0.72) max(0px, calc(var(--cover-bloom-r1) - 340px)),
+			rgba(0, 0, 0, 0.48) max(0px, calc(var(--cover-bloom-r1) - 240px)),
+			rgba(0, 0, 0, 0.24) max(0px, calc(var(--cover-bloom-r1) - 145px)),
+			rgba(0, 0, 0, 0.07) max(0px, calc(var(--cover-bloom-r1) - 60px)),
+			transparent var(--cover-bloom-r1)
+		),
+		radial-gradient(
+			circle at calc(var(--cover-bloom-x, 65vw) - 18vw) calc(var(--cover-bloom-y, 38vh) + 12vh),
+			#000 max(0px, calc(var(--cover-bloom-r2) - 480px)),
+			rgba(0, 0, 0, 0.84) max(0px, calc(var(--cover-bloom-r2) - 375px)),
+			rgba(0, 0, 0, 0.56) max(0px, calc(var(--cover-bloom-r2) - 265px)),
+			rgba(0, 0, 0, 0.28) max(0px, calc(var(--cover-bloom-r2) - 155px)),
+			rgba(0, 0, 0, 0.08) max(0px, calc(var(--cover-bloom-r2) - 65px)),
+			transparent var(--cover-bloom-r2)
+		),
+		radial-gradient(
+			circle at calc(var(--cover-bloom-x, 65vw) + 15vw) calc(var(--cover-bloom-y, 38vh) - 16vh),
+			#000 max(0px, calc(var(--cover-bloom-r3) - 460px)),
+			rgba(0, 0, 0, 0.84) max(0px, calc(var(--cover-bloom-r3) - 360px)),
+			rgba(0, 0, 0, 0.54) max(0px, calc(var(--cover-bloom-r3) - 250px)),
+			rgba(0, 0, 0, 0.24) max(0px, calc(var(--cover-bloom-r3) - 145px)),
+			rgba(0, 0, 0, 0.06) max(0px, calc(var(--cover-bloom-r3) - 60px)),
+			transparent var(--cover-bloom-r3)
+		),
+		linear-gradient(
+			205deg,
+			#000 max(0px, calc(var(--cover-bloom-sweep) - 640px)),
+			rgba(0, 0, 0, 0.72) max(0px, calc(var(--cover-bloom-sweep) - 450px)),
+			rgba(0, 0, 0, 0.36) max(0px, calc(var(--cover-bloom-sweep) - 260px)),
+			rgba(0, 0, 0, 0.1) max(0px, calc(var(--cover-bloom-sweep) - 105px)),
+			transparent var(--cover-bloom-sweep)
+		);
+	mask-image:
+		radial-gradient(
+			circle at var(--cover-bloom-x, 65vw) var(--cover-bloom-y, 38vh),
+			#000 max(0px, calc(var(--cover-bloom-r1) - 520px)),
+			rgba(0, 0, 0, 0.9) max(0px, calc(var(--cover-bloom-r1) - 430px)),
+			rgba(0, 0, 0, 0.72) max(0px, calc(var(--cover-bloom-r1) - 340px)),
+			rgba(0, 0, 0, 0.48) max(0px, calc(var(--cover-bloom-r1) - 240px)),
+			rgba(0, 0, 0, 0.24) max(0px, calc(var(--cover-bloom-r1) - 145px)),
+			rgba(0, 0, 0, 0.07) max(0px, calc(var(--cover-bloom-r1) - 60px)),
+			transparent var(--cover-bloom-r1)
+		),
+		radial-gradient(
+			circle at calc(var(--cover-bloom-x, 65vw) - 18vw) calc(var(--cover-bloom-y, 38vh) + 12vh),
+			#000 max(0px, calc(var(--cover-bloom-r2) - 480px)),
+			rgba(0, 0, 0, 0.84) max(0px, calc(var(--cover-bloom-r2) - 375px)),
+			rgba(0, 0, 0, 0.56) max(0px, calc(var(--cover-bloom-r2) - 265px)),
+			rgba(0, 0, 0, 0.28) max(0px, calc(var(--cover-bloom-r2) - 155px)),
+			rgba(0, 0, 0, 0.08) max(0px, calc(var(--cover-bloom-r2) - 65px)),
+			transparent var(--cover-bloom-r2)
+		),
+		radial-gradient(
+			circle at calc(var(--cover-bloom-x, 65vw) + 15vw) calc(var(--cover-bloom-y, 38vh) - 16vh),
+			#000 max(0px, calc(var(--cover-bloom-r3) - 460px)),
+			rgba(0, 0, 0, 0.84) max(0px, calc(var(--cover-bloom-r3) - 360px)),
+			rgba(0, 0, 0, 0.54) max(0px, calc(var(--cover-bloom-r3) - 250px)),
+			rgba(0, 0, 0, 0.24) max(0px, calc(var(--cover-bloom-r3) - 145px)),
+			rgba(0, 0, 0, 0.06) max(0px, calc(var(--cover-bloom-r3) - 60px)),
+			transparent var(--cover-bloom-r3)
+		),
+		linear-gradient(
+			205deg,
+			#000 max(0px, calc(var(--cover-bloom-sweep) - 640px)),
+			rgba(0, 0, 0, 0.72) max(0px, calc(var(--cover-bloom-sweep) - 450px)),
+			rgba(0, 0, 0, 0.36) max(0px, calc(var(--cover-bloom-sweep) - 260px)),
+			rgba(0, 0, 0, 0.1) max(0px, calc(var(--cover-bloom-sweep) - 105px)),
+			transparent var(--cover-bloom-sweep)
+		);
 }
 
 html[data-cover-atmosphere='night'] {
