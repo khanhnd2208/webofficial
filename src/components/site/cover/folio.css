@@ -1,52 +1,62 @@
-/* Cloth, rag paper, dappled morning light / evening lamplight, and binding shadow share one light source. */
+/* Cloth reading desk, overhanging hardcover boards, cold-pressed cotton signatures,
+ * natural curved spine lighting, sewn silk ribbon, and mobile pocket-book feel. */
 .personal-book.cover-folio {
-	--cloth: #2a463c;
-	--cloth-shadow: #152b25;
-	--cloth-light: #5c7a67;
-	--leaf: #f9f4e7;
-	--edge: #cabfa6;
-	--edge-light: #ece4d1;
-	--binding: #263d33;
-	--fold-shade: #574320;
-	--ribbon: #993f32;
+	--cloth: #284239;
+	--cloth-shadow: #13251f;
+	--cloth-light: #567360;
+	--board: #1d3129;
+	--board-deep: #11201b;
+	--leaf: #f8f3e5;
+	--edge: #c7bca3;
+	--edge-light: #ece3cf;
+	--binding: #22372e;
+	--fold-shade: #4e3b1d;
+	--ribbon: #983d30;
 	--folio-ink: #24382f;
 	--cover-accent: #8a5534;
 	--button-paper: #fdf8eb;
 	isolation: isolate;
-	padding: 0 clamp(20px, 4.4vw, 78px) clamp(26px, 5svh, 60px);
+	padding: 0 clamp(20px, 4.4vw, 78px) max(clamp(24px, 4.6svh, 54px), env(safe-area-inset-bottom));
 	background:
-		radial-gradient(ellipse 46% 36% at 14% 2%, rgba(250, 232, 186, 0.16), transparent 68%),
-		repeating-linear-gradient(92deg, transparent 0 2px, rgb(255 255 255 / 2%) 2.5px 3px),
-		repeating-linear-gradient(2deg, transparent 0 2px, rgb(0 0 0 / 4%) 2.5px 3px),
-		radial-gradient(ellipse at 11% 0%, var(--cloth-light), transparent 64%),
-		linear-gradient(130deg, var(--cloth), var(--cloth-shadow));
+		radial-gradient(ellipse 46% 36% at 14% 2%, rgba(250, 232, 186, 0.17), transparent 68%),
+		radial-gradient(ellipse 95% 88% at 50% 52%, transparent 56%, rgba(8, 18, 15, 0.34) 100%),
+		repeating-linear-gradient(92deg, transparent 0 2px, rgb(255 255 255 / 1.8%) 2.5px 3px),
+		repeating-linear-gradient(2deg, transparent 0 2px, rgb(0 0 0 / 3.8%) 2.5px 3px),
+		radial-gradient(ellipse at 12% 0%, var(--cloth-light), transparent 64%),
+		linear-gradient(132deg, var(--cloth), var(--cloth-shadow));
 }
 html[data-cover-atmosphere='night'] .personal-book.cover-folio {
-	--cloth: #14252e;
-	--cloth-shadow: #091319;
-	--cloth-light: #354c57;
+	--cloth: #13232c;
+	--cloth-shadow: #081117;
+	--cloth-light: #314854;
+	--board: #0d1c24;
+	--board-deep: #061016;
 	--leaf: #192b36;
-	--edge: #465158;
-	--edge-light: #627177;
-	--binding: #0a1b22;
-	--fold-shade: #020b10;
+	--edge: #3d4a52;
+	--edge-light: #56656d;
+	--binding: #091820;
+	--fold-shade: #02090e;
 	--ribbon: #b26347;
 	--folio-ink: #f5e7c6;
 	--cover-accent: #e5ba7d;
 	--button-paper: #16262f;
 	background:
 		radial-gradient(ellipse 52% 40% at 50% 4%, rgba(235, 190, 118, 0.08), transparent 68%),
-		repeating-linear-gradient(92deg, transparent 0 2px, rgb(255 255 255 / 1.5%) 2.5px 3px),
-		repeating-linear-gradient(2deg, transparent 0 2px, rgb(0 0 0 / 4.5%) 2.5px 3px),
+		radial-gradient(ellipse 95% 88% at 50% 52%, transparent 52%, rgba(2, 7, 11, 0.42) 100%),
+		repeating-linear-gradient(92deg, transparent 0 2px, rgb(255 255 255 / 1.4%) 2.5px 3px),
+		repeating-linear-gradient(2deg, transparent 0 2px, rgb(0 0 0 / 4.2%) 2.5px 3px),
 		radial-gradient(ellipse at 14% 0%, var(--cloth-light), transparent 62%),
 		linear-gradient(135deg, var(--cloth), var(--cloth-shadow));
+}
+.cover-folio :is(a, button, summary) {
+	-webkit-tap-highlight-color: transparent;
 }
 .cover-folio .cover-meta {
 	position: relative;
 	z-index: 4;
-	width: min(1280px, 100%);
+	width: min(1296px, 100%);
 	margin: 0 auto;
-	min-height: clamp(60px, 9svh, 92px);
+	min-height: clamp(58px, 8.6svh, 88px);
 	padding: 0 4px;
 	border: 0;
 }
@@ -78,71 +88,189 @@ html[data-cover-atmosphere='night'] .personal-book.cover-folio {
 	outline-color: #efd49e;
 }
 
-/* The centre crease sits between two equal leaves, independent of their contents. */
+/* Overhanging cloth-bound hardcover casing resting naturally on the desk */
+.cover-folio .cover-book-board {
+	position: relative;
+	width: min(1296px, 100%);
+	margin: auto;
+	padding: 6px 10px 12px;
+	border-radius: 7px 9px 9px 7px;
+	background:
+		radial-gradient(ellipse 36px 18px at 50% 100%, rgba(0, 0, 0, 0.34), transparent 76%),
+		radial-gradient(ellipse 36px 16px at 50% 0%, rgba(0, 0, 0, 0.28), transparent 76%),
+		repeating-linear-gradient(90deg, transparent 0 2px, rgba(255, 255, 255, 0.018) 2px 3px),
+		linear-gradient(180deg, var(--board) 0%, var(--board-deep) 100%);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 248, 232, 0.14),
+		inset 0 -1px 0 rgba(0, 0, 0, 0.38),
+		0 2px 4px rgba(0, 0, 0, 0.42),
+		0 16px 30px -10px rgba(0, 0, 0, 0.44),
+		0 44px 84px -30px rgba(0, 0, 0, 0.56);
+}
+
+/* Open rag-paper signatures nestled inside the hardcover boards with realistic curved spine light */
 .cover-folio .cover-composition {
 	--crease: 50%;
 	position: relative;
 	isolation: isolate;
 	flex: none;
-	width: min(1280px, 100%);
-	min-height: clamp(490px, 74svh, 790px);
-	margin: auto;
-	padding: clamp(34px, 4.6vw, 72px) clamp(32px, 4.4vw, 72px);
+	width: 100%;
+	min-height: clamp(486px, 73svh, 776px);
+	margin: 0;
+	padding: clamp(34px, 4.5vw, 70px) clamp(32px, 4.2vw, 70px);
 	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: clamp(44px, 7.3vw, 118px);
+	gap: clamp(44px, 7.2vw, 114px);
+	background:
+		/* Subtle organic 3D page curvature: outer roll-off -> lit crest -> deep spine valley -> specular catchlight */
+		linear-gradient(
+			90deg,
+			color-mix(in srgb, var(--fold-shade) 11%, transparent) 0%,
+			color-mix(in srgb, var(--fold-shade) 3%, transparent) 2.2%,
+			transparent 7%,
+			rgba(255, 252, 244, 0.14) 24%,
+			rgba(255, 252, 244, 0.08) 38%,
+			color-mix(in srgb, var(--fold-shade) 4%, transparent) calc(var(--crease) - 7%),
+			color-mix(in srgb, var(--fold-shade) 12%, transparent) calc(var(--crease) - 2.4%),
+			color-mix(in srgb, var(--fold-shade) 28%, transparent) calc(var(--crease) - 0.5%),
+			color-mix(in srgb, var(--fold-shade) 42%, transparent) var(--crease),
+			color-mix(in srgb, var(--fold-shade) 18%, transparent) calc(var(--crease) + 0.45%),
+			rgba(255, 252, 242, 0.16) calc(var(--crease) + 2.2%),
+			transparent calc(var(--crease) + 10%),
+			rgba(255, 252, 244, 0.09) 68%,
+			transparent 92%,
+			color-mix(in srgb, var(--fold-shade) 4%, transparent) 97.6%,
+			color-mix(in srgb, var(--fold-shade) 12%, transparent) 100%
+		),
+		/* Gentle top & bottom page edge vignette */
+		linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--fold-shade) 6%, transparent) 0%,
+				transparent 2.4%,
+				transparent 96.8%,
+				color-mix(in srgb, var(--fold-shade) 8%, transparent) 100%
+			),
+		var(--leaf);
+	border-radius: 3px 5px 5px 3px;
+	/* Stepped signature page edges on LEFT, RIGHT, and BOTTOM fore-edges */
+	box-shadow:
+		-2px 0 0 var(--edge-light),
+		-3px 0 0 var(--edge),
+		-5px 1px 0 var(--edge-light),
+		2px 0 0 var(--edge-light),
+		3px 0 0 var(--edge),
+		5px 1px 0 var(--edge-light),
+		0 1px 0 var(--edge-light),
+		0 3px 0 var(--edge),
+		0 4px 0 var(--edge-light),
+		0 6px 0 var(--edge),
+		0 7px 0 var(--edge-light),
+		0 9px 10px -4px rgba(0, 0, 0, 0.34);
+}
+html[data-cover-atmosphere='night'] .cover-folio .cover-composition {
 	background:
 		linear-gradient(
 			90deg,
-			transparent calc(var(--crease) - 13%),
-			color-mix(in srgb, var(--fold-shade) 5%, transparent) calc(var(--crease) - 5%),
-			color-mix(in srgb, var(--fold-shade) 18%, transparent) calc(var(--crease) - 0.6%),
-			color-mix(in srgb, var(--fold-shade) 38%, transparent) var(--crease),
-			color-mix(in srgb, var(--fold-shade) 16%, transparent) calc(var(--crease) + 0.35%),
-			color-mix(in srgb, white 6%, transparent) calc(var(--crease) + 3%),
-			transparent calc(var(--crease) + 12%)
+			rgba(2, 8, 12, 0.22) 0%,
+			rgba(2, 8, 12, 0.06) 2.4%,
+			transparent 7%,
+			rgba(235, 198, 134, 0.04) 26%,
+			transparent 40%,
+			rgba(2, 8, 12, 0.1) calc(var(--crease) - 6%),
+			rgba(2, 8, 12, 0.28) calc(var(--crease) - 1.4%),
+			rgba(1, 5, 8, 0.56) var(--crease),
+			rgba(2, 8, 12, 0.24) calc(var(--crease) + 0.55%),
+			rgba(238, 204, 146, 0.07) calc(var(--crease) + 2.4%),
+			transparent calc(var(--crease) + 10%),
+			transparent 94%,
+			rgba(2, 8, 12, 0.22) 100%
 		),
-		radial-gradient(ellipse at 12% 12%, rgb(255 255 255 / 9%), transparent 70%), var(--leaf);
-	border-radius: 3px 7px 6px 3px;
-	box-shadow:
-		0 1px var(--edge),
-		0 3px var(--edge-light),
-		0 4px var(--edge),
-		0 6px var(--edge-light),
-		0 7px var(--edge),
-		0 9px var(--binding),
-		0 0 0 4px var(--binding),
-		0 11px 0 4px var(--binding),
-		0 25px 32px -12px rgb(0 0 0 / 42%),
-		0 55px 90px -38px rgb(0 0 0 / 53%);
+		linear-gradient(
+			180deg,
+			rgba(2, 8, 12, 0.14) 0%,
+			transparent 3%,
+			transparent 96%,
+			rgba(2, 8, 12, 0.18) 100%
+		),
+		var(--leaf);
 }
+
+/* Sewn center spine headband & subtle signature fold dimples at top and bottom of the crease */
+.cover-folio .cover-composition::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	pointer-events: none;
+	z-index: 2;
+	background:
+		radial-gradient(
+			ellipse 16px 7px at var(--crease) 0%,
+			color-mix(in srgb, var(--fold-shade) 42%, transparent),
+			transparent 75%
+		),
+		radial-gradient(
+			ellipse 18px 9px at var(--crease) 100%,
+			color-mix(in srgb, var(--fold-shade) 46%, transparent),
+			transparent 75%
+		);
+}
+
+/* Woven crimson silk bookmark ribbon emerging naturally from the top of the spine headband */
 .cover-folio .cover-composition::before {
 	content: '';
 	position: absolute;
-	left: calc(var(--crease) - clamp(42px, 4vw, 64px));
-	top: -2px;
-	width: clamp(17px, 1.55vw, 24px);
-	height: clamp(47px, 7.5svh, 83px);
+	left: calc(var(--crease) - 9px);
+	top: -5px;
+	width: clamp(16px, 1.45vw, 22px);
+	height: clamp(54px, 8.2svh, 88px);
 	background:
 		linear-gradient(
 			90deg,
-			transparent 9%,
-			rgb(255 239 190 / 28%) 11% 13%,
-			transparent 15% 85%,
-			rgb(255 239 190 / 27%) 87% 89%,
-			transparent 91%
+			rgba(0, 0, 0, 0.18) 0%,
+			transparent 10%,
+			rgb(255 239 190 / 28%) 12% 14%,
+			transparent 16% 84%,
+			rgb(255 239 190 / 26%) 86% 88%,
+			transparent 90%,
+			rgba(0, 0, 0, 0.16) 100%
 		),
-		repeating-linear-gradient(0deg, transparent 0 1px, rgb(0 0 0 / 8%) 1px 2px), var(--ribbon);
+		repeating-linear-gradient(0deg, transparent 0 1px, rgb(0 0 0 / 8%) 1px 2px),
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--ribbon) 86%, #000) 0%,
+			var(--ribbon) 14%,
+			var(--ribbon) 100%
+		);
 	clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%);
-	filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.22));
+	transform-origin: top center;
+	transform: rotate(1.6deg);
+	filter: drop-shadow(2px 4px 4px rgba(0, 0, 0, 0.24));
 	pointer-events: none;
 	z-index: 4;
+}
+
+/* Static cold-pressed cotton paper tooth (rendered once as a cached SVG tile, zero animation cost) */
+.cover-folio .cover-paper-grain {
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	pointer-events: none;
+	z-index: 1;
+	opacity: 0.042;
+	mix-blend-mode: multiply;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+	background-size: 180px 180px;
+}
+html[data-cover-atmosphere='night'] .cover-folio .cover-paper-grain {
+	opacity: 0.032;
+	mix-blend-mode: soft-light;
 }
 
 /* Soft dappled morning sunlight (Dawn) / warm brass desk-lamp pool (Night) across the open pages */
 @keyframes cover-sunlight-sway {
 	0%,
 	100% {
-		opacity: 0.78;
+		opacity: 0.76;
 		transform: translate3d(0, 0, 0);
 	}
 	50% {
@@ -157,10 +285,10 @@ html[data-cover-atmosphere='night'] .personal-book.cover-folio {
 	pointer-events: none;
 	z-index: 3;
 	background:
-		radial-gradient(ellipse 42% 48% at 18% 12%, rgba(255, 241, 200, 0.28), transparent 70%),
+		radial-gradient(ellipse 42% 48% at 18% 12%, rgba(255, 241, 200, 0.26), transparent 70%),
 		linear-gradient(
 			118deg,
-			rgba(255, 244, 212, 0.16) 0%,
+			rgba(255, 244, 212, 0.15) 0%,
 			rgba(255, 244, 212, 0.04) 36%,
 			transparent 58%,
 			rgba(48, 40, 26, 0.03) 100%
@@ -186,7 +314,7 @@ html[data-cover-atmosphere='night'] .cover-folio .cover-sunlight-wash {
 /* Quiet vermilion bookmaker chop seal & page number tucked into lower-left margin */
 .cover-folio .cover-leaf-colophon {
 	position: absolute;
-	left: clamp(32px, 4.4vw, 72px);
+	left: clamp(32px, 4.2vw, 70px);
 	bottom: clamp(18px, 2.6svh, 30px);
 	display: inline-flex;
 	align-items: center;
@@ -327,6 +455,18 @@ html[data-cover-atmosphere='night'] .cover-folio .cover-cta::before {
 		transform var(--ui-duration-control) var(--ui-ease),
 		color var(--ui-duration-control) var(--ui-ease);
 }
+.cover-folio .cover-cta:active {
+	transform: scale(0.98);
+	color: var(--button-paper);
+	border-color: var(--folio-ink);
+}
+.cover-folio .cover-cta:active::before {
+	transform: scaleX(1);
+}
+.cover-folio .cover-cta:active .cover-cta-arrow {
+	color: var(--button-paper);
+	transform: translateX(4px);
+}
 .cover-folio .cover-cta:focus-visible {
 	color: var(--button-paper);
 	border-color: var(--folio-ink);
@@ -376,17 +516,23 @@ html[data-cover-atmosphere='night'] .cover-folio .cover-cta::before {
 	gap: 8px;
 	margin-top: 9px;
 	padding: 0;
-	border-top: 1px solid color-mix(in srgb, var(--cover-accent) 30%, transparent);
+	border-top: 1px solid color-mix(in srgb, var(--cover-accent) 26%, transparent);
 }
 .cover-folio .cover-atmosphere-toggle {
 	color: var(--folio-ink);
+	transition:
+		color var(--ui-duration-hover) var(--ui-ease),
+		transform var(--ui-duration-hover) var(--ui-ease);
+}
+.cover-folio .cover-atmosphere-toggle:active {
+	transform: scale(0.97);
 }
 .cover-folio .cover-atmosphere-icon {
 	display: grid;
 	place-items: center;
 	width: 24px;
 	height: 24px;
-	border: 1px solid color-mix(in srgb, currentColor 48%, transparent);
+	border: 1px solid color-mix(in srgb, currentColor 44%, transparent);
 	border-radius: 50%;
 }
 .cover-folio .cover-layer-dawn {
@@ -404,19 +550,18 @@ html[data-cover-atmosphere='night'] .cover-folio .cover-cta::before {
 	z-index: 3;
 	background: linear-gradient(
 		225deg,
-		rgba(206, 189, 156, 0.62) 0%,
-		rgba(182, 164, 132, 0.28) 18%,
+		rgba(202, 184, 150, 0.68) 0%,
+		rgba(182, 164, 132, 0.3) 18%,
 		transparent 38%
 	);
 }
 
-/* The upper corner of the illustration exposes the other print underneath.
- * The surface and its caption activate the same action by touch or keyboard. */
+/* The upper corner of the illustration softly curls to reveal the other print underneath. */
 .cover-folio[data-js] .cover-plate-figure {
 	--fold: clamp(54px, min(8.2vw, 11.5svh), 104px);
 	--corner: calc(var(--fold) * 0.26);
 	--curl-scale: 0.26;
-	--curl-ease: cubic-bezier(0.2, 0.76, 0.22, 1);
+	--curl-ease: cubic-bezier(0.22, 0.72, 0.22, 1);
 }
 .cover-folio[data-js] .cover-plate-frame:not([data-transitioning]) .cover-layer-night {
 	opacity: 1;
@@ -427,7 +572,7 @@ html[data-cover-atmosphere='night'] .cover-folio .cover-cta::before {
 		100% var(--corner),
 		calc(100% - var(--corner)) 0
 	);
-	transition: clip-path 440ms var(--curl-ease);
+	transition: clip-path 520ms var(--curl-ease);
 }
 .cover-folio[data-js]
 	.cover-plate-frame[data-atmosphere='night']:not([data-transitioning])
@@ -441,16 +586,32 @@ html[data-cover-atmosphere='night'] .cover-folio .cover-cta::before {
 	right: 0;
 	width: var(--fold);
 	height: var(--fold);
-	background: linear-gradient(135deg, #9d8b6b 1%, #f4ead1 24%, #fcf5e3 45%, #ccba9b 74%, #8f7e63);
-	clip-path: polygon(0 0, 100% 100%, 4% 94%);
-	filter: drop-shadow(-2px 3px 5px rgba(10, 16, 24, 0.24));
+	border-bottom-left-radius: 18% 14%;
+	background: linear-gradient(
+		135deg,
+		#8c7b5e 0%,
+		#e4d5b6 22%,
+		#fcf6e6 44%,
+		#d8c7a8 68%,
+		#9d8b6c 94%,
+		#7e6e53 100%
+	);
+	clip-path: polygon(0 0, 100% 100%, 6% 93%);
+	filter: drop-shadow(-3px 4px 6px rgba(18, 16, 12, 0.24));
 	transform-origin: top right;
 	transform: scale(var(--curl-scale));
-	transition: transform 440ms var(--curl-ease);
+	transition: transform 520ms var(--curl-ease);
 }
 html[data-cover-atmosphere='night'] .cover-folio .cover-plate-surface-btn::after {
-	background: linear-gradient(135deg, #16242d 0%, #465c67 26%, #748993 46%, #364751 74%, #15232c);
-	filter: drop-shadow(-2px 3px 6px rgba(2, 6, 12, 0.42));
+	background: linear-gradient(
+		135deg,
+		#132029 0%,
+		#3e5460 24%,
+		#70858f 46%,
+		#354751 72%,
+		#121f27 100%
+	);
+	filter: drop-shadow(-3px 4px 7px rgba(2, 6, 12, 0.44));
 }
 .cover-folio
 	.cover-plate-figure:has(:is(.cover-atmosphere-toggle, .cover-plate-surface-btn):focus-visible) {
@@ -490,32 +651,57 @@ html.cover-blooming .cover-folio[data-js] .cover-plate-frame .cover-layer-night 
 	transition: none;
 }
 
+/* ── Tablet & Mobile Pocket-Book Layout (`<= 1023px`) ────────────────────── */
 @media (max-width: 1023px) {
 	.personal-book.cover-folio {
-		padding: 0 clamp(12px, 3.4vw, 28px) 22px;
+		padding: 0 clamp(12px, 3.4vw, 28px) max(20px, env(safe-area-inset-bottom));
 	}
 	.cover-folio .cover-meta {
-		max-width: 640px;
-		min-height: 52px;
+		max-width: 652px;
+		min-height: 50px;
+	}
+	.cover-folio .cover-book-board {
+		width: min(100%, 652px);
+		padding: 5px 8px 10px 5px;
+		border-radius: 4px 8px 8px 4px;
+		background:
+			repeating-linear-gradient(90deg, transparent 0 2px, rgba(255, 255, 255, 0.018) 2px 3px),
+			linear-gradient(180deg, var(--board) 0%, var(--board-deep) 100%);
 	}
 	.cover-folio .cover-composition,
 	.cover-folio[data-whisper-open='true'] .cover-composition {
-		--crease: 2%;
-		width: min(100%, 640px);
+		--crease: 1.8%;
+		width: 100%;
 		min-height: 0;
 		grid-template-columns: minmax(0, 1fr);
-		gap: 16px;
-		padding: 24px 18px 12px 23px;
+		gap: 15px;
+		padding: 22px 16px 12px 22px;
+		border-radius: 2px 5px 5px 2px;
+		/* Left bound spine groove + stepped right & bottom paper fore-edges */
+		box-shadow:
+			2px 0 0 var(--edge-light),
+			4px 0 0 var(--edge),
+			5px 1px 0 var(--edge-light),
+			0 1px 0 var(--edge-light),
+			0 3px 0 var(--edge),
+			0 4px 0 var(--edge-light),
+			0 6px 0 var(--edge),
+			0 8px 10px -4px rgba(0, 0, 0, 0.32);
 	}
 	.cover-folio[data-whisper-open='true'] .cover-composition {
-		gap: 12px;
-		padding-top: 18px;
+		gap: 11px;
+		padding-top: 16px;
+	}
+	.cover-folio .cover-composition::after {
+		display: none;
 	}
 	.cover-folio .cover-composition::before {
 		left: auto;
-		right: 8%;
+		right: 22px;
+		top: -4px;
 		height: 38px;
 		width: 15px;
+		transform: rotate(0.8deg);
 	}
 	.cover-folio .cover-copy {
 		padding: 0;
@@ -541,7 +727,7 @@ html.cover-blooming .cover-folio[data-js] .cover-plate-frame .cover-layer-night 
 		width: 18px;
 	}
 	.cover-folio .cover-title {
-		font-size: clamp(2.75rem, 10.7vw, 4.4rem);
+		font-size: clamp(2.65rem, 10.6vw, 4.35rem);
 		white-space: nowrap;
 	}
 	.cover-folio .cover-title em {
@@ -551,20 +737,23 @@ html.cover-blooming .cover-folio[data-js] .cover-plate-frame .cover-layer-night 
 		font-size: 1rem;
 	}
 	.cover-folio .cover-narrative {
-		font-size: 1.125rem;
+		font-size: 1.09375rem;
 		margin-top: 8px;
+		line-height: 1.46;
 	}
 	.cover-folio .cover-cta {
-		margin-top: 12px;
+		margin-top: 13px;
+		min-height: 44px;
+		padding: 0 20px 0 16px;
 	}
 	.cover-folio .cover-plate-figure {
 		grid-row: auto;
-		width: clamp(164px, min(64vw, 33svh), 288px);
+		width: clamp(182px, min(72vw, 35svh), 284px);
 		max-width: 100%;
 		transition: width var(--ui-duration-control) var(--ui-ease);
 	}
 	.cover-folio[data-whisper-open='true'] .cover-plate-figure {
-		width: clamp(148px, min(54vw, 26svh), 232px);
+		width: clamp(148px, min(54vw, 25svh), 224px);
 	}
 	.cover-folio[data-whisper-open='true'] .cover-plate-frame,
 	.cover-folio .cover-plate-frame {
@@ -573,7 +762,7 @@ html.cover-blooming .cover-folio[data-js] .cover-plate-frame .cover-layer-night 
 	}
 	.cover-folio .cover-plate-bar {
 		justify-content: center;
-		margin-top: 5px;
+		margin-top: 6px;
 	}
 	.cover-folio .cover-plate-bar:has(.cover-docked-note) {
 		width: min(82vw, 316px);
@@ -581,6 +770,75 @@ html.cover-blooming .cover-folio[data-js] .cover-plate-frame .cover-layer-night 
 	}
 	.cover-folio .cover-plate-status {
 		display: none;
+	}
+}
+@media (max-width: 639px) and (max-height: 700px) {
+	/* Compact phones (e.g. 375×667 iPhone SE, 320×568): keep title, CTA, and artwork balanced */
+	.cover-folio .cover-meta {
+		min-height: 44px;
+	}
+	.cover-folio .cover-composition {
+		gap: 11px;
+		padding: 16px 14px 10px 18px;
+	}
+	.cover-folio .cover-composition::before {
+		height: 30px;
+		width: 13px;
+		right: 16px;
+	}
+	.cover-folio .cover-title {
+		font-size: clamp(2.35rem, 9.8vw, 3rem);
+	}
+	.cover-folio .cover-ink-sprig {
+		display: none;
+	}
+	.cover-folio .cover-narrative {
+		font-size: 1rem;
+		margin-top: 6px;
+	}
+	.cover-folio .cover-cta {
+		margin-top: 10px;
+	}
+	.cover-folio .cover-plate-figure {
+		width: clamp(146px, min(58vw, 31svh), 214px);
+	}
+}
+@media (max-width: 359px) and (max-height: 600px) {
+	/* Narrowest legacy phones (320×568): fit entire hardcover spread cleanly without scroll */
+	.personal-book.cover-folio {
+		padding: 0 10px max(10px, env(safe-area-inset-bottom));
+	}
+	.cover-folio .cover-meta {
+		min-height: 38px;
+	}
+	.cover-folio .cover-book-board {
+		padding: 4px 6px 8px 4px;
+	}
+	.cover-folio .cover-composition {
+		gap: 8px;
+		padding: 12px 12px 8px 16px;
+	}
+	.cover-folio .cover-title {
+		font-size: 2.15rem;
+	}
+	.cover-folio .cover-pos {
+		font-size: 0.9375rem;
+	}
+	.cover-folio .cover-narrative {
+		font-size: 0.9375rem;
+		margin-top: 4px;
+		line-height: 1.4;
+	}
+	.cover-folio .cover-cta {
+		margin-top: 8px;
+		min-height: 40px;
+		padding: 0 16px 0 14px;
+	}
+	.cover-folio .cover-plate-figure {
+		width: clamp(132px, 46vw, 162px);
+	}
+	.cover-folio .cover-plate-bar {
+		margin-top: 4px;
 	}
 }
 @media (min-width: 640px) and (max-width: 1023px) {
@@ -602,25 +860,28 @@ html.cover-blooming .cover-folio[data-js] .cover-plate-frame .cover-layer-night 
 }
 @media (min-width: 1024px) and (max-height: 600px) {
 	.personal-book.cover-folio {
-		padding: 0 clamp(20px, 4vw, 64px) 14px;
+		padding: 0 clamp(20px, 4vw, 64px) 12px;
 	}
 	.cover-folio .cover-meta {
-		min-height: 44px;
+		min-height: 42px;
+	}
+	.cover-folio .cover-book-board {
+		padding: 5px 8px 9px;
 	}
 	.cover-folio .cover-composition {
 		min-height: 0;
-		padding: 18px clamp(28px, 4vw, 56px);
+		padding: 16px clamp(28px, 4vw, 56px);
 		gap: clamp(32px, 5vw, 84px);
 	}
 	.cover-folio .cover-composition::before {
 		height: 36px;
-		width: 16px;
+		width: 15px;
 	}
 	.cover-folio .cover-author {
 		margin-bottom: 6px;
 	}
 	.cover-folio .cover-title {
-		font-size: clamp(2.8rem, 11svh, 4.3rem);
+		font-size: clamp(2.8rem, 11svh, 4.2rem);
 		line-height: 0.96;
 	}
 	.cover-folio .cover-pos {
@@ -645,7 +906,7 @@ html.cover-blooming .cover-folio[data-js] .cover-plate-frame .cover-layer-night 
 		top: calc(100% + 8px);
 	}
 	.cover-folio .cover-plate-figure {
-		max-width: min(100%, 440px, 70svh);
+		max-width: min(100%, 420px, 68svh);
 	}
 	.cover-folio .cover-plate-bar {
 		min-height: 36px;
