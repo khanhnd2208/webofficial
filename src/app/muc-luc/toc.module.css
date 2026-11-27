@@ -157,9 +157,9 @@
 .skyOverlay {
 	position: absolute;
 	inset-inline: 0;
-	top: 22%;
+	top: 30%;
 	width: 100%;
-	height: 66%;
+	height: 58%;
 	transform: translate3d(
 		calc(var(--toc-gaze-x, 0) * -1.8px),
 		calc(var(--toc-gaze-y, 0) * -1.2px),
@@ -647,13 +647,30 @@
 	transform: translate(3px, -3px);
 }
 
+.page :is(a, button) {
+	-webkit-tap-highlight-color: transparent;
+}
+
+.door:active::before {
+	opacity: 1;
+}
+
+.door:active .arrow {
+	transform: translateX(4px);
+}
+
+.backLink:active,
+.atmosphereToggle:active {
+	opacity: 0.72;
+}
+
 /* ── Bottom Archival Colophon Bar (Clean contrast over horizon) ──────────── */
 .footer {
 	position: relative;
 	z-index: 2;
 	margin-top: auto;
 	margin-inline: -40px;
-	padding: 32px 40px 18px;
+	padding: 32px 40px max(18px, env(safe-area-inset-bottom));
 	background: var(--toc-footer-grad);
 }
 
@@ -797,14 +814,14 @@
 /* ── Mobile (`<= 767px`) ─────────────────────────────────────────────────── */
 @media (max-width: 767px) {
 	.page {
-		padding: 68px 20px 0;
+		padding: 66px 20px 0;
 	}
 	.metaRow {
-		margin-bottom: 10px;
+		margin-bottom: 8px;
 		gap: 8px;
 	}
 	.eyebrow {
-		letter-spacing: 0.08em;
+		letter-spacing: 0.1em;
 		white-space: nowrap;
 	}
 	.titleBlock {
@@ -826,14 +843,17 @@
 	}
 	.door {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) 58px;
+		grid-template-columns: minmax(0, 1fr) 62px;
 		align-items: center;
-		gap: 6px 14px;
+		gap: 4px 14px;
 		padding: 18px 4px;
 		border-bottom: 1px solid var(--hairline);
 	}
 	.door:last-child {
 		border-bottom: 0;
+	}
+	.door::before {
+		inset: 2px -8px;
 	}
 	.door::after {
 		inset-inline: 0;
@@ -854,15 +874,19 @@
 		grid-column: 1;
 		grid-row: 2;
 	}
+	.doorTitleRow {
+		justify-content: flex-start;
+		gap: 10px;
+	}
 	.doorIcon {
 		grid-column: 2;
 		grid-row: 1 / 3;
-		width: 58px;
-		height: 58px;
+		width: 62px;
+		height: 62px;
 	}
 	.doorIcon img {
-		width: 56px;
-		height: 56px;
+		width: 58px;
+		height: 58px;
 	}
 	.doorTitle {
 		font-size: 1.45rem;
@@ -883,7 +907,7 @@
 	}
 	.footer {
 		margin-inline: -20px;
-		padding: 24px 20px 14px;
+		padding: 24px 20px max(14px, env(safe-area-inset-bottom));
 	}
 	.footerInner {
 		font-size: var(--type-caption);
@@ -897,6 +921,42 @@
 	}
 }
 
+@media (max-width: 480px) {
+	/* Keep top meta row airy on phones; `Duy Khánh` already sits directly above in SiteHeader */
+	.eyebrowAuthor {
+		display: none;
+	}
+}
+
+@media (max-width: 767px) and (max-height: 700px) {
+	/* Compact phones (375×667 iPhone SE / 320×568): preserve open sky above the sun/moon */
+	.page {
+		padding-top: 58px;
+	}
+	.header {
+		margin-bottom: 12px;
+	}
+	.metaRow {
+		margin-bottom: 4px;
+	}
+	.titleBlock h1 {
+		font-size: clamp(1.75rem, 7.6vw, 2.1rem);
+		margin-bottom: 6px;
+	}
+	.ornamentRule {
+		margin-top: 8px;
+	}
+	.door {
+		padding: 13px 2px;
+	}
+	.horizonWrap {
+		height: clamp(210px, 38svh, 280px);
+	}
+	.footer {
+		padding-top: 16px;
+	}
+}
+
 @media (max-width: 359px) {
 	.door {
 		grid-template-columns: minmax(0, 1fr);
@@ -905,9 +965,38 @@
 		display: none;
 	}
 	.footerInner {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0;
+		gap: 8px;
+	}
+}
+
+@media (max-width: 359px) and (max-height: 600px) {
+	/* Narrowest legacy phones (320×568): zero vertical scroll and clear sky above the sun */
+	.page {
+		padding: 50px 16px 0;
+	}
+	.header {
+		margin-bottom: 6px;
+	}
+	.titleBlock h1 {
+		font-size: 1.75rem;
+		margin-bottom: 4px;
+	}
+	.lead {
+		font-size: 0.9375rem;
+	}
+	.ornamentRule {
+		margin-top: 6px;
+	}
+	.door {
+		padding: 10px 2px;
+		gap: 2px;
+	}
+	.horizonWrap {
+		height: 170px;
+	}
+	.footer {
+		margin-inline: -16px;
+		padding: 10px 16px max(8px, env(safe-area-inset-bottom));
 	}
 }
 
