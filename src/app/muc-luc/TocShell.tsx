@@ -196,7 +196,7 @@ export default function TocShell({ children }: TocShellProps) {
 		[reduced],
 	);
 
-	const toggleLabel = atmosphere === 'night' ? 'Gọi bình minh' : 'Gọi đêm sao';
+	const toggleLabel = atmosphere === 'night' ? 'Đón nắng sớm' : 'Đón đêm sao';
 
 	return (
 		<main
@@ -206,6 +206,9 @@ export default function TocShell({ children }: TocShellProps) {
 			data-atmosphere={atmosphere}
 			data-atmosphere-ready={ready ? 'true' : undefined}
 		>
+			{/* Dappled morning sunlight (Dawn) / warm desk-lamp glow (Night) across open book paper */}
+			<div className={styles.sunlightWash} aria-hidden="true" />
+
 			{/* Panoramic horizon anchored along the bottom with true alpha mask fade (zero seam) */}
 			<div className={styles.horizonWrap} aria-hidden="true">
 				<div className={styles.horizonParallax}>
@@ -227,7 +230,7 @@ export default function TocShell({ children }: TocShellProps) {
 					/>
 				</div>
 
-				{/* Quiet sky accents: faint gliding ink birds (Dawn) / serene twinkling stars (Night) */}
+				{/* Quiet sky accents: faint gliding ink birds & sun motes (Dawn) / stars & shooting star (Night) */}
 				<svg
 					className={styles.skyOverlay}
 					viewBox="0 0 1000 420"
@@ -242,9 +245,13 @@ export default function TocShell({ children }: TocShellProps) {
 							className={`${styles.inkBird} ${styles.inkBirdB}`}
 							d="M 656 122 Q 662 117 667 121 Q 672 117 678 122"
 						/>
+						<circle className={`${styles.sunMote} ${styles.sunMoteA}`} cx="240" cy="180" r="1.5" />
+						<circle className={`${styles.sunMote} ${styles.sunMoteB}`} cx="480" cy="140" r="1.2" />
+						<circle className={`${styles.sunMote} ${styles.sunMoteC}`} cx="740" cy="160" r="1.6" />
 					</g>
 					<g className={styles.nightStars}>
 						<path className={styles.celestialArc} d="M 40 170 A 560 420 0 0 1 960 110" />
+						<line className={styles.shootingStar} x1="810" y1="62" x2="718" y2="108" />
 						{TOC_SKY_STARS.map((star) => (
 							<circle
 								key={`${star.x}-${star.y}`}
@@ -265,14 +272,31 @@ export default function TocShell({ children }: TocShellProps) {
 			<div className={styles.content}>
 				<div className={styles.header}>
 					<div className={styles.metaRow}>
-						<p className={styles.eyebrow}>Mục lục · Nguyễn Duy Khánh</p>
+						<p className={styles.eyebrow}>
+							<span className={styles.eyebrowStar} aria-hidden="true">
+								✦
+							</span>
+							<span>Mục lục · Nguyễn Duy Khánh</span>
+						</p>
 						<Link href={routes.home} className={styles.backLink} data-testid="toc-back-cover">
 							<span aria-hidden="true">←</span>
 							<span>Về trang bìa</span>
 						</Link>
 					</div>
-					<h1>Bạn muốn ghé đâu?</h1>
-					<p className={styles.lead}>Một chút về tôi. Và những điều để học.</p>
+					<div className={styles.titleBlock}>
+						<h1>Bạn muốn ghé đâu?</h1>
+						<p className={styles.lead}>Một chút về tôi. Và những điều để học.</p>
+						<svg
+							className={styles.ornamentRule}
+							viewBox="0 0 160 12"
+							fill="none"
+							aria-hidden="true"
+						>
+							<path d="M4 6 H66" stroke="currentColor" strokeWidth="0.9" opacity="0.45" />
+							<path d="M94 6 H156" stroke="currentColor" strokeWidth="0.9" opacity="0.45" />
+							<path d="M80 2 L84 6 L80 10 L76 6 Z" stroke="currentColor" strokeWidth="0.9" />
+						</svg>
+					</div>
 				</div>
 
 				{children}

@@ -55,7 +55,7 @@ describe('IntroLanding', () => {
 		expect(screen.getByRole('heading', { level: 1, name: 'Trở thành' })).toBeInTheDocument();
 		expect(screen.getByTestId('intro-open-toc')).toHaveAttribute('href', '/muc-luc');
 		expect(screen.getByTestId('intro-home')).toHaveAttribute('data-atmosphere', 'dawn');
-		expect(screen.getByTestId('cover-atmosphere-toggle')).toHaveTextContent('Chạm để gọi đêm sao');
+		expect(screen.getByTestId('cover-atmosphere-toggle')).toHaveTextContent('Đón đêm sao');
 	});
 
 	it('honors pre-paint html[data-cover-atmosphere] without flash and cleans up on unmount', () => {
@@ -63,9 +63,7 @@ describe('IntroLanding', () => {
 		const { unmount } = render(<IntroLanding />);
 
 		expect(screen.getByTestId('intro-home')).toHaveAttribute('data-atmosphere', 'night');
-		expect(screen.getByTestId('cover-atmosphere-toggle')).toHaveTextContent(
-			'Chạm để gọi bình minh',
-		);
+		expect(screen.getByTestId('cover-atmosphere-toggle')).toHaveTextContent('Đón nắng sớm');
 
 		unmount();
 		expect(document.documentElement.dataset.coverAtmosphere).toBeUndefined();
@@ -78,7 +76,7 @@ describe('IntroLanding', () => {
 		fireEvent.click(toggle);
 
 		expect(screen.getByTestId('intro-home')).toHaveAttribute('data-atmosphere', 'night');
-		expect(toggle).toHaveTextContent('Chạm để gọi bình minh');
+		expect(toggle).toHaveTextContent('Đón nắng sớm');
 		expect(window.sessionStorage.getItem(COVER_ATMOSPHERE_STORAGE_KEY)).toBe('night');
 
 		fireEvent.click(toggle);

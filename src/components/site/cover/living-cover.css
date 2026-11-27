@@ -616,21 +616,39 @@ html[data-cover-atmosphere='night']
 	display: none;
 }
 
+@keyframes cover-spark-breathe {
+	0%,
+	100% {
+		opacity: 0.58;
+		transform: scale(0.94);
+	}
+	50% {
+		opacity: 0.96;
+		transform: scale(1.06);
+	}
+}
+
 .cover-marginalia-seal {
-	width: 22px;
-	height: 22px;
+	width: 26px;
+	height: 26px;
 	border-radius: 9999px;
 	display: grid;
 	place-items: center;
-	font-size: 0.75rem;
+	font-size: 0.8125rem;
 	line-height: 1;
 	color: var(--bronze);
-	background: rgba(248, 247, 244, 0.9);
-	border: 1px solid rgba(118, 86, 37, 0.44);
-	box-shadow: 0 0 0 4px rgba(118, 86, 37, 0.08);
+	background: radial-gradient(
+		circle,
+		rgba(250, 245, 232, 0.82) 0%,
+		rgba(250, 245, 232, 0.36) 54%,
+		transparent 76%
+	);
+	border: 1px solid transparent;
+	animation: cover-spark-breathe 4.8s ease-in-out infinite;
 	transition:
 		transform var(--ui-duration-hover) var(--ui-ease),
 		background-color var(--ui-duration-hover) var(--ui-ease),
+		border-color var(--ui-duration-hover) var(--ui-ease),
 		color var(--ui-duration-hover) var(--ui-ease),
 		box-shadow var(--ui-duration-control) var(--ui-ease);
 }
@@ -639,37 +657,60 @@ html[data-cover-atmosphere='night']
 html[data-cover-atmosphere='night']
 	.book-cover:not([data-atmosphere-ready='true'])
 	.cover-marginalia-seal {
-	color: #f0cf88;
-	background: rgba(14, 24, 37, 0.88);
-	border-color: rgba(232, 198, 130, 0.56);
-	box-shadow: 0 0 0 4px rgba(232, 198, 130, 0.14);
+	color: #f2d48f;
+	background: radial-gradient(
+		circle,
+		rgba(240, 207, 136, 0.28) 0%,
+		rgba(240, 207, 136, 0.08) 54%,
+		transparent 76%
+	);
+	border-color: transparent;
 }
 
-.cover-marginalia-dot:hover .cover-marginalia-seal,
-.cover-marginalia[open] .cover-marginalia-seal {
-	transform: scale(1.14);
+.cover-marginalia[open] .cover-marginalia-seal,
+.cover-marginalia-dot:focus-visible .cover-marginalia-seal {
+	animation: none;
+	opacity: 1;
+	transform: scale(1.12);
 	background: var(--bronze);
 	color: #fffcf7;
 	border-color: var(--bronze);
-	box-shadow: 0 0 0 7px rgba(200, 157, 75, 0.22);
+	box-shadow: 0 0 0 5px rgba(200, 157, 75, 0.22);
 }
 
-.book-cover[data-atmosphere='night'] .cover-marginalia-dot:hover .cover-marginalia-seal,
-.book-cover[data-atmosphere='night'] .cover-marginalia[open] .cover-marginalia-seal {
+@media (hover: hover) and (pointer: fine) {
+	.cover-marginalia-dot:hover .cover-marginalia-seal {
+		animation: none;
+		opacity: 1;
+		transform: scale(1.12);
+		background: var(--bronze);
+		color: #fffcf7;
+		border-color: var(--bronze);
+		box-shadow: 0 0 0 5px rgba(200, 157, 75, 0.22);
+	}
+}
+
+.book-cover[data-atmosphere='night'] .cover-marginalia[open] .cover-marginalia-seal,
+.book-cover[data-atmosphere='night'] .cover-marginalia-dot:focus-visible .cover-marginalia-seal {
 	color: #0d1622;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.book-cover[data-atmosphere='night'] .cover-marginalia-dot:hover .cover-marginalia-seal {
+		color: #0d1622;
+	}
 }
 
 .cover-marginalia-slip {
 	position: absolute;
 	min-width: 224px;
 	max-width: 268px;
-	padding: 12px 15px;
-	border-radius: var(--radius-sm);
-	border: 1px solid var(--hairline);
-	background: rgba(255, 252, 247, 0.97);
+	padding: 13px 16px;
+	border-radius: 4px;
+	border: 1px solid color-mix(in srgb, var(--bronze) 28%, transparent);
+	background: rgba(251, 246, 234, 0.97);
 	color: var(--ink);
-	box-shadow: var(--shadow-md);
-	backdrop-filter: blur(8px);
+	box-shadow: 0 12px 28px -12px rgba(32, 26, 18, 0.22);
 	animation: cover-whisper-in var(--ui-duration-control) var(--ui-ease) both;
 }
 
@@ -743,7 +784,10 @@ html[data-cover-atmosphere='night']
 }
 
 .cover-plate-status {
-	letter-spacing: 0.03em;
+	font-family: var(--font-serif-display), 'Source Serif 4', Georgia, serif;
+	font-style: italic;
+	font-size: 0.875rem;
+	letter-spacing: 0.015em;
 	white-space: nowrap;
 }
 
@@ -1007,6 +1051,7 @@ html[data-cover-atmosphere='night']
 	.cover-journey-stroke,
 	.cover-star,
 	.cover-whisper,
+	.cover-marginalia-seal,
 	.cover-marginalia-slip,
 	.cover-docked-note,
 	.cover-settled-cursor {

@@ -66,6 +66,19 @@ export default function CoverEditorialCopy({ onWhisperChange }: CoverEditorialCo
 					<span className="cover-pos-label">{introPage.partOfSpeech}</span>
 				</button>
 			</p>
+			<svg className="cover-ink-sprig" viewBox="0 0 88 12" fill="none" aria-hidden="true">
+				<path
+					d="M2 7.5 C 22 4.5, 42 4.5, 62 7 C 72 8.2, 80 7.2, 86 5.5"
+					stroke="currentColor"
+					strokeWidth="1"
+					strokeLinecap="round"
+				/>
+				<path
+					d="M42 5.2 C 45 2.2, 49 1.8, 51 3.4 C 48.5 5.4, 44.5 5.6, 42 5.2 Z"
+					fill="currentColor"
+					opacity="0.55"
+				/>
+			</svg>
 			<div className="cover-narrative">
 				{introPage.lines.map((line, index) => (
 					<p key={line}>
@@ -81,8 +94,11 @@ export default function CoverEditorialCopy({ onWhisperChange }: CoverEditorialCo
 				))}
 			</div>
 			<Link className="book-link cover-cta" href={routes.toc} data-testid="intro-open-toc">
-				{introPage.cta}
-				<span aria-hidden="true">→</span>
+				<span className="cover-cta-seal" aria-hidden="true" />
+				<span className="cover-cta-text">{introPage.cta}</span>
+				<span className="cover-cta-arrow" aria-hidden="true">
+					→
+				</span>
 			</Link>
 			{activeWhisper ? (
 				<aside

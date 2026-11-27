@@ -1558,24 +1558,24 @@ html.cover-blooming::view-transition-new(root) {
 }
 
 html[data-cover-atmosphere='night'] {
-	background-color: #0d1622;
+	background-color: #0e1925;
 }
 
 html[data-cover-atmosphere='night']:has([data-testid='gate-home'])
 	header[data-testid='site-header'] {
-	--canvas: #0d1622;
-	--paper: #0e1825;
-	--surface: #132030;
-	--surface-elevated: #162638;
-	--surface-hover: #1b2d42;
-	--ink: #f2eadc;
-	--ink-secondary: #adb8c4;
-	--foreground: #f2eadc;
-	--muted: #adb8c4;
-	--hairline: rgba(216, 200, 172, 0.16);
-	--border: rgba(216, 200, 172, 0.16);
-	--bronze: #d9b269;
-	color: #f2eadc;
+	--canvas: #0e1925;
+	--paper: #101d2b;
+	--surface: #142334;
+	--surface-elevated: #17283b;
+	--surface-hover: #1b2f45;
+	--ink: #f4e8cd;
+	--ink-secondary: #b4bec8;
+	--foreground: #f4e8cd;
+	--muted: #b4bec8;
+	--hairline: rgba(226, 206, 174, 0.17);
+	--border: rgba(226, 206, 174, 0.17);
+	--bronze: #e4ba7c;
+	color: #f4e8cd;
 }
 
 @media (prefers-reduced-motion: reduce) {

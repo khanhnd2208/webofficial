@@ -46,7 +46,7 @@ describe('TocShell', () => {
 			screen.getByRole('heading', { level: 1, name: 'Bạn muốn ghé đâu?' }),
 		).toBeInTheDocument();
 		expect(screen.getByTestId('toc-back-cover')).toHaveAttribute('href', routes.home);
-		expect(screen.getByTestId('toc-atmosphere-toggle')).toHaveTextContent('Gọi đêm sao');
+		expect(screen.getByTestId('toc-atmosphere-toggle')).toHaveTextContent('Đón đêm sao');
 	});
 
 	it('inherits Night atmosphere from the homepage session and toggles cleanly', () => {
@@ -59,7 +59,7 @@ describe('TocShell', () => {
 
 		expect(screen.getByTestId('gate-home')).toHaveAttribute('data-atmosphere', 'night');
 		const toggle = screen.getByTestId('toc-atmosphere-toggle');
-		expect(toggle).toHaveTextContent('Gọi bình minh');
+		expect(toggle).toHaveTextContent('Đón nắng sớm');
 
 		fireEvent.click(toggle);
 		expect(screen.getByTestId('gate-home')).toHaveAttribute('data-atmosphere', 'dawn');

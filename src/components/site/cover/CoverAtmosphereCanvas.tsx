@@ -60,6 +60,28 @@ interface DustMote {
 	alpha: number;
 }
 
+interface BreezeSpark {
+	x: number;
+	y: number;
+	vx: number;
+	vy: number;
+	r: number;
+	life: number;
+	maxLife: number;
+}
+
+function createBreezePool(): BreezeSpark[] {
+	return Array.from({ length: 14 }, () => ({
+		x: 0,
+		y: 0,
+		vx: 0,
+		vy: 0,
+		r: 1.2,
+		life: 0,
+		maxLife: 1,
+	}));
+}
+
 function createInitialMotes(): DustMote[] {
 	const motes: DustMote[] = [];
 	for (let i = 0; i < 14; i += 1) {
@@ -136,6 +158,9 @@ export default function CoverAtmosphereCanvas({
 		DESKTOP_LEAVES.map(() => ({ ox: 0, oy: 0, vx: 0, vy: 0, angleOffset: 0, vAngle: 0 })),
 	);
 	const motesRef = useRef<DustMote[]>(createInitialMotes());
+	const sparksRef = useRef<BreezeSpark[]>(createBreezePool());
+	const sparkCursorRef = useRef(0);
+	const lastSparkTimeRef = useRef(0);
 	const sunWarmthRef = useRef(0);
 	const lanternGlowRef = useRef(0);
 	const lastPointerPosRef = useRef({ x: 0.5, y: 0.5 });
@@ -208,11 +233,16 @@ export default function CoverAtmosphereCanvas({
 			const inWelcomeWindow =
 				!hasInteractedRef.current && elapsedSinceMount > 1.6 && elapsedSinceMount < 3.4;
 
-			// Full native frame rate during interaction/transitions; calm ~30fps when idle.
+			// Full native frame rate during interaction, active sparks, shooting star, or transitions; calm ~30fps idle.
+			const secNow = now / 1000;
+			const shootingStarActive = atmosphereRef.current === 'night' && (secNow + 3.4) % 11.2 < 0.9;
+			const hasActiveSparks = sparksRef.current.some((s) => s.life > 0);
 			const highRate =
 				ptr.active ||
 				Boolean(activePulse) ||
 				inWelcomeWindow ||
+				shootingStarActive ||
+				hasActiveSparks ||
 				sunWarmthRef.current > 0.02 ||
 				lanternGlowRef.current > 0.02;
 			if (!highRate && now - lastPaint < 32) {
@@ -281,7 +311,7 @@ export default function CoverAtmosphereCanvas({
 				ctx.restore();
 			}
 
-			// 2) Ambient drifting dust motes (Dawn sunlit library motes / Night twilight specks)
+			// 2) Ambient drifting dust motes + whisper-light breeze trail sparks
 			if (allowsAmbient) {
 				const motes = motesRef.current;
 				for (let i = 0; i < motes.length; i += 1) {
@@ -306,13 +336,80 @@ export default function CoverAtmosphereCanvas({
 					}
 
 					const breathe = 0.6 + 0.4 * Math.sin(sec * 1.1 + m.phase);
-					const a = m.alpha * breathe * (isNight ? 1.05 : 1.15);
+					const a = m.alpha * breathe * (isNight ? 1.08 : 1.18);
 					ctx.fillStyle = isNight
 						? `rgba(238, 212, 152, ${a.toFixed(3)})`
 						: `rgba(186, 138, 54, ${a.toFixed(3)})`;
 					ctx.beginPath();
 					ctx.arc(mx, my, m.r, 0, Math.PI * 2);
 					ctx.fill();
+				}
+
+				// Feather-light sunlit pollen / stardust released gently on pointer motion
+				const speed = ptr.active ? Math.hypot(ptr.vx, ptr.vy) : 0;
+				const sparks = sparksRef.current;
+				if (ptr.active && speed > 45 && now - lastSparkTimeRef.current > 85) {
+					lastSparkTimeRef.current = now;
+					const s = sparks[sparkCursorRef.current % sparks.length];
+					sparkCursorRef.current += 1;
+					const jitterAngle = (sparkCursorRef.current * 2.39996) % (Math.PI * 2);
+					s.x = px + Math.cos(jitterAngle) * 5;
+					s.y = py + Math.sin(jitterAngle) * 5;
+					s.vx = ptr.vx * 0.045 + Math.cos(jitterAngle) * 6;
+					s.vy = ptr.vy * 0.035 - 10;
+					s.r = 1.05 + (sparkCursorRef.current % 3) * 0.35;
+					s.maxLife = 1.05 + (sparkCursorRef.current % 3) * 0.2;
+					s.life = s.maxLife;
+				}
+				for (let i = 0; i < sparks.length; i += 1) {
+					const s = sparks[i];
+					if (s.life <= 0) continue;
+					s.life -= dt;
+					if (s.life <= 0) continue;
+					s.x += s.vx * dt;
+					s.y += s.vy * dt;
+					s.vx *= Math.exp(-1.8 * dt);
+					const t = s.life / s.maxLife;
+					const alpha = Math.sin(t * Math.PI) * (isNight ? 0.52 : 0.44);
+					ctx.fillStyle = isNight
+						? `rgba(246, 224, 170, ${alpha.toFixed(3)})`
+						: `rgba(196, 148, 62, ${alpha.toFixed(3)})`;
+					ctx.beginPath();
+					ctx.arc(s.x, s.y, s.r * (0.65 + 0.35 * t), 0, Math.PI * 2);
+					ctx.fill();
+				}
+
+				// Rare, silent shooting star gliding across the nocturnal upper sky (~every 11s)
+				if (isNight) {
+					const cycle = 11.2;
+					const local = (sec + 3.4) % cycle;
+					if (local < 0.85) {
+						const p = local / 0.85;
+						const ease = 1 - Math.pow(1 - p, 2);
+						const sx0 = w * 0.84;
+						const sy0 = h * 0.11;
+						const sx1 = w * 0.56;
+						const sy1 = h * 0.24;
+						const headX = sx0 + (sx1 - sx0) * ease;
+						const headY = sy0 + (sy1 - sy0) * ease;
+						const tailP = Math.max(0, ease - 0.24);
+						const tailX = sx0 + (sx1 - sx0) * tailP;
+						const tailY = sy0 + (sy1 - sy0) * tailP;
+						const fade = Math.sin(p * Math.PI) * 0.62;
+
+						const streak = ctx.createLinearGradient(tailX, tailY, headX, headY);
+						streak.addColorStop(0, 'rgba(246, 228, 184, 0)');
+						streak.addColorStop(1, `rgba(248, 232, 192, ${fade.toFixed(3)})`);
+						ctx.save();
+						ctx.strokeStyle = streak;
+						ctx.lineWidth = 1.25;
+						ctx.lineCap = 'round';
+						ctx.beginPath();
+						ctx.moveTo(tailX, tailY);
+						ctx.lineTo(headX, headY);
+						ctx.stroke();
+						ctx.restore();
+					}
 				}
 			}
 

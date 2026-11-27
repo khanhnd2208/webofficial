@@ -331,8 +331,9 @@ export default function CoverLivingPlate({
 		'--sun-y': `${sunPos.y}%`,
 	} as CSSProperties;
 
-	const toggleLabel = atmosphere === 'night' ? 'Chạm để gọi bình minh' : 'Chạm để gọi đêm sao';
-	const plateStatus = atmosphere === 'night' ? 'Đêm sao · Hà Nội' : 'Bình minh · Hà Nội';
+	const toggleLabel = atmosphere === 'night' ? 'Đón nắng sớm' : 'Đón đêm sao';
+	const toggleAriaLabel = atmosphere === 'night' ? 'Chạm để đón nắng sớm' : 'Chạm để đón đêm sao';
+	const plateStatus = atmosphere === 'night' ? 'Đêm khuya · Hà Nội' : 'Nắng sớm · Hà Nội';
 
 	const dockedNote =
 		!isDesktop && openNote
@@ -530,7 +531,7 @@ export default function CoverLivingPlate({
 					onClick={(event) =>
 						event.detail > 0 ? turnFromPoint(event.clientX, event.clientY) : triggerFromSun()
 					}
-					aria-label={toggleLabel}
+					aria-label={toggleAriaLabel}
 					aria-pressed={atmosphere === 'night'}
 					data-testid="cover-plate-toggle"
 				>
@@ -545,8 +546,8 @@ export default function CoverLivingPlate({
 					onClick={triggerFromSun}
 					aria-label={
 						atmosphere === 'night'
-							? 'Chạm vào mặt trăng để gọi bình minh'
-							: 'Chạm vào mặt trời để gọi đêm sao'
+							? 'Chạm vào mặt trăng để đón nắng sớm'
+							: 'Chạm vào mặt trời để đón đêm sao'
 					}
 					title={toggleLabel}
 				>

@@ -49,26 +49,31 @@ function Arrow({ external }: { external: boolean }) {
 function Door({ item, testId }: { item: TocDoor; testId: string }) {
 	return (
 		<Link href={item.href} className={styles.door} data-testid={testId}>
-			<span className={styles.doorIndex} aria-hidden="true">
-				{item.index}
+			<span className={styles.doorTop}>
+				<span className={styles.doorIndex} aria-hidden="true">
+					{item.index}
+				</span>
+				<span className={styles.doorRule} aria-hidden="true" />
+				<span className={styles.doorIcon} aria-hidden="true">
+					<Image
+						src={item.icon}
+						alt=""
+						width={84}
+						height={84}
+						sizes="(max-width: 640px) 58px, 84px"
+						loading="eager"
+					/>
+				</span>
 			</span>
 			<span className={styles.doorText}>
-				<span className={styles.doorTitle}>{item.label}</span>
+				<span className={styles.doorTitleRow}>
+					<span className={styles.doorTitle}>{item.label}</span>
+					<span className={styles.doorCue}>
+						<Arrow external={/^https?:/.test(item.href)} />
+					</span>
+				</span>
 				<span className={styles.doorDescription}>{item.description}</span>
 				<span className={styles.doorScope}>{item.scope}</span>
-			</span>
-			<span className={styles.doorIcon} aria-hidden="true">
-				<Image
-					src={item.icon}
-					alt=""
-					width={72}
-					height={72}
-					sizes="(max-width: 640px) 52px, 72px"
-					loading="eager"
-				/>
-			</span>
-			<span className={styles.doorCue}>
-				<Arrow external={/^https?:/.test(item.href)} />
 			</span>
 		</Link>
 	);
