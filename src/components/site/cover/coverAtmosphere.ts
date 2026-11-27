@@ -59,17 +59,30 @@ export function runAtmosphereViewTransition(options: {
 
 	const vw = window.innerWidth;
 	const vh = window.innerHeight;
-	const maxRadius =
-		Math.max(
-			Math.hypot(clientX, clientY),
-			Math.hypot(vw - clientX, clientY),
-			Math.hypot(clientX, vh - clientY),
-			Math.hypot(vw - clientX, vh - clientY),
-		) + 84;
+	const maxCorner = Math.max(
+		Math.hypot(clientX, clientY),
+		Math.hypot(vw - clientX, clientY),
+		Math.hypot(clientX, vh - clientY),
+		Math.hypot(vw - clientX, vh - clientY),
+	);
+	// Precompute concrete pixel lengths for every registered @property lobe so Blink/WebKit
+	// smoothly interpolate all four mist layers past every viewport corner without end pop.
+	const max1 = Math.ceil(maxCorner + 560);
+	const max2 = Math.ceil(maxCorner + Math.hypot(vw * 0.18, vh * 0.12) + 520);
+	const max3 = Math.ceil(maxCorner + Math.hypot(vw * 0.15, vh * 0.16) + 500);
+	const sweepMax = Math.ceil(Math.hypot(vw, vh) + 680);
 
 	root.style.setProperty('--cover-bloom-x', `${Math.round(clientX)}px`);
 	root.style.setProperty('--cover-bloom-y', `${Math.round(clientY)}px`);
-	root.style.setProperty('--cover-bloom-max', `${Math.ceil(maxRadius)}px`);
+	root.style.setProperty('--cover-bloom-r1-a', `${Math.round(max1 * 0.24)}px`);
+	root.style.setProperty('--cover-bloom-r1-b', `${Math.round(max1 * 0.62)}px`);
+	root.style.setProperty('--cover-bloom-r1-end', `${max1}px`);
+	root.style.setProperty('--cover-bloom-r2-b', `${Math.round(max2 * 0.46)}px`);
+	root.style.setProperty('--cover-bloom-r2-end', `${max2}px`);
+	root.style.setProperty('--cover-bloom-r3-b', `${Math.round(max3 * 0.68)}px`);
+	root.style.setProperty('--cover-bloom-r3-end', `${max3}px`);
+	root.style.setProperty('--cover-bloom-sweep-b', `${Math.round(sweepMax * 0.44)}px`);
+	root.style.setProperty('--cover-bloom-sweep-end', `${sweepMax}px`);
 	root.classList.add('cover-blooming');
 
 	try {

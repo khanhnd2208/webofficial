@@ -100,37 +100,40 @@ export default function IntroLanding() {
 				</span>
 				<SiteAuthChip variant="chrome" />
 			</header>
-			<main className="cover-composition">
-				<div className="cover-sunlight-wash" aria-hidden="true" />
-				<CoverEditorialCopy onWhisperChange={setWhisperOpen} />
-				<CoverLivingPlate
-					atmosphere={atmosphere}
-					viewTransitionActive={viewTransitionActive}
-					onToggleAtmosphere={handleToggleAtmosphere}
-				/>
-				<div className="cover-leaf-colophon" aria-hidden="true">
-					<svg className="cover-chop-seal" viewBox="0 0 24 24" fill="none">
-						<rect
-							x="2.2"
-							y="2.2"
-							width="19.6"
-							height="19.6"
-							rx="3.5"
-							stroke="currentColor"
-							strokeWidth="1.25"
-						/>
-						<path
-							d="M6.5 16.5 L10.2 10.2 L13 13.8 L15.4 11.2 L18 16.5"
-							stroke="currentColor"
-							strokeWidth="1.2"
-							strokeLinecap="round"
-							strokeLinejoin="round"
-						/>
-						<circle cx="15.8" cy="7.6" r="1.4" fill="currentColor" />
-					</svg>
-					<span className="cover-folio-page-num">tr. i</span>
-				</div>
-			</main>
+			<div className="cover-book-board">
+				<main className="cover-composition">
+					<div className="cover-paper-grain" aria-hidden="true" />
+					<div className="cover-sunlight-wash" aria-hidden="true" />
+					<CoverEditorialCopy onWhisperChange={setWhisperOpen} />
+					<CoverLivingPlate
+						atmosphere={atmosphere}
+						viewTransitionActive={viewTransitionActive}
+						onToggleAtmosphere={handleToggleAtmosphere}
+					/>
+					<div className="cover-leaf-colophon" aria-hidden="true">
+						<svg className="cover-chop-seal" viewBox="0 0 24 24" fill="none">
+							<rect
+								x="2.2"
+								y="2.2"
+								width="19.6"
+								height="19.6"
+								rx="3.5"
+								stroke="currentColor"
+								strokeWidth="1.25"
+							/>
+							<path
+								d="M6.5 16.5 L10.2 10.2 L13 13.8 L15.4 11.2 L18 16.5"
+								stroke="currentColor"
+								strokeWidth="1.2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							/>
+							<circle cx="15.8" cy="7.6" r="1.4" fill="currentColor" />
+						</svg>
+						<span className="cover-folio-page-num">tr. i</span>
+					</div>
+				</main>
+			</div>
 		</div>
 	);
 }

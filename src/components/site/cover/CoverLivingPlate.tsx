@@ -40,7 +40,7 @@ interface CoverLivingPlateProps {
 	onToggleAtmosphere: (origin: BloomOrigin) => void;
 }
 
-const FALLBACK_REVEAL_MS = 760;
+const FALLBACK_REVEAL_MS = 1320;
 
 function formatPolyline(points: readonly { x: number; y: number }[]): string {
 	return points.map((p) => `${p.x},${p.y}`).join(' ');

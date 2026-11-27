@@ -276,7 +276,8 @@ export default function TocShell({ children }: TocShellProps) {
 							<span className={styles.eyebrowStar} aria-hidden="true">
 								✦
 							</span>
-							<span>Mục lục · Nguyễn Duy Khánh</span>
+							<span>Mục lục</span>
+							<span className={styles.eyebrowAuthor}> · Nguyễn Duy Khánh</span>
 						</p>
 						<Link href={routes.home} className={styles.backLink} data-testid="toc-back-cover">
 							<span aria-hidden="true">←</span>
